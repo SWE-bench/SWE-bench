@@ -30,6 +30,7 @@ setuptools.setup(
     install_requires=[
         "beautifulsoup4",
         "chardet",
+        "dagger-io",
         "datasets",
         "docker",
         "ghapi",

@@ -693,6 +693,8 @@ SPECS_XARRAY = {
             "scipy==1.11.1",
             "setuptools==68.0.0",
             "dask==2022.8.1",
+            # a "sparse" dependency but it's the last version that works with numpy 1.23
+            "numba==0.60.0",
         ],
         "no_use_env": True,
         "test_cmd": TEST_PYTEST,
