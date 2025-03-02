@@ -381,7 +381,13 @@ SPECS_MATPLOTLIB = {
         "packages": "environment.yml",
         "install": "python -m pip install -e .",
         "pre_install": [
-            "apt-get -y update && apt-get -y upgrade && DEBIAN_FRONTEND=noninteractive apt-get install -y imagemagick ffmpeg texlive texlive-latex-extra texlive-fonts-recommended texlive-xetex texlive-luatex cm-super dvipng"
+            "apt-get -y update && apt-get -y upgrade && DEBIAN_FRONTEND=noninteractive apt-get install -y imagemagick ffmpeg texlive texlive-latex-extra texlive-fonts-recommended texlive-xetex texlive-luatex cm-super dvipng",
+            "QHULL_URL=\"http://www.qhull.org/download/qhull-2020-src-8.0.2.tgz\"",
+            "QHULL_TAR=\"/tmp/qhull-2020-src-8.0.2.tgz\"",
+            "QHULL_BUILD_DIR=\"/testbed/build\"",
+            "wget -O \"$QHULL_TAR\" \"$QHULL_URL\"",
+            "mkdir -p \"$QHULL_BUILD_DIR\"",
+            "tar -xvzf \"$QHULL_TAR\" -C \"$QHULL_BUILD_DIR\""
         ],
         "pip_packages": [
             "contourpy==1.1.0",
@@ -411,7 +417,13 @@ SPECS_MATPLOTLIB.update(
             "packages": "requirements.txt",
             "install": "python -m pip install -e .",
             "pre_install": [
-                "apt-get -y update && apt-get -y upgrade && DEBIAN_FRONTEND=noninteractive apt-get install -y imagemagick ffmpeg libfreetype6-dev pkg-config texlive texlive-latex-extra texlive-fonts-recommended texlive-xetex texlive-luatex cm-super"
+                "apt-get -y update && apt-get -y upgrade && DEBIAN_FRONTEND=noninteractive apt-get install -y imagemagick ffmpeg libfreetype6-dev pkg-config texlive texlive-latex-extra texlive-fonts-recommended texlive-xetex texlive-luatex cm-super",
+                "QHULL_URL=\"http://www.qhull.org/download/qhull-2020-src-8.0.2.tgz\"",
+                "QHULL_TAR=\"/tmp/qhull-2020-src-8.0.2.tgz\"",
+                "QHULL_BUILD_DIR=\"/testbed/build\"",
+                "wget -O \"$QHULL_TAR\" \"$QHULL_URL\"",
+                "mkdir -p \"$QHULL_BUILD_DIR\"",
+                "tar -xvzf \"$QHULL_TAR\" -C \"$QHULL_BUILD_DIR\""
             ],
             "pip_packages": ["pytest", "ipython"],
             "test_cmd": TEST_PYTEST,
@@ -426,7 +438,13 @@ SPECS_MATPLOTLIB.update(
             "packages": "requirements.txt",
             "install": "python -m pip install -e .",
             "pre_install": [
-                "apt-get -y update && apt-get -y upgrade && apt-get install -y imagemagick ffmpeg libfreetype6-dev pkg-config"
+                "apt-get -y update && apt-get -y upgrade && apt-get install -y imagemagick ffmpeg libfreetype6-dev pkg-config",
+                "QHULL_URL=\"http://www.qhull.org/download/qhull-2020-src-8.0.2.tgz\"",
+                "QHULL_TAR=\"/tmp/qhull-2020-src-8.0.2.tgz\"",
+                "QHULL_BUILD_DIR=\"/testbed/build\"",
+                "wget -O \"$QHULL_TAR\" \"$QHULL_URL\"",
+                "mkdir -p \"$QHULL_BUILD_DIR\"",
+                "tar -xvzf \"$QHULL_TAR\" -C \"$QHULL_BUILD_DIR\""
             ],
             "pip_packages": ["pytest"],
             "test_cmd": TEST_PYTEST,
