@@ -195,6 +195,19 @@ def make_repo_script_list_py(
 
     if "install" in specs:
         setup_commands.append(specs["install"])
+
+    # If the setup modifies the repository in any way, it can be 
+    # difficult to get a clean diff.  This ensures that `git diff`
+    # will only reflect the changes from the user while retaining the
+    # original state of the repository plus setup commands.
+    clean_diff_commands = [
+        "git config --global user.email setup@swebench.config",
+        "git config --global user.name SWE-bench",
+        "git commit --allow-empty -am SWE-bench",
+    ]
+
+    setup_commands += clean_diff_commands
+
     return setup_commands
 
 
