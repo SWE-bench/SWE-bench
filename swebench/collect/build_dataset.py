@@ -59,8 +59,10 @@ def is_valid_pull(pull: dict) -> bool:
     """
     if pull["merged_at"] is None:
         return False
-    if "resolved_issues" not in pull or len(pull["resolved_issues"]) < 1:
-        return False
+    
+    # TODO(jjma): No issue needed for performance tasks.
+    # if "resolved_issues" not in pull or len(pull["resolved_issues"]) < 1:
+    #     return False
     return True
 
 
@@ -75,8 +77,10 @@ def is_valid_instance(instance: dict) -> bool:
     """
     if instance["patch"] is None or instance["patch"] == "":
         return False
-    if instance["problem_statement"] is None or instance["problem_statement"] == "":
-        return False
+    
+    # TODO(jjma): No problem statement needed for performance tasks.
+    # if instance["problem_statement"] is None or instance["problem_statement"] == "":
+    #     return False
     return True
 
 
