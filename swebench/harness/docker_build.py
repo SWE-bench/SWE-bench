@@ -463,6 +463,10 @@ def build_container(
                 client.images.pull(test_spec.instance_image_key)
             except docker.errors.NotFound as e:
                 raise BuildImageError(test_spec.instance_id, str(e), logger) from e
+            except Exception as e:
+                raise Exception(
+                    f"Error occurred while pulling image {test_spec.base_image_key}: {str(e)}"
+                )
 
     container = None
     try:
