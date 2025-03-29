@@ -100,13 +100,13 @@ class Repo:
         # Remove comments from text
         text = comments_pat.sub("", text)
         # Look for issue numbers in text via scraping <keyword, number> patterns
-        references = dict(issues_pat.findall(text))
-        resolved_issues = list()
+        references = issues_pat.findall(text)
+        resolved_issues_set = set()
         if references:
-            for word, issue_num in references.items():
+            for word, issue_num in references:
                 if word.lower() in PR_KEYWORDS:
-                    resolved_issues.append(issue_num)
-        return resolved_issues
+                    resolved_issues_set.add(issue_num)
+        return list(resolved_issues_set)
 
     def get_all_loop(
         self,

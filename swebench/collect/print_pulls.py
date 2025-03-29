@@ -49,12 +49,46 @@ def log_all_pulls(
                 break
 
 
+def log_single_pull(
+    repo: Repo,
+    pull_number: int,
+    output: str,
+) -> None:
+    """
+    Get a single pull request from a repository and log it to a file
+
+    Args:
+        repo (Repo): repository object
+        pull_number (int): pull request number
+        output (str): output file name
+    """
+    logger.info(f"Fetching PR #{pull_number} from {repo.owner}/{repo.name}")
+    
+    # Get the pull request using the GitHub API
+    pull = repo.call_api(repo.api.pulls.get, owner=repo.owner, repo=repo.name, pull_number=pull_number)
+    
+    if pull is None:
+        logger.error(f"PR #{pull_number} not found in {repo.owner}/{repo.name}")
+        return
+    
+    # Extract resolved issues
+    setattr(pull, "resolved_issues", repo.extract_resolved_issues(pull))
+    
+    # Log the pull request to a file
+    with open(output, "w") as file:
+        print(json.dumps(obj2dict(pull)), end="\n", flush=True, file=file)
+    
+    logger.info(f"PR #{pull_number} saved to {output}")
+    logger.info(f"Resolved issues: {pull.resolved_issues}")
+
+
 def main(
     repo_name: str,
     output: str,
     token: Optional[str] = None,
     max_pulls: int = None,
     cutoff_date: str = None,
+    pull_number: int = None,
 ):
     """
     Logic for logging all pull requests in a repository
@@ -63,12 +97,19 @@ def main(
         repo_name (str): name of the repository
         output (str): output file name
         token (str, optional): GitHub token
+        max_pulls (int, optional): maximum number of pulls to log
+        cutoff_date (str, optional): cutoff date for PRs to consider
+        pull_number (int, optional): specific pull request number to log
     """
     if token is None:
         token = os.environ.get("GITHUB_TOKEN")
     owner, repo = repo_name.split("/")
     repo = Repo(owner, repo, token=token)
-    log_all_pulls(repo, output, max_pulls=max_pulls, cutoff_date=cutoff_date)
+    
+    if pull_number is not None:
+        log_single_pull(repo, pull_number, output)
+    else:
+        log_all_pulls(repo, output, max_pulls=max_pulls, cutoff_date=cutoff_date)
 
 
 if __name__ == "__main__":
@@ -83,6 +124,12 @@ if __name__ == "__main__":
         "--cutoff_date",
         type=str,
         help="Cutoff date for PRs to consider in format YYYYMMDD",
+        default=None,
+    )
+    parser.add_argument(
+        "--pull_number",
+        type=int,
+        help="Specific pull request number to log",
         default=None,
     )
     args = parser.parse_args()
