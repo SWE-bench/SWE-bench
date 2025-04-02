@@ -213,6 +213,7 @@ def main(
                 if datum["instance_id"] not in valid_instance_ids:
                     invalid_instances.append(datum["instance_id"])
                     continue
+                datum = extract_fields(datum)
                 for key in columns:
                     split_data[key].append(datum.get(key, ""))
 
