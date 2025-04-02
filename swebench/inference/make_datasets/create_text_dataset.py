@@ -58,11 +58,11 @@ def get_training_and_eval_instances(raw_files, test_dataset):
 def extract_fields(instance):
     instance_id = instance["instance_id"]
     if instance["text_inputs"] is None or instance["patch"] is None:
-        print(f"No text for {instance_id}")
+        logger.warning(f"No text for {instance_id}")
         return None
     text_inputs = instance["text_inputs"].strip() + "\n\n"
     if text_inputs is None or instance["patch"] is None:
-        print(f"No inputs for {instance_id}")
+        logger.warning(f"No inputs for {instance_id}")
         return None
     patch = "\n".join(["<patch>", instance["patch"], "</patch>"])
     return {**instance, "text": text_inputs, "patch": patch}
@@ -214,6 +214,8 @@ def main(
                     invalid_instances.append(datum["instance_id"])
                     continue
                 datum = extract_fields(datum)
+                if not datum:
+                    continue
                 for key in columns:
                     split_data[key].append(datum.get(key, ""))
 
