@@ -87,14 +87,14 @@ def run_threadpool(func, payloads, max_workers):
             # Wait for each future to complete
             for future in as_completed(futures):
                 try:
-                    # Update progress bar, check if instance ran successfully
+                    # Check if instance ran successfully
                     future.result()
                     succeeded.append(futures[future])
                 except Exception as e:
                     print(f"{type(e)}: {e}")
                     traceback.print_exc()
                     failed.append(futures[future])
-                    continue
+                # Update progress bar
                 pbar.update(1)
                 pbar.set_description(
                     f"{len(succeeded)} ran successfully, {len(failed)} failed"
