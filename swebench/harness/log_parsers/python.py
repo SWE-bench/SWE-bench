@@ -167,6 +167,11 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
             test_case = line.split()
             if len(test_case) >= 2:
                 test_status_map[test_case[0]] = test_case[1]
+        # Support even older pytest versions
+        elif any([x.value in line for x in TestStatus]):
+            test_case = line.split()
+            if len(test_case) >= 2:
+                test_status_map[test_case[0]] = test_case[1]
     return test_status_map
 
 

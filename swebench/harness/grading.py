@@ -52,6 +52,7 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
     if isinstance(test_cmd, list):
         test_cmd = test_cmd[-1]
 
+
     with open(log_fp) as f:
         content = f.read()
         # TODO fix constant here

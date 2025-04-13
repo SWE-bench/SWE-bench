@@ -299,31 +299,17 @@ def make_eval_script_list_py(
             *get_test_directives(instance),
         ]
     )
-    eval_commands = [
-        "source /opt/miniconda3/bin/activate",
-        f"conda activate {env_name}",
-        f"cd {repo_directory}",
-    ]
+    eval_commands = []
     if "eval_commands" in specs:
         eval_commands += specs["eval_commands"]
-    eval_commands += [
-        f"git config --global --add safe.directory {repo_directory}",  # for nonroot user
-        f"cd {repo_directory}",
-        # This is just informational, so we have a record
-        "git status",
-        "git show",
-        f"git -c core.fileMode=false diff {base_commit}",
-        "source /opt/miniconda3/bin/activate",
-        f"conda activate {env_name}",
-    ]
     if "install" in specs:
-        eval_commands.append(specs["install"])
+        # NOTE(@tianyi): we have already installed the dependencies and the repo
+        # eval_commands.append(specs["install"])
+        pass
     eval_commands += [
-        reset_tests_command,
         apply_test_patch_command,
-        f": '{START_TEST_OUTPUT}'",
+        f"(set +x; echo '{START_TEST_OUTPUT}')",
         test_command,
-        f": '{END_TEST_OUTPUT}'",
-        reset_tests_command,  # Revert tests after done, leave the repo in the same state as before
+        f"(set +x; echo '{END_TEST_OUTPUT}')",
     ]
     return eval_commands

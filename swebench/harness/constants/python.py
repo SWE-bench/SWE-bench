@@ -27,7 +27,7 @@ SPECS_SKLEARN = {
             "setuptools",
             "scipy==1.5.2",
         ],
-        "test_cmd": TEST_PYTEST,
+        "test_cmd": "pytest -v",
     }
     for k in ["0.20", "0.21", "0.22"]
 }

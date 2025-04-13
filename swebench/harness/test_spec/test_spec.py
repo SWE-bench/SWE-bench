@@ -58,7 +58,7 @@ class TestSpec:
     @property
     def eval_script(self):
         return (
-            "\n".join(["#!/bin/bash", "set -uxo pipefail"] + self.eval_script_list)
+            "\n".join(["#!/bin/bash", "set -euxo pipefail"] + self.eval_script_list)
             + "\n"
         )
         # Don't exit early because we need to revert tests at the end
