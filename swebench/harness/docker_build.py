@@ -3,7 +3,6 @@ from __future__ import annotations
 import docker
 import docker.errors
 import logging
-import re
 import sys
 import traceback
 
