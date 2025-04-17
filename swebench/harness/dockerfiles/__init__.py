@@ -49,3 +49,10 @@ def get_dockerfile_instance(platform, language, env_image_name):
     return _DOCKERFILE_INSTANCE[language].format(
         platform=platform, env_image_name=env_image_name
     )
+
+
+__all__ = [
+    "get_dockerfile_base",
+    "get_dockerfile_env",
+    "get_dockerfile_instance",
+]

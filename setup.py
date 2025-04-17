@@ -5,8 +5,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="swebench",
-    author="John Yang",
-    author_email="byjohnyang@gmail.com",
+    author="SWE-bench team",
+    author_email="support@swebench.com",
     description="The official SWE-bench package - a benchmark for evaluating LMs on software engineering",
     keywords="nlp, benchmark, code",
     long_description=long_description,
@@ -70,6 +70,17 @@ setuptools.setup(
         "test": [
             "pytest",
             "pytest-cov",
+        ],
+        "docs": [
+            "mkdocs",
+            "mkdocs-material",
+            "mkdocs-glightbox",
+            "mkdocstrings",
+            "mkdocstrings-python",
+            "mike",
+            "pymdown-extensions",
+            "mkdocs-include-markdown-plugin",
+            "griffe-pydantic",
         ],
     },
     include_package_data=True,

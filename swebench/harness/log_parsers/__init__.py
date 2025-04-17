@@ -5,3 +5,8 @@ MAP_REPO_TO_PARSER = {
     **MAP_REPO_TO_PARSER_JS,
     **MAP_REPO_TO_PARSER_PY,
 }
+
+
+__all__ = [
+    "MAP_REPO_TO_PARSER",
+]
