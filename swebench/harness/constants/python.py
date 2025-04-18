@@ -8,7 +8,8 @@ TEST_SEABORN = "pytest --no-header -rA"
 TEST_SEABORN_VERBOSE = "pytest -rA --tb=long"
 TEST_PYTEST = "pytest -rA"
 TEST_PYTEST_VERBOSE = "pytest -rA --tb=long"
-TEST_SPHINX = "tox --current-env -epy39 -v --"
+TEST_SPHINX = "pytest -vrA"
+# TEST_SPHINX = "tox --current-env -epy39 -v --"
 TEST_SYMPY = (
     "PYTHONWARNINGS='ignore::UserWarning,ignore::SyntaxWarning' bin/test -C --verbose"
 )
@@ -27,7 +28,7 @@ SPECS_SKLEARN = {
             "setuptools",
             "scipy==1.5.2",
         ],
-        "test_cmd": "pytest -v",
+        "test_cmd": "pytest -vrA",
     }
     for k in ["0.20", "0.21", "0.22"]
 }
@@ -182,7 +183,7 @@ SPECS_REQUESTS = {
         "python": "3.9",
         "packages": "pytest",
         "install": "python -m pip install .",
-        "test_cmd": TEST_PYTEST,
+        "test_cmd": "python -m pytest -v",
     }
     for k in ["0.7", "0.8", "0.9", "0.11", "0.13", "0.14", "1.1", "1.2", "2.0", "2.2"]
     + ["2.3", "2.4", "2.5", "2.7", "2.8", "2.9", "2.10", "2.11", "2.12", "2.17"]

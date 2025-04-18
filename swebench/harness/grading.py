@@ -69,7 +69,16 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
         )
         if bad_codes:
             return {}, False
-        elif not (START_TEST_OUTPUT in content and END_TEST_OUTPUT in content):
+        # Note(tianyi)
+        # we do not check for END_TEST_OUTPUT here
+        # because test output may have non-zero exit code
+        # and still have test output
+        # in those, cases, we still want to parse the test output
+        #
+        # The change has to do with the error exiting logic:
+        # before: in og swe bench, we discard the exit code from pytest, and only need to deal with test output
+        # after: in our project, we want to capture the exit code to tell if pytest has run successfully
+        elif not (START_TEST_OUTPUT in content):
             # Test patch did not apply (should not happen at all)
             return {}, False
 
