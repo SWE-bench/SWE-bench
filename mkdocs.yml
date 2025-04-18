@@ -54,12 +54,11 @@ markdown_extensions:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 nav:
-  - Leaderboard: index.md
-  - Overview:
-    - Overview: get_started/index.md
-    - Installation: get_started/installation.md
-    - FAQ: get_started/faq.md
-  - Guides:
+  - Getting Started:
+    - Overview: index.md
+    - Installation: installation.md
+    - FAQ: faq.md
+  - User Guides:
     - Quickstart: guides/quickstart.md
     - Evaluation: guides/evaluation.md
     - Docker Setup: guides/docker_setup.md
@@ -112,3 +111,6 @@ extra:
   analytics:
     provider: google
     property: G-T5P2NYGJYR
+  font:
+    text: Roboto
+    code: Roboto Mono
