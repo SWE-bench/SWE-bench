@@ -4,11 +4,13 @@
   </a>
 </p>
 
-<div align="center">
+<p align="center">|&nbsp;<a href="https://swebench.com/docs/"><strong>Read the Docs</strong></a>&nbsp;|</p>
 
- | [日本語](docs/README_JP.md) | [English](https://github.com/swe-bench/SWE-bench) | [中文简体](docs/README_CN.md) | [中文繁體](docs/README_TW.md) |
-
-</div>
+<p align="center">
+  <a href="docs/other_languages/README_JP.md">日本語</a> |
+  <a href="docs/other_languages/README_CN.md">中文简体</a> |
+  <a href="docs/other_languages/README_TW.md">中文繁體</a>
+</p>
 
 <p align="center">
     <a href="https://www.python.org/">

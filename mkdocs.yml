@@ -37,8 +37,6 @@ theme:
     - header.autohide
     - announce.dismiss
     - content.code.annotate
-    - navigation.expand
-    - navigation.sections
 markdown_extensions:
   - sane_lists
   - admonition
@@ -54,24 +52,24 @@ markdown_extensions:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 nav:
-  - Getting Started:
-    - Overview: index.md
-    - Installation: installation.md
-    - FAQ: faq.md
-  - User Guides:
-    - Quickstart: guides/quickstart.md
-    - Evaluation: guides/evaluation.md
-    - Docker Setup: guides/docker_setup.md
-    - Datasets: guides/datasets.md
-    - Create RAG Datasets: guides/create_rag_datasets.md
-  - Reference:
-    - The Harness: reference/harness.md
-    - Inference: reference/inference.md
-    - Versioning: reference/versioning.md
-  - API:
-    - Harness: api/harness.md
-    - Inference: api/inference.md
-    - Versioning: api/versioning.md
+  - "Getting Started":
+    - "Overview": index.md
+    - "Installation": installation.md
+    - "FAQ": faq.md
+  - "User Guides":
+    - "Quickstart": guides/quickstart.md
+    - "Evaluation": guides/evaluation.md
+    - "Docker Setup": guides/docker_setup.md
+    - "Datasets": guides/datasets.md
+    - "Create RAG Datasets": guides/create_rag_datasets.md
+  - "Reference":
+    - "The Harness": reference/harness.md
+    - "Inference": reference/inference.md
+    - "Versioning": reference/versioning.md
+  - "API":
+    - "Harness": api/harness.md
+    - "Inference": api/inference.md
+    - "Versioning": api/versioning.md
 plugins:
    - glightbox
    - search
