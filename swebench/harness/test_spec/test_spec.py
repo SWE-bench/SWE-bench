@@ -1,4 +1,5 @@
 import hashlib
+import ast
 import json
 import platform
 
@@ -72,6 +73,8 @@ class TestSpec:
 
     @property
     def base_image_key(self):
+        if self.repo not in MAP_REPO_TO_EXT:
+            return f"sw.base.py.{self.arch}:{self.base_image_tag}"
         return (
             f"sweb.base.{MAP_REPO_TO_EXT[self.repo]}.{self.arch}:{self.base_image_tag}"
         )
@@ -91,12 +94,18 @@ class TestSpec:
         hash_object.update(hash_key.encode("utf-8"))
         hash_value = hash_object.hexdigest()
         val = hash_value[:22]  # 22 characters is still very likely to be unique
+        if self.repo not in MAP_REPO_TO_EXT:
+            return f"sw.env.py.{self.arch}.{val}:{self.env_image_tag}"
         return f"sweb.env.{MAP_REPO_TO_EXT[self.repo]}.{self.arch}.{val}:{self.env_image_tag}"
 
     @property
     def instance_image_key(self):
-        key = f"sweb.eval.{self.arch}.{self.instance_id.lower()}:{self.instance_image_tag}"
-        if self.is_remote_image:
+        if self.repo not in MAP_REPO_TO_EXT:
+            key = f"logicstarai/swa-bench:sw.eval.{self.arch}.{self.instance_id.lower()}"
+        else:
+            key = f"sweb.eval.{self.arch}.{self.instance_id.lower()}:{self.instance_image_tag}"
+
+        if self.is_remote_image and not self.namespace == "swabench":
             key = f"{self.namespace}/{key}".replace("__", "_1776_")
         return key
 
@@ -174,7 +183,7 @@ def make_test_spec(
     assert instance_image_tag is not None, "instance_image_tag cannot be None"
     instance_id = instance[KEY_INSTANCE_ID]
     repo = instance["repo"]
-    version = instance.get("version")
+    version = instance.get("version", "-1")
     base_commit = instance["base_commit"]
     problem_statement = instance.get("problem_statement")
     hints_text = instance.get("hints_text")  # Unused
@@ -194,7 +203,12 @@ def make_test_spec(
 
     env_name = "testbed"
     repo_directory = f"/{env_name}"
-    specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
+
+    if repo in MAP_REPO_VERSION_TO_SPECS:
+        specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
+    else:
+        specs = json.loads(instance["install"])
+
     docker_specs = specs.get("docker_specs", {})
 
     repo_script_list = make_repo_script_list(
@@ -220,7 +234,7 @@ def make_test_spec(
         arch=arch,
         FAIL_TO_PASS=fail_to_pass,
         PASS_TO_PASS=pass_to_pass,
-        language=MAP_REPO_TO_EXT[repo],
+        language=MAP_REPO_TO_EXT.get(repo,"py"),
         docker_specs=docker_specs,
         namespace=namespace,
         base_image_tag=base_image_tag,

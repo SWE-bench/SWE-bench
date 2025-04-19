@@ -299,13 +299,16 @@ def should_remove(image_name: str, cache_level: str, clean: bool, prior_images: 
     existed_before = image_name in prior_images
     if "/" in image_name:
         image_name = image_name.split("/", 1)[-1]
-    if image_name.startswith("sweb.base"):
+    if image_name.startswith("swa-bench"):
+        image_name = image_name.replace("swa-bench:","")
+
+    if image_name.startswith("sweb.base") or image_name.startswith("sw.base"):
         if cache_level in {"none"} and (clean or not existed_before):
             return True
-    elif image_name.startswith("sweb.env"):
+    elif image_name.startswith("sweb.env") or image_name.startswith("sw.env"):
         if cache_level in {"none", "base"} and (clean or not existed_before):
             return True
-    elif image_name.startswith("sweb.eval"):
+    elif image_name.startswith("sweb.eval") or image_name.startswith("sw.eval"):
         if cache_level in {"none", "base", "env"} and (clean or not existed_before):
             return True
     return False
