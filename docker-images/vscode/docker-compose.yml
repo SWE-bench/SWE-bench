@@ -1,0 +1,23 @@
+services:
+  vscode:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vscode-vnc
+    ports:
+      - "5900:5900"
+    restart: unless-stopped
+    # does not work on macos
+    # network_mode: host
+    environment:
+      # for manual filling
+      - KEY=${KEY}
+      - MODEL=${MODEL}
+
+      # will passed to model as-is
+      - PROMPT=${PROMPT}
+      # files to open in editor
+      # comma separated
+      - FILES=${FILES}
+    volumes:
+      - ./repo:/home/vscode/repo

@@ -22,6 +22,7 @@ from tenacity import (
 )
 from datasets import load_dataset, load_from_disk
 from swebench.inference.make_datasets.utils import extract_diff
+from swebench.inference.prepare_utils import prepare_output, prepare_input
 from argparse import ArgumentParser
 import logging
 
@@ -456,41 +457,24 @@ def main(
     if shard_id is not None and num_shards is None:
         logger.warning(f"Received shard_id={shard_id} but num_shards is None, ignoring")
     model_args = parse_model_args(model_args)
-    model_nickname = model_name_or_path
-    if "checkpoint" in Path(model_name_or_path).name:
-        model_nickname = Path(model_name_or_path).parent.name
-    else:
-        model_nickname = Path(model_name_or_path).name
-    output_file = f"{model_nickname}__{dataset_name_or_path.split('/')[-1]}__{split}"
-    if shard_id is not None and num_shards is not None:
-        output_file += f"__shard-{shard_id}__num_shards-{num_shards}"
-    output_file = Path(output_dir, output_file + ".jsonl")
-    logger.info(f"Will write to {output_file}")
-    existing_ids = set()
-    if os.path.exists(output_file):
-        with open(output_file) as f:
-            for line in f:
-                data = json.loads(line)
-                instance_id = data["instance_id"]
-                existing_ids.add(instance_id)
-    logger.info(f"Read {len(existing_ids)} already completed ids from {output_file}")
-    if Path(dataset_name_or_path).exists():
-        dataset = load_from_disk(dataset_name_or_path)
-    else:
-        dataset = load_dataset(dataset_name_or_path)
-    if split not in dataset:
-        raise ValueError(f"Invalid split {split} for dataset {dataset_name_or_path}")
-    dataset = dataset[split]
-    lens = np.array(list(map(len, dataset["text"])))
-    dataset = dataset.select(np.argsort(lens))
-    if len(existing_ids) > 0:
-        dataset = dataset.filter(
-            lambda x: x["instance_id"] not in existing_ids,
-            desc="Filtering out existing ids",
-            load_from_cache_file=False,
-        )
-    if shard_id is not None and num_shards is not None:
-        dataset = dataset.shard(num_shards, shard_id, contiguous=True)
+    
+    output_file, existing_ids = prepare_output(
+        dataset_name_or_path=dataset_name_or_path,
+        split=split,
+        shard_id=shard_id,
+        num_shards=num_shards,
+        output_dir=output_dir,
+        model_name_or_path=model_name_or_path,
+    )
+    
+    dataset = prepare_input(
+        dataset_name_or_path=dataset_name_or_path,
+        split=split,
+        existing_ids=existing_ids,
+        shard_id=shard_id,
+        num_shards=num_shards,
+    )
+    
     inference_args = {
         "test_dataset": dataset,
         "model_name_or_path": model_name_or_path,
