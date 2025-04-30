@@ -127,10 +127,12 @@ To do so, please either file a new pull request or issue and fill in the corresp
 
 Contact person: [Carlos E. Jimenez](http://www.carlosejimenez.com/) and [John Yang](https://john-b-yang.github.io/) (Email: carlosej@princeton.edu, johnby@stanford.edu).
 
-## ✍️ Citation
+## ✍️ Citation & license
+MIT license. Check `LICENSE.md`.
+
 If you find our work helpful, please use the following citations.
 
-```
+```bibtex
 @inproceedings{
     jimenez2024swebench,
     title={{SWE}-bench: Can Language Models Resolve Real-world Github Issues?},
@@ -150,5 +152,16 @@ If you find our work helpful, please use the following citations.
 }
 ```
 
-## 🪪 License
-MIT. Check `LICENSE.md`.
+## Related projects
+
+<div align="center">
+  <a href="https://github.com/SWE-bench/sb-cli"><img src="docs/assets/sbcli_logo_text_below.svg" alt="sb-cli" height="120px"></a>
+   &nbsp;&nbsp;
+  <a href="https://github.com/SWE-bench/SWE-smith"><img src="docs/assets/swesmith_logo_text_below.svg" alt="SWE-smith" height="120px"></a>
+   &nbsp;&nbsp;
+  <a href="https://github.com/SWE-agent/SWE-agent"><img src="docs/assets/sweagent_logo_text_below.svg" alt="SWE-agent" height="120px"></a>
+   &nbsp;&nbsp;
+  <a href="https://github.com/SWE-agent/SWE-ReX"><img src="docs/assets/swerex_logo_text_below.svg" alt="SWE-ReX" height="120px"></a>
+   &nbsp;&nbsp;
+  <!-- <a href="https://github.com/SWE-bench/SWE-bench"><img src="docs/assets/swebench_logo_text_below.svg" alt="SWE-bench" height="120px"></a> -->
+</div
