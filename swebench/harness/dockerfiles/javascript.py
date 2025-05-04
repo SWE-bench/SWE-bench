@@ -133,3 +133,44 @@ RUN /bin/bash /root/setup_repo.sh
 
 WORKDIR /testbed/
 """
+
+# We use a modern version of ubuntu as the base image because old node images
+# can cause problems with agent installations. For eg. old GLIBC versions.
+_DOCKERFILE_BASE_JS_2 = r"""
+FROM --platform={platform} ubuntu:{ubuntu_version}
+
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+RUN apt update && apt install -y \
+    wget \
+    curl \
+    git \
+    build-essential \
+    jq \
+    gnupg \
+    ca-certificates \
+    apt-transport-https
+
+# Install node
+RUN bash -c "set -eo pipefail && curl -fsSL https://deb.nodesource.com/setup_{node_version}.x | bash -"
+RUN apt-get update && apt-get install -y nodejs
+RUN node -v && npm -v
+
+# Install pnpm
+RUN npm install --global corepack@latest
+RUN corepack enable pnpm
+
+# Install Chrome for browser testing
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up Chrome environment variables
+ENV CHROME_BIN /usr/bin/google-chrome
+ENV CHROME_PATH /usr/bin/google-chrome
+
+RUN adduser --disabled-password --gecos 'dog' nonroot
+"""
