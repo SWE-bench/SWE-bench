@@ -80,7 +80,6 @@ setuptools.setup(
             "mike",
             "pymdown-extensions",
             "mkdocs-include-markdown-plugin",
-            "griffe-pydantic",
         ],
     },
     include_package_data=True,

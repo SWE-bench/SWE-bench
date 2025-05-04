@@ -94,9 +94,6 @@ plugins:
             merge_init_into_class: true
             show_if_no_docstring: true
             signature_crossrefs: true
-            extensions:
-              - griffe_pydantic:
-                  schema: false
 repo_url: https://github.com/SWE-bench/SWE-bench
 repo_name: SWE-bench
 edit_uri: edit/main/docs/
