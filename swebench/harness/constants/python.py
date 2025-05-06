@@ -373,6 +373,7 @@ for k in ["7.4", "8.0", "8.1", "8.2", "8.3", "8.4"]:
         "exceptiongroup==1.1.3",
         "tomli==2.0.1",
     ]
+SPECS_PYTEST["6.3"]["pre_install"] = ["sed -i 's/>=>=/>=/' setup.cfg"]
 
 SPECS_MATPLOTLIB = {
     k: {
