@@ -1,7 +1,5 @@
 from swebench.harness.constants import MAP_REPO_TO_EXT
 from swebench.harness.test_spec.javascript import (
-    make_repo_script_list_js,
-    make_env_script_list_js,
     make_eval_script_list_js,
 )
 from swebench.harness.test_spec.python import (
@@ -23,15 +21,8 @@ def make_repo_script_list(specs, repo, repo_directory, base_commit, env_name) ->
     """
     ext = MAP_REPO_TO_EXT[repo]
     func = {
-        "c": make_repo_script_list_common,
-        "go": make_repo_script_list_common,
-        "java": make_repo_script_list_common,
-        "js": make_repo_script_list_js,
-        "php": make_repo_script_list_common,
         "py": make_repo_script_list_py,
-        "rb": make_repo_script_list_common,
-        "rs": make_repo_script_list_common,
-    }[ext]
+    }.get(ext, make_repo_script_list_common)
     return func(specs, repo, repo_directory, base_commit, env_name)
 
 
@@ -42,15 +33,8 @@ def make_env_script_list(instance, specs, env_name) -> list:
     """
     ext = MAP_REPO_TO_EXT[instance["repo"]]
     func = {
-        "c": make_env_script_list_common,
-        "go": make_env_script_list_common,
-        "java": make_env_script_list_common,
-        "js": make_env_script_list_js,
-        "php": make_env_script_list_common,
         "py": make_env_script_list_py,
-        "rb": make_env_script_list_common,
-        "rs": make_env_script_list_common,
-    }[ext]
+    }.get(ext, make_env_script_list_common)
     return func(instance, specs, env_name)
 
 
@@ -61,14 +45,9 @@ def make_eval_script_list(
     Applies the test patch and runs the tests.
     """
     ext = MAP_REPO_TO_EXT[instance["repo"]]
+    common_func = make_eval_script_list_common
     func = {
-        "c": make_eval_script_list_common,
-        "go": make_eval_script_list_common,
-        "java": make_eval_script_list_common,
         "js": make_eval_script_list_js,
-        "php": make_eval_script_list_common,
         "py": make_eval_script_list_py,
-        "rb": make_eval_script_list_common,
-        "rs": make_eval_script_list_common,
-    }[ext]
+    }.get(ext, common_func)
     return func(instance, specs, env_name, repo_directory, base_commit, test_patch)

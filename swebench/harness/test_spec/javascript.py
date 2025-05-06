@@ -6,11 +6,7 @@ from swebench.harness.constants import (
     END_TEST_OUTPUT,
     START_TEST_OUTPUT,
 )
-from swebench.harness.test_spec.utils import (
-    make_env_script_list_common,
-    make_eval_script_list_common,
-    make_repo_script_list_common,
-)
+from swebench.harness.test_spec.utils import make_eval_script_list_common
 from unidiff import PatchSet
 
 
@@ -70,9 +66,8 @@ MAP_REPO_TO_TEST_CMDS = {
     "Automattic/wp-calypso": get_test_cmds_calypso,
 }
 
+
 # MARK: Utility Functions
-
-
 def get_download_img_commands(instance) -> list:
     cmds = []
     image_assets = {}
@@ -90,24 +85,6 @@ def get_download_img_commands(instance) -> list:
 
 
 # MARK: Script Creation Functions
-
-
-def make_repo_script_list_js(
-    specs, repo, repo_directory, base_commit, env_name
-) -> list:
-    return make_repo_script_list_common(
-        specs, repo, repo_directory, base_commit, env_name
-    )
-
-
-def make_env_script_list_js(instance, specs, env_name) -> list:
-    """
-    Creates the list of commands to set up the environment for testing.
-    This is the setup script for the environment image.
-    """
-    return make_env_script_list_common(instance, specs, env_name)
-
-
 def make_eval_script_list_js(
     instance, specs, env_name, repo_directory, base_commit, test_patch
 ) -> list:
