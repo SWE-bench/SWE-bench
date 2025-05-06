@@ -122,7 +122,7 @@ def run_sequential(func, args_list):
 
 
 def load_swebench_dataset(
-    name="princeton-nlp/SWE-bench", split="test", instance_ids=None
+    name="SWE-bench/SWE-bench", split="test", instance_ids=None
 ) -> list[SWEbenchInstance]:
     """
     Load SWE-bench dataset from Hugging Face Datasets or local .json/.jsonl file
@@ -138,7 +138,7 @@ def load_swebench_dataset(
     else:
         # Load from Hugging Face Datasets
         if name.lower() in {"swe-bench", "swebench", "swe_bench"}:
-            name = "princeton-nlp/SWE-bench"
+            name = "SWE-bench/SWE-bench"
         elif name.lower() in {
             "swe-bench-lite",
             "swebench-lite",
@@ -146,7 +146,7 @@ def load_swebench_dataset(
             "swe-bench_lite",
             "lite",
         }:
-            name = "princeton-nlp/SWE-bench_Lite"
+            name = "SWE-bench/SWE-bench_Lite"
         if (Path(name) / split / "dataset_info.json").exists():
             dataset = cast(Dataset, load_from_disk(Path(name) / split))
         else:

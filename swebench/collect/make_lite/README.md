@@ -10,4 +10,4 @@ SWE-bench lite consists of 300 test instances and 23 development instances; both
 - We remove instances that contain tests with error message checks.
 - Finally, we sample 300 test instances and 23 development instances from the remaining instances.
 
-See `make_lite.py` for the script that makes the *lite* version of SWE-bench, or download the *lite* version from the Hugging Face datasets [princeton-nlp/SWE-bench_Lite](https://huggingface.co/datasets/princeton-nlp/SWE-bench_Lite)
+See `make_lite.py` for the script that makes the *lite* version of SWE-bench, or download the *lite* version from the Hugging Face datasets [princeton-nlp/SWE-bench_Lite](https://huggingface.co/datasets/SWE-bench/SWE-bench_Lite)

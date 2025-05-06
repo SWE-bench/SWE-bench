@@ -72,8 +72,8 @@ def take_subset(dset, n, name=""):
 
 if __name__ == "__main__":
     # Load the dataset
-    dev = load_dataset("princeton-nlp/SWE-bench")["dev"]
-    test = load_dataset("princeton-nlp/SWE-bench")["test"]
+    dev = load_dataset("SWE-bench/SWE-bench")["dev"]
+    test = load_dataset("SWE-bench/SWE-bench")["test"]
 
     test = apply_filters(
         test, [filter_problem_statement, filter_patch, filter_patch_test], "test"

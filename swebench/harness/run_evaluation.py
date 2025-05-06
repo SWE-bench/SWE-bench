@@ -461,7 +461,7 @@ def main(
     """
     namespace = None if namespace == "" else namespace
 
-    if dataset_name == "princeton-nlp/SWE-bench_Multimodal" and split == "test":
+    if dataset_name == "SWE-bench/SWE-bench_Multimodal" and split == "test":
         print(
             "⚠️ Local evaluation for the test split of SWE-bench Multimodal is not supported. "
             "Please check out sb-cli (https://github.com/swe-bench/sb-cli/) for instructions on how to submit predictions."
@@ -537,7 +537,7 @@ if __name__ == "__main__":
     # Common args
     parser.add_argument(
         "--dataset_name",
-        default="princeton-nlp/SWE-bench_Lite",
+        default="SWE-bench/SWE-bench_Lite",
         type=str,
         help="Name of dataset or path to JSON file.",
     )

@@ -61,7 +61,7 @@ def main(dataset_name_or_path, split):
 if __name__ == "__main__":
     parser = ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--dataset_name_or_path", type=str, default="princeton-nlp/SWE-bench_bm25_13K"
+        "--dataset_name_or_path", type=str, default="SWE-bench/SWE-bench_bm25_13K"
     )
     parser.add_argument("--split", type=str, default="test")
     args = parser.parse_args()

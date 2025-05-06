@@ -119,12 +119,12 @@ python -m swebench.harness.run_evaluation --help
 
 | 數據集 | 模型 |
 | - | - |
-| [🤗 SWE-bench](https://huggingface.co/datasets/princeton-nlp/SWE-bench) | [🦙 SWE-Llama 13b](https://huggingface.co/princeton-nlp/SWE-Llama-13b) |
-| [🤗 "Oracle" 檢索](https://huggingface.co/datasets/princeton-nlp/SWE-bench_oracle) | [🦙 SWE-Llama 13b (PEFT)](https://huggingface.co/princeton-nlp/SWE-Llama-13b-peft) |
-| [🤗 BM25 檢索 13K](https://huggingface.co/datasets/princeton-nlp/SWE-bench_bm25_13K) | [🦙 SWE-Llama 7b](https://huggingface.co/princeton-nlp/SWE-Llama-7b) |
-| [🤗 BM25 檢索 27K](https://huggingface.co/datasets/princeton-nlp/SWE-bench_bm25_27K) | [🦙 SWE-Llama 7b (PEFT)](https://huggingface.co/princeton-nlp/SWE-Llama-7b-peft) |
-| [🤗 BM25 檢索 40K](https://huggingface.co/datasets/princeton-nlp/SWE-bench_bm25_40K) | |
-| [🤗 BM25 檢索 50K (Llama tokens)](https://huggingface.co/datasets/princeton-nlp/SWE-bench_bm25_50k_llama)   | |
+| [🤗 SWE-bench](https://huggingface.co/datasets/SWE-bench/SWE-bench) | [🦙 SWE-Llama 13b](https://huggingface.co/princeton-nlp/SWE-Llama-13b) |
+| [🤗 "Oracle" 檢索](https://huggingface.co/datasets/SWE-bench/SWE-bench_oracle) | [🦙 SWE-Llama 13b (PEFT)](https://huggingface.co/princeton-nlp/SWE-Llama-13b-peft) |
+| [🤗 BM25 檢索 13K](https://huggingface.co/datasets/SWE-bench/SWE-bench_bm25_13K) | [🦙 SWE-Llama 7b](https://huggingface.co/princeton-nlp/SWE-Llama-7b) |
+| [🤗 BM25 檢索 27K](https://huggingface.co/datasets/SWE-bench/SWE-bench_bm25_27K) | [🦙 SWE-Llama 7b (PEFT)](https://huggingface.co/princeton-nlp/SWE-Llama-7b-peft) |
+| [🤗 BM25 檢索 40K](https://huggingface.co/datasets/SWE-bench/SWE-bench_bm25_40K) | |
+| [🤗 BM25 檢索 50K (Llama tokens)](https://huggingface.co/datasets/SWE-bench/SWE-bench_bm25_50k_llama)   | |
 
 ## 🍎 教程
 

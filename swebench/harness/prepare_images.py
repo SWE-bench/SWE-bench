@@ -103,7 +103,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset_name",
         type=str,
-        default="princeton-nlp/SWE-bench_Lite",
+        default="SWE-bench/SWE-bench_Lite",
         help="Name of the dataset to use",
     )
     parser.add_argument("--split", type=str, default="test", help="Split to use")
