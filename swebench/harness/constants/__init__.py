@@ -34,6 +34,7 @@ class SWEbenchInstance(TypedDict):
     FAIL_TO_PASS: str
     PASS_TO_PASS: str
     environment_setup_commit: str
+    docker_image_root: str | None
 
 
 # Constants - Test Types, Statuses, Commands
@@ -55,6 +56,7 @@ class TestStatus(Enum):
     SKIPPED = "SKIPPED"
     ERROR = "ERROR"
     XFAIL = "XFAIL"
+    XPASS = "XPASS"
 
 
 class EvalType(Enum):
