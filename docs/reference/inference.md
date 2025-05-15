@@ -22,7 +22,7 @@ Depending on your inference needs, you can install different dependency sets:
 
 ```bash
 # For dataset generation and API-based inference
-pip install -e ".[make_datasets]"
+pip install -e ".[datasets]"
 
 # For local model inference (requires GPU with CUDA)
 pip install -e ".[inference]"
