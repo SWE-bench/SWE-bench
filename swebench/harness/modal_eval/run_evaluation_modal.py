@@ -336,6 +336,7 @@ def run_instance_modal(
             prediction=pred,
             test_log_path=test_output_path,
             include_tests_status=True,
+            on_modal=True,
         )
         logger.info(
             f"report: {report}\n"
