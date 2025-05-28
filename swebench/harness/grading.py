@@ -33,12 +33,13 @@ def test_failed(case: str, sm: dict[str, str]) -> bool:
 
 
 # MARK: Evaluation report functions
-def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], bool]:
+def get_logs_eval(test_spec: TestSpec, log_fp: str, on_modal: bool = False) -> tuple[dict[str, str], bool]:
     """
     Retrieve evaluation results for a task instance from its corresponding log file
 
     Args:
         log_fp (str): path to log file
+        on_modal (bool): whether the run is performed remotely on Modal
     Returns:
         bool: whether the patch applied successfully
         dict: status map
@@ -73,7 +74,8 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
             return {}, False
 
         # Get status map of evaluation results
-        content = content.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0]
+        if not on_modal:
+            content = content.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0]
         return log_parser(content, test_spec), True
 
 
@@ -223,6 +225,7 @@ def get_eval_report(
     prediction: dict[str, str],
     test_log_path: str,
     include_tests_status: bool,
+    on_modal: bool = False,
 ) -> dict[str, Any]:
     """
     Generate a report of model evaluation results from a prediction, task instance,
@@ -235,6 +238,7 @@ def get_eval_report(
         include_tests_status (bool): whether to include the status of each test in the returned report
     Returns:
         report (dict): report of metrics
+        on_modal (bool): whether the run is performed remotely on Modal
     """
     report_map = {}
 
@@ -253,7 +257,7 @@ def get_eval_report(
     report_map[instance_id]["patch_exists"] = True
 
     # Get evaluation logs
-    eval_status_map, found = get_logs_eval(test_spec, test_log_path)
+    eval_status_map, found = get_logs_eval(test_spec, test_log_path, on_modal)
 
     if not found:
         return report_map
