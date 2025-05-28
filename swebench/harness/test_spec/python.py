@@ -196,7 +196,7 @@ def make_repo_script_list_py(
     if "install" in specs:
         setup_commands.append(specs["install"])
 
-    # If the setup modifies the repository in any way, it can be 
+    # If the setup modifies the repository in any way, it can be
     # difficult to get a clean diff.  This ensures that `git diff`
     # will only reflect the changes from the user while retaining the
     # original state of the repository plus setup commands.
@@ -209,6 +209,29 @@ def make_repo_script_list_py(
     setup_commands += clean_diff_commands
 
     return setup_commands
+
+
+def replace_uninstallable_packages_requirements_txt(requirement_str: str) -> str:
+    """Replaces certain packages in a requirements.txt-like string.
+    For example, some packages have been yanked and we need to replace them with compatible alternatives.
+    """
+    replacements = {
+        # See https://github.com/princeton-nlp/SWE-bench/issues/199
+        # This package was sinced yanked, so we need to force pip
+        # to install it.
+        "types-pkg_resources": "types-pkg-resources==0.1.3",
+    }
+    requirements = [req.strip() for req in requirement_str.split("\n") if req.strip()]
+    requirements_replaced = []
+    for requirement in requirements:
+        if requirement in replacements:
+            print(
+                f"Replaced {requirement!r} with {replacements[requirement]!r} (replace_uninstallable_packages)"
+            )
+            requirements_replaced.append(replacements[requirement])
+        else:
+            requirements_replaced.append(requirement)
+    return "\n".join(requirements_replaced) + "\n"
 
 
 def make_env_script_list_py(instance, specs, env_name) -> list:
@@ -228,7 +251,9 @@ def make_env_script_list_py(instance, specs, env_name) -> list:
         reqs_commands.append(cmd)
 
         # Install dependencies
-        reqs = get_requirements(instance)
+        reqs = replace_uninstallable_packages_requirements_txt(
+            get_requirements(instance)
+        )
         path_to_reqs = "$HOME/requirements.txt"
         reqs_commands.append(
             f"cat <<'{HEREDOC_DELIMITER}' > {path_to_reqs}\n{reqs}\n{HEREDOC_DELIMITER}"
@@ -238,7 +263,9 @@ def make_env_script_list_py(instance, specs, env_name) -> list:
         reqs_commands.append(f"rm {path_to_reqs}")
     elif pkgs == "environment.yml":
         # Create environment from yml
-        reqs = get_environment_yml(instance, env_name)
+        reqs = replace_uninstallable_packages_requirements_txt(
+            get_environment_yml(instance, env_name)
+        )
         path_to_reqs = "environment.yml"
         reqs_commands.append(
             f"cat <<'{HEREDOC_DELIMITER}' > {path_to_reqs}\n{reqs}\n{HEREDOC_DELIMITER}"
