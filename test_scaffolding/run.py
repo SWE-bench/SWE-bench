@@ -15,6 +15,9 @@ import time
 import os
 from pathlib import Path
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def find_task_instance_by_id(dataset, instance_id, split="test"):
     """
@@ -46,7 +49,7 @@ def run_tests(container, test_command, log_dir, before_patch=True):
     bash_cmd = (
         f'/bin/bash -lc "{test_command}"'  # Use -lc to run the command in a login shell
     )
-    print(f"Running inside container: {bash_cmd!r}")
+    logger.info(f"Running inside container: {bash_cmd!r}")
     exec_result = container.exec_run(
         bash_cmd,
         workdir="/testbed",
@@ -60,9 +63,9 @@ def run_tests(container, test_command, log_dir, before_patch=True):
         outfile.write(exec_result.output)
 
     if exec_result.exit_code == 0:
-        print(f"Tests completed successfully. Output → {output_filename!r}")
+        logger.info(f"Tests completed successfully. Output → {output_filename!r}")
     else:
-        print(
+        logger.warning(
             f"Tests failed (exit code {exec_result.exit_code}). "
             f"See {output_filename!r} for details."
         )
@@ -77,10 +80,10 @@ def apply_patch(container, patch_content, log_dir, is_test_patch=False):
         Path(f"{log_dir}/{patch_filename}"),
         Path(f"/testbed/{patch_filename}"),
     )
-    print("Patch file copied to container.")
+    logger.info("Patch file copied to container.")
 
     git_apply_command = f"git apply /testbed/{patch_filename}"
-    print(f"Applying patch with command: {git_apply_command!r}")
+    logger.info(f"Applying patch with command: {git_apply_command!r}")
 
     exec_result = container.exec_run(
         git_apply_command,
@@ -89,9 +92,9 @@ def apply_patch(container, patch_content, log_dir, is_test_patch=False):
         stderr=True,
     )
     if exec_result.exit_code == 0:
-        print(f"Patch {patch_filename} applied successfully.")
+        logger.info(f"Patch {patch_filename} applied successfully.")
     else:
-        print(f"Patch {patch_filename} failed (exit code {exec_result.exit_code}).")
+        logger.warning(f"Patch {patch_filename} failed (exit code {exec_result.exit_code}).")
 
 
 def main():
@@ -140,7 +143,7 @@ def main():
 
     if args.patch_file:
         # If a patch file is provided, read it
-        print(f"Using patch file: {args.patch_file}")
+        logger.info(f"Using patch file: {args.patch_file}")
         with open(args.patch_file, "r") as f:
             patch_content = f.read()
     else:
@@ -148,17 +151,17 @@ def main():
     test_patch_content = swebench_instance.get("test_patch", "")
 
     if test_spec.arch != "arm64":
-        print(
+        logger.warning(
             f"Warning: Instance {instance_id} is using arch {test_spec.arch}. The container build will not work on ARM machines."
         )
 
     container = build_task_instance_container(test_spec, run_id, client)
     container.start()
-    print(f"Container {container.name} started for instance {instance_id}.")
+    logger.info(f"Container {container.name} started for instance {instance_id}.")
 
     # Apply test_patch
     if test_patch_content:
-        print(f"Applying test patch for instance {instance_id}.")
+        logger.info(f"Applying test patch for instance {instance_id}.")
         apply_patch(container, test_patch_content, log_dir, is_test_patch=True)
 
     # Run the tests before patching
@@ -166,19 +169,19 @@ def main():
 
     # Apply the patch
     if patch_content:
-        print(f"Applying patch for instance {instance_id}.")
+        logger.info(f"Applying patch for instance {instance_id}.")
         apply_patch(container, patch_content, log_dir, is_test_patch=False)
 
     # Run the tests after patching
     run_tests(container, test_command, log_dir, before_patch=False)
 
     # Cleanup
-    print(f"Stopping container {container.name}.")
+    logger.info(f"Stopping container {container.name}.")
     container.stop()
-    print(f"Container {container.name} stopped.")
+    logger.info(f"Container {container.name} stopped.")
     if args.remove_container:
         container.remove()
-        print(f"Container {container.name} removed.")
+        logger.info(f"Container {container.name} removed.")
 
 
 if __name__ == "__main__":
