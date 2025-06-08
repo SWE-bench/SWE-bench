@@ -1450,3 +1450,61 @@ USE_X86_PY = {
     "sympy__sympy-15222",
     "sympy__sympy-19201",
 }
+
+_PYTHON_REPO_SPECS_DEFINITIONS = {
+    "SKLEARN": "scikit-learn/scikit-learn",
+    "FLASK": "pallets/flask",
+    "DJANGO": "django/django",
+    "REQUESTS": "psf/requests",
+    "SEABORN": "mwaskom/seaborn",
+    "MATPLOTLIB": "matplotlib/matplotlib",
+    "PYTEST": "pytest-dev/pytest",
+    "SPHINX": "sphinx-doc/sphinx",
+    "ASTROPY": "astropy/astropy",
+    "PYVISTA": "pyvista/pyvista",
+    "PVLIB": "pvlib/pvlib-python",
+    "SQLFLUFF": "sqlfluff/sqlfluff",
+    "SYMPY": "sympy/sympy"
+}
+
+MAP_REPO_VERSION_TO_SPECS_PY = {}
+MAP_REPO_TO_ENV_YML_PATHS = {} # Placeholder
+# MAP_REPO_TO_INSTALL_PY is defined earlier (around line 929) and should not be reset here.
+MAP_REPO_TO_REQS_PATHS = {} # Placeholder for Python-specific requirements file paths
+
+for var_name_suffix, canonical_repo_key in _PYTHON_REPO_SPECS_DEFINITIONS.items():
+    specs_var_name = f"SPECS_{var_name_suffix}"
+    if specs_var_name in globals() and isinstance(globals()[specs_var_name], dict):
+        MAP_REPO_VERSION_TO_SPECS_PY[canonical_repo_key] = globals()[specs_var_name]
+
+# Populate MAP_REPO_TO_INSTALL_PY from MAP_REPO_VERSION_TO_SPECS_PY
+# Assumes MAP_REPO_TO_INSTALL_PY is initialized (e.g., at line 929)
+if 'MAP_REPO_TO_INSTALL_PY' not in globals() or not isinstance(MAP_REPO_TO_INSTALL_PY, dict):
+    print("swebench/harness/constants/python.py: WARNING - MAP_REPO_TO_INSTALL_PY not found or not a dict. Initializing.")
+    MAP_REPO_TO_INSTALL_PY = {}
+
+for repo_name_py, specs_for_repo_py in MAP_REPO_VERSION_TO_SPECS_PY.items():
+    if repo_name_py not in MAP_REPO_TO_INSTALL_PY:
+        MAP_REPO_TO_INSTALL_PY[repo_name_py] = {}
+    for version_py, version_spec_py in specs_for_repo_py.items():
+        if "install" in version_spec_py:
+            MAP_REPO_TO_INSTALL_PY[repo_name_py][version_py] = version_spec_py["install"]
+        # elif "build" in version_spec_py: # Fallback for Python if necessary
+        #     MAP_REPO_TO_INSTALL_PY[repo_name_py][version_py] = version_spec_py["build"]
+
+_all_exports = [
+    "TEST_PYTEST", "TEST_PYTEST_VERBOSE", "TEST_ASTROPY_PYTEST", "TEST_DJANGO",
+    "TEST_DJANGO_NO_PARALLEL", "TEST_SEABORN", "TEST_SEABORN_VERBOSE",
+    "TEST_SPHINX", "TEST_SYMPY", "TEST_SYMPY_VERBOSE",
+    "SPECS_SKLEARN", "SPECS_FLASK", "SPECS_DJANGO", "SPECS_REQUESTS",
+    "SPECS_SEABORN", "SPECS_MATPLOTLIB", "SPECS_PYTEST", "SPECS_SPHINX",
+    "SPECS_ASTROPY", "SPECS_PYVISTA", "SPECS_PVLIB", "SPECS_SQLFLUFF", "SPECS_SYMPY",
+    "MAP_REPO_VERSION_TO_SPECS_PY",
+    "MAP_REPO_TO_ENV_YML_PATHS",
+    "MAP_REPO_TO_INSTALL_PY",
+    "MAP_REPO_TO_REQS_PATHS",
+    "USE_X86_PY"
+]
+
+__all__ = [export_name for export_name in _all_exports if export_name in globals()]
+

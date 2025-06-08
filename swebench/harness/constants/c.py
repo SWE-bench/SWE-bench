@@ -253,3 +253,13 @@ MAP_REPO_VERSION_TO_SPECS_C = {
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_C = {}
+
+# Populate MAP_REPO_TO_INSTALL_C from MAP_REPO_VERSION_TO_SPECS_C
+for repo_name_c, specs_for_repo_c in MAP_REPO_VERSION_TO_SPECS_C.items():
+    if repo_name_c not in MAP_REPO_TO_INSTALL_C:
+        MAP_REPO_TO_INSTALL_C[repo_name_c] = {}
+    for version_c, version_spec_c in specs_for_repo_c.items():
+        if "install" in version_spec_c:
+            MAP_REPO_TO_INSTALL_C[repo_name_c][version_c] = version_spec_c["install"]
+        elif "build" in version_spec_c: # Fallback to "build" if "install" is not present
+             MAP_REPO_TO_INSTALL_C[repo_name_c][version_c] = version_spec_c["build"]

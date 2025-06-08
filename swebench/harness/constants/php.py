@@ -359,3 +359,13 @@ MAP_REPO_VERSION_TO_SPECS_PHP = {
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_PHP = {}
+
+# Populate MAP_REPO_TO_INSTALL_PHP from MAP_REPO_VERSION_TO_SPECS_PHP
+for repo_name_php, specs_for_repo_php in MAP_REPO_VERSION_TO_SPECS_PHP.items():
+    if repo_name_php not in MAP_REPO_TO_INSTALL_PHP:
+        MAP_REPO_TO_INSTALL_PHP[repo_name_php] = {}
+    for version_php, version_spec_php in specs_for_repo_php.items():
+        if "install" in version_spec_php:
+            MAP_REPO_TO_INSTALL_PHP[repo_name_php][version_php] = version_spec_php["install"]
+        elif "build" in version_spec_php: # Fallback for cases like Carbon 2813
+            MAP_REPO_TO_INSTALL_PHP[repo_name_php][version_php] = version_spec_php["build"]
