@@ -574,3 +574,11 @@ MAP_REPO_VERSION_TO_SPECS_JS = {
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_JS = {}
+
+# Populate MAP_REPO_TO_INSTALL_JS from MAP_REPO_VERSION_TO_SPECS_JS
+for repo_name_js, specs_for_repo_js in MAP_REPO_VERSION_TO_SPECS_JS.items():
+    if repo_name_js not in MAP_REPO_TO_INSTALL_JS:
+        MAP_REPO_TO_INSTALL_JS[repo_name_js] = {}
+    for version_js, version_spec_js in specs_for_repo_js.items():
+        if "install" in version_spec_js:
+            MAP_REPO_TO_INSTALL_JS[repo_name_js][version_js] = version_spec_js["install"]
