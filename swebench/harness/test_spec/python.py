@@ -189,7 +189,7 @@ def clean_requirements(requirements_text: str) -> str:
     for pkg_to_replace, replacement in REPLACE_REQ_PACKAGES:
         if replacement == None:
             requirements_text = re.sub(
-                rf"^{re.escape(pkg_to_replace)}(?=[<>=!~\s]|$)",
+                rf"^{re.escape(pkg_to_replace)}.*",
                 "",
                 requirements_text,
                 flags=re.MULTILINE,
@@ -197,7 +197,7 @@ def clean_requirements(requirements_text: str) -> str:
         else:
             # this replacement removes version specifier of the original package
             requirements_text = re.sub(
-                rf"^{re.escape(pkg_to_replace)}(?=[<>=!~\s]|$)",
+                rf"^{re.escape(pkg_to_replace)}.*",
                 replacement,
                 requirements_text,
                 flags=re.MULTILINE,
