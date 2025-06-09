@@ -408,6 +408,7 @@ def run_instances_modal(
     with modal.enable_output():
         with app.run():
             run_test_specs = []
+            failed_instances = []
 
             # Check for instances that have already been run
             for test_spec in test_specs:
@@ -419,37 +420,74 @@ def run_instances_modal(
                 run_test_specs.append(test_spec)
 
             if run_test_specs:
-                # Run instances that haven't been run yet
-                results = run_instance_modal.starmap(
-                    [
-                        (
+                print(f"Need to run {len(run_test_specs)} instances")
+
+                # Process each instance individually
+                for test_spec in run_test_specs:
+                    instance_id = test_spec.instance_id
+                    print(f"Running evaluation for {instance_id}...")
+
+                    try:
+                        # Run the single instance with the Modal function
+                        instance_args = [(
                             test_spec,
-                            predictions[test_spec.instance_id],
+                            predictions[instance_id],
                             run_id,
                             timeout,
+                        )]
+
+                        # Use a list to collect results
+                        results_list = []
+
+                        # Try to process this single instance
+                        for result in run_instance_modal.starmap(instance_args):
+                            results_list.append(result)
+
+                        # If we got here, it succeeded
+                        if results_list:
+                            result = results_list[0]
+
+                            # Save logs immediately
+                            log_dir = result.log_dir
+                            log_dir.mkdir(parents=True, exist_ok=True)
+                            with open(log_dir / "run_instance.log", "w") as f:
+                                f.write(result.run_instance_log)
+                            with open(log_dir / "test_output.txt", "w") as f:
+                                f.write(result.test_output)
+                            with open(log_dir / "patch.diff", "w") as f:
+                                f.write(result.patch_diff)
+                            with open(log_dir / "report.json", "w") as f:
+                                try:
+                                    report_json = json.loads(result.report_json_str)
+                                    json.dump(report_json, f, indent=4)
+                                except Exception as e:
+                                    print(f"{instance_id}: no report.json - {e}")
+
+                            print(f"Successfully processed {instance_id}")
+                        else:
+                            raise Exception(f"No results returned for {instance_id}")
+
+                    except Exception as e:
+                        print(f"Error processing {instance_id}: {e}")
+                        print(traceback.format_exc())
+                        failed_instances.append(instance_id)
+
+                        # Create minimal log files for failed instances
+                        log_dir = get_log_dir(
+                            predictions[instance_id], run_id, instance_id
                         )
-                        for test_spec in run_test_specs
-                    ],
-                )
+                        log_dir.mkdir(parents=True, exist_ok=True)
+                        with open(log_dir / "run_instance.log", "w") as f:
+                            f.write(f"Error processing instance: {e}\n{traceback.format_exc()}")
 
-                for result in results:
-                    result = cast(TestOutput, result)
+                print(f"Successfully processed {len(run_test_specs) - len(failed_instances)} instances")
+                if failed_instances:
+                    print(f"Failed to process {len(failed_instances)} instances: {', '.join(failed_instances)}")
 
-                    # Save logs locally
-                    log_dir = result.log_dir
-                    log_dir.mkdir(parents=True, exist_ok=True)
-                    with open(log_dir / "run_instance.log", "w") as f:
-                        f.write(result.run_instance_log)
-                    with open(log_dir / "test_output.txt", "w") as f:
-                        f.write(result.test_output)
-                    with open(log_dir / "patch.diff", "w") as f:
-                        f.write(result.patch_diff)
-                    with open(log_dir / "report.json", "w") as f:
-                        try:
-                            report_json = json.loads(result.report_json_str)
-                            json.dump(report_json, f, indent=4)
-                        except Exception:
-                            # This happens if the test fails with any exception
-                            print(f"{result.instance_id}: no report.json")
-
-            make_run_report(predictions, full_dataset, run_id)
+            # Always try to generate the final report
+            try:
+                make_run_report(predictions, full_dataset, run_id)
+                print(f"Successfully generated run report for {run_id}")
+            except Exception as e:
+                print(f"Error generating final report: {e}")
+                print(traceback.format_exc())
