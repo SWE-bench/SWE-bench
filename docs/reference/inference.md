@@ -38,7 +38,7 @@ For detailed usage instructions, see the [Make Datasets Guide](../guides/create_
 
 ### Running API Inference (`run_api.py`)
 
-This script runs inference on a dataset using either the OpenAI or Anthropic API. It sorts instances by length and continually writes outputs to a specified file, so the script can be stopped and restarted without losing progress.
+This script runs inference on a dataset using either the (Azure) OpenAI or Anthropic API. It sorts instances by length and continually writes outputs to a specified file, so the script can be stopped and restarted without losing progress.
 
 ```bash
 # Example with Anthropic Claude
@@ -46,6 +46,17 @@ export ANTHROPIC_API_KEY=<your key>
 python -m swebench.inference.run_api \
     --dataset_name_or_path princeton-nlp/SWE-bench_oracle \
     --model_name_or_path claude-2 \
+    --output_dir ./outputs
+
+# Example with Azure OpenAI gpt-4o
+export OPENAI_API_KEY=<your key>
+export AZURE_OPENAI_API_BASE=https://<your AI service name>.openai.azure.com/
+export AZURE_OPENAI_API_VERSION=2025-01-01-preview
+export AZURE_MODEL_DEPLOYMENT_NAME=<your gpt-4o deployment name>
+python -m swebench.inference.run_api \
+    --dataset_name_or_path princeton-nlp/SWE-bench_oracle \
+    --model_name_or_path gpt-4o-2024-11-20 \
+    --model_args use_azure=True \
     --output_dir ./outputs
 ```
 
