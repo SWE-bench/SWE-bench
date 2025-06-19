@@ -72,7 +72,7 @@ python -m swebench.harness.run_evaluation \
 ```
 > [!NOTE]
 > If using a MacOS M-series or other ARM-based systems, add `--namespace ''` to the above script.
-> By default, the evaluation script pulls images (built for Linux) from [DockerHub](https://hub.docker.com/repositories/swebench).
+> By default, the evaluation script pulls images (built for Linux) from [DockerHub](https://hub.docker.com/u/swebench).
 > Adding `--namespace ''` will cause evaluation images to be built locally instead.
 
 ## 💽 Usage
