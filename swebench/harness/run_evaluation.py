@@ -272,7 +272,7 @@ def run_instances(
     max_workers: int,
     run_id: str,
     timeout: int,
-    namespace: str = "swebench",
+    namespace: str | None = "swebench",
     instance_image_tag: str = "latest",
     rewrite_reports: bool = False,
 ):
