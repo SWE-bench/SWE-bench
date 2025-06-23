@@ -99,6 +99,7 @@ python -m swebench.harness.run_evaluation \
     --run_id <運行ID>
     # 使用 --predictions_path 'gold' 來驗證黃金補丁
     # 使用 --run_id 來命名評估運行
+    # 使用 --modal true 来在 Modal 上使用
 ```
 
 這個命令將在當前目錄中生成docker構建日誌(`logs/build_images`)和評估日誌(`logs/run_evaluation`)。

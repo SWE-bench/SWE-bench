@@ -198,8 +198,12 @@ class ModalSandboxRuntime:
                 "/opt/miniconda3/bin/conda config --append channels conda-forge",
                 "adduser --disabled-password --gecos 'dog' nonroot",
             )
-            .copy_local_file(Path(remote_env_script_path), remote_env_script_path)
-            .copy_local_file(Path(remote_repo_script_path), remote_repo_script_path)
+            .add_local_file(
+Path(remote_env_script_path), remote_env_script_path, copy=True
+            )
+            .add_local_file(
+                Path(remote_repo_script_path), remote_repo_script_path, copy=True
+            )
             .run_commands(
                 f"chmod +x {remote_env_script_path}",
                 f"/bin/bash -c 'source ~/.bashrc && {remote_env_script_path}'",

@@ -72,10 +72,11 @@ pip install modal swebench[modal]
 modal setup
 
 # Run evaluation on Modal
-python -m swebench.harness.modal_eval.run_modal \
+python -m swebench.harness.run_evaluation \
     --dataset_name princeton-nlp/SWE-bench_Lite \
     --predictions_path <path_to_predictions> \
-    --parallelism 10
+    --parallelism 10 \
+    --modal true
 ```
 
 ### Running with sb-cli

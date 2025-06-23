@@ -30,6 +30,7 @@ python -m swebench.harness.run_evaluation \
     # use --predictions_path 'gold' to verify the gold patches
     # use --run_id to name the run, logs will be written to ./logs/run_evaluation/<run_id>
     # use --split to specify which split to evaluate on, usually `dev` or `test`
+    # use --modal true to run on Modal
 ```
 
 You can run evaluation for the following (`dataset_name`, `split`)
