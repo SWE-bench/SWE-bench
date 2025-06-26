@@ -434,10 +434,13 @@ def run_instances_modal(
                         )
                         for test_spec in run_test_specs
                     ],
+                    return_exceptions=True,
                 )
 
                 for result in results:
-                    result = cast(TestOutput, result)
+                    if not isinstance(result, TestOutput):
+                        print(f"Result failed with error: {result}")
+                        continue
 
                     # Save logs locally
                     log_dir = result.log_dir
