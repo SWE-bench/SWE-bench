@@ -495,3 +495,11 @@ MAP_REPO_VERSION_TO_SPECS_JAVA = {
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_JAVA = {}
+
+# Populate MAP_REPO_TO_INSTALL_JAVA from MAP_REPO_VERSION_TO_SPECS_JAVA
+for repo_name_java, specs_for_repo_java in MAP_REPO_VERSION_TO_SPECS_JAVA.items():
+    if repo_name_java not in MAP_REPO_TO_INSTALL_JAVA:
+        MAP_REPO_TO_INSTALL_JAVA[repo_name_java] = {}
+    for version_java, version_spec_java in specs_for_repo_java.items():
+        if "install" in version_spec_java:
+            MAP_REPO_TO_INSTALL_JAVA[repo_name_java][version_java] = version_spec_java["install"]
