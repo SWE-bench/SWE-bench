@@ -170,3 +170,6 @@ cython_debug/
 data/repos/copies
 notebooks/
 *logs/
+/.idea
+/.claude
+/.python-version

@@ -3,7 +3,7 @@ import resource
 
 from argparse import ArgumentParser
 
-from swebench.harness.constants import KEY_INSTANCE_ID
+from swebench.harness.constants import KEY_INSTANCE_ID, LATEST
 from swebench.harness.docker_build import build_instance_images
 from swebench.harness.docker_utils import list_images
 from swebench.harness.test_spec.test_spec import make_test_spec
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         help="Namespace to use for the images (default: None)",
     )
     parser.add_argument(
-        "--tag", type=str, default=None, help="Tag to use for the images"
+        "--tag", type=str, default=LATEST, help="Tag to use for the images"
     )
     args = parser.parse_args()
     main(**vars(args))

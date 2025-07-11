@@ -556,6 +556,23 @@ SPECS_AXIOS = {
     },
 }
 
+SPECS_THEIA_JS = {
+    "0.1.0": {
+        "install": [
+            "pnpm install",
+            "pnpm run build",
+        ],
+        "test_cmd": [
+            "pnpm install",
+            "pnpm run build",
+            "pnpm run test",
+        ],
+        "docker_specs": {
+            "node_version": "22.17.0",
+        },
+    },
+}
+
 
 MAP_REPO_VERSION_TO_SPECS_JS = {
     "Automattic/wp-calypso": SPECS_CALYPSO,
@@ -570,6 +587,7 @@ MAP_REPO_VERSION_TO_SPECS_JS = {
     "mrdoob/three.js": SPECS_THREEJS,
     "preactjs/preact": SPECS_PREACT,
     "axios/axios": SPECS_AXIOS,
+    "faros-ai/theia": SPECS_THEIA_JS,
 }
 
 # Constants - Repository Specific Installation Instructions

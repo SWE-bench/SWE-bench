@@ -346,6 +346,7 @@ MAP_REPO_TO_PARSER_JS = {
     "babel/babel": parse_log_jest,
     "vuejs/core": parse_log_vitest,
     "facebook/docusaurus": parse_log_jest,
+    "faros-ai/theia": parse_log_jest,
     "immutable-js/immutable-js": parse_log_immutable_js,
     "mrdoob/three.js": parse_log_tap,
     "preactjs/preact": parse_log_karma,

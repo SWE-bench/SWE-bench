@@ -26,8 +26,9 @@ def make_repo_script_list_common(
     Create a list of bash commands to set up the repository for testing.
     This is the setup script for the instance image.
     """
+    # TODO thread in GH cred
     setup_commands = [
-        f"git clone -o origin https://github.com/{repo} {repo_directory}",
+        f"git clone -o origin https://<cred goes here>@github.com/{repo} {repo_directory}",
         f"chmod -R 777 {repo_directory}",  # So nonroot user can run tests
         f"cd {repo_directory}",
         f"git reset --hard {base_commit}",

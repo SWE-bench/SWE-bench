@@ -29,7 +29,10 @@ def test_passed(case: str, sm: dict[str, str]) -> bool:
 
 
 def test_failed(case: str, sm: dict[str, str]) -> bool:
-    return case not in sm or sm[case] in [TestStatus.FAILED.value, TestStatus.ERROR.value]
+    return case not in sm or sm[case] in [
+        TestStatus.FAILED.value,
+        TestStatus.ERROR.value,
+    ]
 
 
 # MARK: Evaluation report functions
@@ -255,6 +258,14 @@ def get_eval_report(
     # Get evaluation logs
     eval_status_map, found = get_logs_eval(test_spec, test_log_path)
 
+    # golden comparison is not automatically supported
+    # you probably need to add FAIL_TO_PASS to your instances
+    # dataset by hand.
+    # see https://github.com/SWE-bench/SWE-bench/issues/287
+    # verified with this statement that test logs are properly parsed
+    # for success/failure
+    # print('eval_status_map', eval_status_map)
+
     if not found:
         return report_map
     report_map[instance_id]["patch_successfully_applied"] = True
@@ -265,12 +276,13 @@ def get_eval_report(
         PASS_TO_PASS: test_spec.PASS_TO_PASS,
     }
 
-    eval_type = EvalType.FAIL_ONLY if test_spec.repo in FAIL_ONLY_REPOS \
+    eval_type = (
+        EvalType.FAIL_ONLY
+        if test_spec.repo in FAIL_ONLY_REPOS
         else EvalType.PASS_AND_FAIL
-
-    report = get_eval_tests_report(
-        eval_status_map, eval_ref, eval_type=eval_type
     )
+
+    report = get_eval_tests_report(eval_status_map, eval_ref, eval_type=eval_type)
     if get_resolution_status(report) == ResolvedStatus.FULL.value:
         report_map[instance_id]["resolved"] = True
 

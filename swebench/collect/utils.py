@@ -231,6 +231,15 @@ class Repo:
         )
         return pulls
 
+    # method to get diff for PR
+    def get_diff(self, pull_number: int) -> str:
+        return self.api.pulls.get(
+            pull_number=pull_number,
+            owner=self.owner,
+            repo=self.name,
+            headers={"Accept": "application/vnd.github.diff"},
+        )
+
 
 def extract_problem_statement_and_hints(pull: dict, repo: Repo) -> tuple[str, str]:
     """
@@ -320,7 +329,7 @@ def extract_patches(pull: dict, repo: Repo) -> tuple[str, str]:
         patch_change_str (str): gold patch
         patch_test_str (str): test patch
     """
-    patch = requests.get(pull["diff_url"]).text
+    patch = repo.get_diff(pull["number"])
     patch_test = ""
     patch_fix = ""
     for hunk in PatchSet(patch):
