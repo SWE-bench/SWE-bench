@@ -288,6 +288,7 @@ def run_instances(
         max_workers (int): Maximum number of workers
         run_id (str): Run ID
         timeout (int): Timeout for running tests
+        report_dir (str): Directory to write reports to
     """
     client = docker.from_env()
     test_specs = list(
@@ -469,10 +470,6 @@ def main(
 
     # set open file limit
     assert len(run_id) > 0, "Run ID must be provided"
-    if report_dir is not None:
-        report_dir = Path(report_dir)
-        if not report_dir.exists():
-            report_dir.mkdir(parents=True)
 
     if force_rebuild and namespace is not None:
         raise ValueError("Cannot force rebuild and use a namespace at the same time.")
@@ -524,7 +521,7 @@ def main(
 
     # clean images + make final report
     clean_images(client, existing_images, cache_level, clean)
-    return make_run_report(predictions, full_dataset, run_id, client)
+    return make_run_report(predictions, full_dataset, run_id, client, report_dir)
 
 
 if __name__ == "__main__":
