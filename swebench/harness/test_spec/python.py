@@ -97,14 +97,14 @@ def clean_environment_yml(yml_text: str) -> str:
     for pkg_to_replace, replacement in REPLACE_REQ_PACKAGES:
         if replacement == None:
             pip_portion = re.sub(
-                rf"^(\s*-\s*){re.escape(pkg_to_replace)}(?=[=\s]|$).*\n?",
+                rf"^(\s*-\s*){re.escape(pkg_to_replace)}([<>~]=?.*|$)\n?",
                 "",
                 pip_portion,
                 flags=re.MULTILINE,
             )
         else:
             pip_portion = re.sub(
-                rf"^(\s*-\s*){re.escape(pkg_to_replace)}(?=[=\s]|$)",
+                rf"^(\s*-\s*){re.escape(pkg_to_replace)}([<>=!~]=?.*|$)",
                 rf"\1{replacement}",
                 pip_portion,
                 flags=re.MULTILINE,
@@ -189,7 +189,7 @@ def clean_requirements(requirements_text: str) -> str:
     for pkg_to_replace, replacement in REPLACE_REQ_PACKAGES:
         if replacement == None:
             requirements_text = re.sub(
-                rf"^{re.escape(pkg_to_replace)}.*",
+                rf"^{re.escape(pkg_to_replace)}([<>=!~]=?.*|$)\n?",
                 "",
                 requirements_text,
                 flags=re.MULTILINE,
@@ -197,7 +197,7 @@ def clean_requirements(requirements_text: str) -> str:
         else:
             # this replacement removes version specifier of the original package
             requirements_text = re.sub(
-                rf"^{re.escape(pkg_to_replace)}.*",
+                rf"^{re.escape(pkg_to_replace)}([<>=!~]=?.*|$)",
                 replacement,
                 requirements_text,
                 flags=re.MULTILINE,
