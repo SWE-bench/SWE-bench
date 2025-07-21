@@ -62,7 +62,7 @@ MODEL_COST_PER_INPUT = {
     "gpt-4-32k": 0.00006,
     "gpt-4-1106-preview": 0.00001,
     "gpt-4-0125-preview": 0.00001,
-    "gpt-4o-2024-11-20": 0.000002212
+    "gpt-4o-2024-11-20": 0.000002212,
 }
 
 # The cost per token for each model output.
