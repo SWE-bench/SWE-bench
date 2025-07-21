@@ -42,7 +42,7 @@ MODEL_LIMITS = {
     "gpt-4-0613": 8_192,
     "gpt-4-1106-preview": 128_000,
     "gpt-4-0125-preview": 128_000,
-    "gpt-4o-2024-11-20": 128_000
+    "gpt-4o-2024-11-20": 128_000,
 }
 
 # The cost per token for each model input.
