@@ -143,7 +143,7 @@ def call_chat(model_name_or_path, inputs, use_azure, temperature, top_p, **model
                 ],
                 temperature=temperature,
                 top_p=top_p,
-                model=model_args['model'],
+                model=model_args.get('model'),
             )
         else:
             response = openai.chat.completions.create(
