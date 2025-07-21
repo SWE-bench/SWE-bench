@@ -90,7 +90,7 @@ ENGINES = {
     "gpt-3.5-turbo-16k-0613": "gpt-35-turbo-16k",
     "gpt-4-0613": "gpt-4",
     "gpt-4-32k-0613": "gpt-4-32k",
-    "gpt-4o-2024-11-20": "gpt-4o"
+    "gpt-4o-2024-11-20": "gpt-4o",
 }
 
 
