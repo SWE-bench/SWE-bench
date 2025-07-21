@@ -82,7 +82,7 @@ MODEL_COST_PER_OUTPUT = {
     "gpt-4-32k": 0.00012,
     "gpt-4-1106-preview": 0.00003,
     "gpt-4-0125-preview": 0.00003,
-    "gpt-4o-2024-11-20": 0.000008848
+    "gpt-4o-2024-11-20": 0.000008848,
 }
 
 # used for azure
