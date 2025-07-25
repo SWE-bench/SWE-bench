@@ -21,6 +21,11 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
 }
 
+REPLACE_REQ_PACKAGES = [
+    # pkg-to-replace, replacement
+    ("types-pkg_resources", "types-setuptools")
+]
+
 
 @cache
 def get_environment_yml_by_commit(repo: str, commit: str, env_name: str) -> str:
@@ -46,6 +51,67 @@ def get_environment_yml_by_commit(repo: str, commit: str, env_name: str) -> str:
     return "\n".join(cleaned)
 
 
+def clean_environment_yml(yml_text: str) -> str:
+    """
+    Clean environment.yml by removing packages that have been yanked from PyPI
+
+    conda style yamls take the form:
+    ...
+    - channels:
+        ...
+    - dependencies:
+        ...
+    - pip:
+        - pkg_to_replace
+        - pkg_to_replace
+    - ... (more dependencies)
+
+    We want to replace packages in the pip section only.
+    """
+    pip_match = re.search(r"^(\s*-\s*pip\s*:\s*\n)", yml_text, flags=re.MULTILINE)
+    if not pip_match:
+        return yml_text
+    pip_line_start = pip_match.start()
+    # get indentation level of pip line
+    pip_indent = len(pip_match.group(1)) - len(pip_match.group(1).lstrip())
+    pip_content_start = pip_match.end()
+    # find where pip section ends by looking for a line that's at same or less indentation
+    # or a line that starts a new top-level dependency (not pip)
+    lines_after_pip = yml_text[pip_content_start:].split("\n")
+    pip_section_end = pip_content_start
+    for ix, line in enumerate(lines_after_pip):
+        if line.strip() == "":
+            continue
+        line_indent = len(line) - len(line.lstrip())
+        if line_indent <= pip_indent:
+            # +1 to account for the newline
+            pip_section_end = pip_content_start + sum(
+                len(l) + 1 for l in lines_after_pip[:ix]
+            )
+            break
+    else:
+        pip_section_end = len(yml_text)
+    prefix = yml_text[:pip_content_start]
+    pip_portion = yml_text[pip_content_start:pip_section_end]
+    suffix = yml_text[pip_section_end:]
+    for pkg_to_replace, replacement in REPLACE_REQ_PACKAGES:
+        if replacement == None:
+            pip_portion = re.sub(
+                rf"^(\s*-\s*){re.escape(pkg_to_replace)}([<>~]=?.*|$)\n?",
+                "",
+                pip_portion,
+                flags=re.MULTILINE,
+            )
+        else:
+            pip_portion = re.sub(
+                rf"^(\s*-\s*){re.escape(pkg_to_replace)}([<>=!~]=?.*|$)",
+                rf"\1{replacement}",
+                pip_portion,
+                flags=re.MULTILINE,
+            )
+    return prefix + pip_portion + suffix
+
+
 def get_environment_yml(instance: SWEbenchInstance, env_name: str) -> str:
     """
     Get environment.yml for given task instance
@@ -62,8 +128,9 @@ def get_environment_yml(instance: SWEbenchInstance, env_name: str) -> str:
         if "environment_setup_commit" in instance
         else instance["base_commit"]
     )
-
-    return get_environment_yml_by_commit(instance["repo"], commit, env_name)
+    yml_text = get_environment_yml_by_commit(instance["repo"], commit, env_name)
+    yml_text = clean_environment_yml(yml_text)
+    return yml_text
 
 
 @cache
@@ -113,6 +180,31 @@ def get_requirements_by_commit(repo: str, commit: str) -> str:
     return all_reqs
 
 
+def clean_requirements(requirements_text: str) -> str:
+    """
+    Clean requirements.txt by replacing / removing packages
+
+    E.g. types-pkg_resources has been yanked from PyPI, so we replace it with types-setuptools
+    """
+    for pkg_to_replace, replacement in REPLACE_REQ_PACKAGES:
+        if replacement == None:
+            requirements_text = re.sub(
+                rf"^{re.escape(pkg_to_replace)}([<>=!~]=?.*|$)\n?",
+                "",
+                requirements_text,
+                flags=re.MULTILINE,
+            )
+        else:
+            # this replacement removes version specifier of the original package
+            requirements_text = re.sub(
+                rf"^{re.escape(pkg_to_replace)}([<>=!~]=?.*|$)",
+                replacement,
+                requirements_text,
+                flags=re.MULTILINE,
+            )
+    return requirements_text
+
+
 def get_requirements(instance: SWEbenchInstance) -> str:
     """
     Get requirements.txt for given task instance
@@ -129,7 +221,9 @@ def get_requirements(instance: SWEbenchInstance) -> str:
         else instance["base_commit"]
     )
 
-    return get_requirements_by_commit(instance["repo"], commit)
+    requirements_text = get_requirements_by_commit(instance["repo"], commit)
+    requirements_text = clean_requirements(requirements_text)
+    return requirements_text
 
 
 def get_test_directives(instance: SWEbenchInstance) -> list:
@@ -196,7 +290,7 @@ def make_repo_script_list_py(
     if "install" in specs:
         setup_commands.append(specs["install"])
 
-    # If the setup modifies the repository in any way, it can be 
+    # If the setup modifies the repository in any way, it can be
     # difficult to get a clean diff.  This ensures that `git diff`
     # will only reflect the changes from the user while retaining the
     # original state of the repository plus setup commands.

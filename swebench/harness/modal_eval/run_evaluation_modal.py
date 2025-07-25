@@ -198,8 +198,12 @@ class ModalSandboxRuntime:
                 "/opt/miniconda3/bin/conda config --append channels conda-forge",
                 "adduser --disabled-password --gecos 'dog' nonroot",
             )
-            .copy_local_file(Path(remote_env_script_path), remote_env_script_path)
-            .copy_local_file(Path(remote_repo_script_path), remote_repo_script_path)
+            .add_local_file(
+Path(remote_env_script_path), remote_env_script_path, copy=True
+            )
+            .add_local_file(
+                Path(remote_repo_script_path), remote_repo_script_path, copy=True
+            )
             .run_commands(
                 f"chmod +x {remote_env_script_path}",
                 f"/bin/bash -c 'source ~/.bashrc && {remote_env_script_path}'",
@@ -431,10 +435,13 @@ def run_instances_modal(
                         )
                         for test_spec in run_test_specs
                     ],
+                    return_exceptions=True,
                 )
 
                 for result in results:
-                    result = cast(TestOutput, result)
+                    if not isinstance(result, TestOutput):
+                        print(f"Result failed with error: {result}")
+                        continue
 
                     # Save logs locally
                     log_dir = result.log_dir

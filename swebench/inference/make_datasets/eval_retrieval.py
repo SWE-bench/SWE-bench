@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 def main(dataset_name_or_path, split):
     try:
-        dataset = load_dataset(dataset_name_or_path, split=split)
+        dataset = load_from_disk(dataset_name_or_path)[split]
     except:
-        dataset = load_from_disk(dataset_name_or_path, split=split)
+        dataset = load_dataset(dataset_name_or_path, split=split)
     print(
         f"Evaluating {len(dataset)} instances from {dataset_name_or_path} {split} split"
     )
@@ -35,9 +35,7 @@ def main(dataset_name_or_path, split):
         instance_id = datum["instance_id"]
         retrieved_files = instance_files_pattern.findall(datum["text"])
         if retrieved_files and "readme" in retrieved_files[0].lower():
-            retrieved_files = retrieved_files[
-                1:
-            ]  # first file is usually the readme, we don't want to count that
+            retrieved_files = retrieved_files[1:]
         retrieved_files = set(retrieved_files)
         gold_files = set(patch_files_pattern.findall(patch_files[instance_id]))
         if len(gold_files) == 0:
@@ -45,8 +43,9 @@ def main(dataset_name_or_path, split):
             continue
         if len(retrieved_files) == 0:
             print(f"WARNING: Instance {datum['instance_id']} has no retrieved files")
-            continue
-        recall = len(retrieved_files.intersection(gold_files)) / len(gold_files)
+            recall = 0.0
+        else:
+            recall = len(retrieved_files.intersection(gold_files)) / len(gold_files)
         recalls.append(recall)
         recalls_any.append(int(recall > 0))
         recalls_all.append(int(recall == 1))

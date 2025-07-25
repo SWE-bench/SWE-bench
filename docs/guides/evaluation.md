@@ -49,15 +49,15 @@ Your predictions should be in JSONL format, with each line containing a JSON obj
 ```json
 {
   "instance_id": "repo_owner__repo_name-issue_number",
-  "model": "your-model-name",
-  "prediction": "the patch content as a string"
+  "model_name_or_path": "your-model-name",
+  "model_patch": "the patch content as a string"
 }
 ```
 
 Example:
 
 ```json
-{"instance_id": "sympy__sympy-20590", "model": "gpt-4", "prediction": "diff --git a/sympy/core/sympify.py b/sympy/core/sympify.py\nindex 6a73a83..fb90e1a 100644\n--- a/sympy/core/sympify.py\n+++ b/sympy/core/sympify.py\n@@ -508,7 +508,7 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,\n         converter[type(a)],\n         (SympifyError,\n          OverflowError,\n-         ValueError)):\n+         ValueError, AttributeError)):\n     return a\n"}
+{"instance_id": "sympy__sympy-20590", "model_name_or_path": "gpt-4", "model_patch": "diff --git a/sympy/core/sympify.py b/sympy/core/sympify.py\nindex 6a73a83..fb90e1a 100644\n--- a/sympy/core/sympify.py\n+++ b/sympy/core/sympify.py\n@@ -508,7 +508,7 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,\n         converter[type(a)],\n         (SympifyError,\n          OverflowError,\n-         ValueError)):\n+         ValueError, AttributeError)):\n     return a\n"}
 ```
 
 ## Cloud-Based Evaluation
@@ -72,10 +72,11 @@ pip install modal swebench[modal]
 modal setup
 
 # Run evaluation on Modal
-python -m swebench.harness.modal_eval.run_modal \
+python -m swebench.harness.run_evaluation \
     --dataset_name princeton-nlp/SWE-bench_Lite \
     --predictions_path <path_to_predictions> \
-    --parallelism 10
+    --parallelism 10 \
+    --modal true
 ```
 
 ### Running with sb-cli

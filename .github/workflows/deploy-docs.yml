@@ -1,5 +1,10 @@
 name: build-docs
 
+# Prevent concurrent runs that could conflict when pushing to gh-pages
+concurrency:
+  group: build-docs-${{ github.ref }}
+  cancel-in-progress: false
+
 on:
   push:
     branches:

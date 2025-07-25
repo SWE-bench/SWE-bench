@@ -302,6 +302,15 @@ def str2bool(v):
         raise ArgumentTypeError("Boolean value expected.")
 
 
+def optional_str(value: str) -> str | None:
+    """
+    Convert special string values to None, otherwise return the string as-is.
+    """
+    if value.lower() in ("none", "null", ""):
+        return None
+    return value
+
+
 def get_repo_file(repo, commit, filepath):
     url = f"https://raw.githubusercontent.com/{repo}/{commit}/{filepath}"
     try:

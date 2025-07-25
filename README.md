@@ -72,7 +72,7 @@ python -m swebench.harness.run_evaluation \
 ```
 > [!NOTE]
 > If using a MacOS M-series or other ARM-based systems, add `--namespace ''` to the above script.
-> By default, the evaluation script pulls images (built for Linux) from [DockerHub](https://hub.docker.com/repositories/swebench).
+> By default, the evaluation script pulls images (built for Linux) from [DockerHub](https://hub.docker.com/u/swebench).
 > Adding `--namespace ''` will cause evaluation images to be built locally instead.
 
 ## 💽 Usage
@@ -85,6 +85,7 @@ python -m swebench.harness.run_evaluation \
     --run_id <run_id>
     # use --predictions_path 'gold' to verify the gold patches
     # use --run_id to name the evaluation run
+    # use --modal true to run on Modal
 ```
 
 This command will generate docker build logs (`logs/build_images`) and evaluation logs (`logs/run_evaluation`) in the current directory.
@@ -156,7 +157,7 @@ If you find our work helpful, please use the following citations.
 }
 ```
 
-## Related projects
+## Our Other Projects
 
 <div align="center">
   <a href="https://github.com/SWE-bench/sb-cli"><img src="docs/assets/sbcli_logo_text_below.svg" alt="sb-cli" height="120px"></a>

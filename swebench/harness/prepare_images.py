@@ -7,7 +7,7 @@ from swebench.harness.constants import KEY_INSTANCE_ID
 from swebench.harness.docker_build import build_instance_images
 from swebench.harness.docker_utils import list_images
 from swebench.harness.test_spec.test_spec import make_test_spec
-from swebench.harness.utils import load_swebench_dataset, str2bool
+from swebench.harness.utils import load_swebench_dataset, str2bool, optional_str
 
 
 def filter_dataset_to_build(
@@ -85,6 +85,10 @@ def main(
         dataset, instance_ids, client, force_rebuild, namespace, tag
     )
 
+    if len(dataset) == 0:
+        print("All images exist. Nothing left to build.")
+        return 0
+
     # Build images for remaining instances
     successful, failed = build_instance_images(
         client=client,
@@ -123,7 +127,10 @@ if __name__ == "__main__":
         "--open_file_limit", type=int, default=8192, help="Open file limit"
     )
     parser.add_argument(
-        "--namespace", type=str, default=None, help="Namespace to use for the images"
+        "--namespace",
+        type=optional_str,
+        default=None,
+        help="Namespace to use for the images (default: None)",
     )
     parser.add_argument(
         "--tag", type=str, default=None, help="Tag to use for the images"

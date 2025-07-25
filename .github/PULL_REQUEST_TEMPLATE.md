@@ -19,4 +19,4 @@ been modified for this fix.
 
 #### Any other comments?
 
-🧡 Thanks for contributing!
+<!-- 🧡 Thanks for contributing! -->

@@ -56,6 +56,7 @@ from swebench.harness.utils import (
     get_predictions_from_file,
     run_threadpool,
     str2bool,
+    optional_str,
 )
 
 GIT_APPLY_CMDS = [
@@ -271,7 +272,7 @@ def run_instances(
     max_workers: int,
     run_id: str,
     timeout: int,
-    namespace: str = "swebench",
+    namespace: str | None = "swebench",
     instance_image_tag: str = "latest",
     rewrite_reports: bool = False,
 ):
@@ -459,8 +460,6 @@ def main(
     """
     Run evaluation harness for the given dataset and predictions.
     """
-    namespace = None if namespace == "" else namespace
-
     if dataset_name == "SWE-bench/SWE-bench_Multimodal" and split == "test":
         print(
             "⚠️ Local evaluation for the test split of SWE-bench Multimodal is not supported. "
@@ -595,7 +594,10 @@ if __name__ == "__main__":
         "--run_id", type=str, required=True, help="Run ID - identifies the run"
     )
     parser.add_argument(
-        "--namespace", type=str, default="swebench", help="Namespace for images"
+        "--namespace",
+        type=optional_str,
+        default="swebench",
+        help='Namespace for images. (use "none" to use no namespace)',
     )
     parser.add_argument(
         "--instance_image_tag", type=str, default="latest", help="Instance image tag"

@@ -66,8 +66,8 @@ from swebench.harness.run_evaluation import run_evaluation
 predictions = [
     {
         "instance_id": "repo_owner_name__repo_name-issue_number",
-        "model": "my-model-name",
-        "prediction": "code patch here"
+        "model_name_or_path": "my-model-name",
+        "model_patch": "code patch here"
     }
 ]
 

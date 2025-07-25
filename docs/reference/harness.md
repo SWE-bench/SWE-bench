@@ -77,15 +77,13 @@ python -m swebench.harness.run_evaluation \
 
 The harness supports cloud-based evaluations using Modal:
 
-```python
-from swebench.harness.modal_eval.run_modal import run_modal_evaluation
-
-# Run evaluation in the cloud
-results = run_modal_evaluation(
-    predictions=predictions,
-    dataset_name="SWE-bench_Lite",
-    parallelism=10
-)
+```bash
+python -m swebench.harness.run_evaluation \
+    --predictions_path gold \
+    --max_workers 1 \
+    --instance_ids sympy__sympy-20590 \
+    --run_id validate-gold
+    --modal true
 ```
 
 You can also use [sb-cli](https://github.com/swe-bench/sb-cli), a tool for running evaluations automatically on AWS.
@@ -95,14 +93,19 @@ You can also use [sb-cli](https://github.com/swe-bench/sb-cli), a tool for runni
 The harness accepts various parameters to configure the evaluation:
 
 - `--dataset_name`: The name of the dataset to evaluate on
+- `--split`: Split of the dataset
 - `--predictions_path`: Path to the predictions file (or "gold" for ground truth)
 - `--max_workers`: Number of parallel evaluation workers
 - `--run_id`: Identifier for the evaluation run
 - `--cache_level`: Level of caching for Docker images
 - `--clean`: Whether to clean up resources after evaluation
 - `--instance_ids`: Specific instances to evaluate (comma-separated)
+- `--open_file_limit`: Open file limit
+- `--force_rebuild`: Force rebuild all images
 - `--log_level`: Logging verbosity
+- `--namespace`: Namespace for images
 - `--timeout`: Maximum time (seconds) for evaluating each instance
+- `--modal`: If true, run on Modal
 
 For a complete list of arguments, run:
 ```bash
