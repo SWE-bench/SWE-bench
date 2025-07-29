@@ -244,3 +244,11 @@ MAP_REPO_VERSION_TO_SPECS_GO = {
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_GO = {}
+
+# Populate MAP_REPO_TO_INSTALL_GO from MAP_REPO_VERSION_TO_SPECS_GO
+for repo_name_go, specs_for_repo_go in MAP_REPO_VERSION_TO_SPECS_GO.items():
+    if repo_name_go not in MAP_REPO_TO_INSTALL_GO:
+        MAP_REPO_TO_INSTALL_GO[repo_name_go] = {}
+    for version_go, version_spec_go in specs_for_repo_go.items():
+        if "install" in version_spec_go:
+            MAP_REPO_TO_INSTALL_GO[repo_name_go][version_go] = version_spec_go["install"]
