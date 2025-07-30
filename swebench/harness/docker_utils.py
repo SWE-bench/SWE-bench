@@ -299,13 +299,15 @@ def should_remove(image_name: str, cache_level: str, clean: bool, prior_images: 
     existed_before = image_name in prior_images
     if "/" in image_name:
         image_name = image_name.split("/", 1)[-1]
-    if image_name.startswith("sweb.base"):
+    image_name = image_name.split(".", maxsplit=1)[-1]  # strip the docker root and prefix
+
+    if image_name.startswith("base"):
         if cache_level in {"none"} and (clean or not existed_before):
             return True
-    elif image_name.startswith("sweb.env"):
+    elif image_name.startswith("env"):
         if cache_level in {"none", "base"} and (clean or not existed_before):
             return True
-    elif image_name.startswith("sweb.eval"):
+    elif image_name.startswith("eval"):
         if cache_level in {"none", "base", "env"} and (clean or not existed_before):
             return True
     return False

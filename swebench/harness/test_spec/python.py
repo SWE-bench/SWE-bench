@@ -1,4 +1,5 @@
 import os
+import json
 import posixpath
 import re
 import requests
@@ -274,11 +275,23 @@ def make_repo_script_list_py(
         f"git reset --hard {base_commit}",
         # Remove the remote so the agent won't see newer commits.
         "git remote remove origin",
-        # Make sure conda is available for later use
         "source /opt/miniconda3/bin/activate",
-        f"conda activate {env_name}",
-        'echo "Current environment: $CONDA_DEFAULT_ENV"',
     ]
+
+    if "install" in specs \
+        and ((isinstance(specs["install"], str) and "uv pip " in specs["install"])
+        or (isinstance(specs["install"], list) and "uv pip " in "\n".join(specs["install"]))):
+            # Install uv in base conda for compatibility with old Python versions
+            setup_commands.append("conda activate base && pip install uv")
+
+    setup_commands.extend(
+        [
+            # Make sure conda is available for later use
+            f"conda activate {env_name}",
+            'echo "Current environment: $CONDA_DEFAULT_ENV"',
+        ]
+    )
+
     if repo in MAP_REPO_TO_INSTALL:
         setup_commands.append(MAP_REPO_TO_INSTALL[repo])
 
@@ -288,7 +301,12 @@ def make_repo_script_list_py(
             setup_commands.append(pre_install)
 
     if "install" in specs:
-        setup_commands.append(specs["install"])
+        if isinstance(specs["install"], str):
+            setup_commands.append(specs["install"])
+        elif isinstance(specs["install"], list):
+            setup_commands.extend(specs["install"])
+        else:
+            raise ValueError(f'specs["install"] of type {type(specs["install"])} is not supported')
 
     # If the setup modifies the repository in any way, it can be
     # difficult to get a clean diff.  This ensures that `git diff`
@@ -385,14 +403,26 @@ def make_eval_script_list_py(
     apply_test_patch_command = (
         f"git apply -v - <<'{HEREDOC_DELIMITER}'\n{test_patch}\n{HEREDOC_DELIMITER}"
     )
-    test_command = " ".join(
-        [
-            MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]][
-                "test_cmd"
-            ],
-            *get_test_directives(instance),
-        ]
-    )
+
+    if instance["repo"] in MAP_REPO_VERSION_TO_SPECS:
+        test_command = " ".join(
+            [
+                MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]][
+                    "test_cmd"
+                ],
+                *get_test_directives(instance),
+            ]
+        )
+    elif instance.get("test_framework"):
+        test_command = " ".join(
+            [
+                instance["test_framework"],
+                *get_test_directives(instance),
+            ]
+        )
+    else:
+        test_command = " && ".join(json.loads(instance["test_commands"]))
+
     eval_commands = [
         "source /opt/miniconda3/bin/activate",
         f"conda activate {env_name}",
@@ -411,7 +441,10 @@ def make_eval_script_list_py(
         f"conda activate {env_name}",
     ]
     if "install" in specs:
-        eval_commands.append(specs["install"])
+        if isinstance(specs["install"], str):
+            eval_commands.append(specs["install"])
+        elif isinstance(specs["install"], list):
+            eval_commands.extend(specs["install"])
     eval_commands += [
         reset_tests_command,
         apply_test_patch_command,
