@@ -206,6 +206,8 @@ def find_resolved_instance_reports(root_dir):
 
     for report_path in root_path.rglob("report.json"):
         try:
+            if "merged" not in str(report_path):
+                continue
             with open(report_path, "r") as f:
                 data = json.load(f)
 
