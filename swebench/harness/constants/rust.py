@@ -350,3 +350,13 @@ MAP_REPO_VERSION_TO_SPECS_RUST = {
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_RUST = {}
+
+# Populate MAP_REPO_TO_INSTALL_RUST from MAP_REPO_VERSION_TO_SPECS_RUST
+for repo_name_rust, specs_for_repo_rust in MAP_REPO_VERSION_TO_SPECS_RUST.items():
+    if repo_name_rust not in MAP_REPO_TO_INSTALL_RUST:
+        MAP_REPO_TO_INSTALL_RUST[repo_name_rust] = {}
+    for version_rust, version_spec_rust in specs_for_repo_rust.items():
+        if "install" in version_spec_rust:
+            MAP_REPO_TO_INSTALL_RUST[repo_name_rust][version_rust] = version_spec_rust["install"]
+        elif "build" in version_spec_rust: # Fallback if "install" is not present
+            MAP_REPO_TO_INSTALL_RUST[repo_name_rust][version_rust] = version_spec_rust["build"]

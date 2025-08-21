@@ -354,3 +354,11 @@ MAP_REPO_VERSION_TO_SPECS_RUBY = {
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_RUBY = {}
+
+# Populate MAP_REPO_TO_INSTALL_RUBY from MAP_REPO_VERSION_TO_SPECS_RUBY
+for repo_name_ruby, specs_for_repo_ruby in MAP_REPO_VERSION_TO_SPECS_RUBY.items():
+    if repo_name_ruby not in MAP_REPO_TO_INSTALL_RUBY:
+        MAP_REPO_TO_INSTALL_RUBY[repo_name_ruby] = {}
+    for version_ruby, version_spec_ruby in specs_for_repo_ruby.items():
+        if "install" in version_spec_ruby:
+            MAP_REPO_TO_INSTALL_RUBY[repo_name_ruby][version_ruby] = version_spec_ruby["install"]
