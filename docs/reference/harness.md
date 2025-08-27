@@ -99,7 +99,7 @@ The harness accepts various parameters to configure the evaluation:
 - `--run_id`: Identifier for the evaluation run
 - `--cache_level`: Level of caching for Docker images
 - `--clean`: Whether to clean up resources after evaluation
-- `--instance_ids`: Specific instances to evaluate (comma-separated)
+- `--instance_ids`: Specific instances to evaluate (space-separated)
 - `--open_file_limit`: Open file limit
 - `--force_rebuild`: Force rebuild all images
 - `--log_level`: Logging verbosity

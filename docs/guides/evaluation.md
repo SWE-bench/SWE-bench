@@ -103,7 +103,7 @@ To evaluate only specific instances, use the `--instance_ids` parameter:
 ```bash
 python -m swebench.harness.run_evaluation \
     --predictions_path <path_to_predictions> \
-    --instance_ids httpie-cli__httpie-1088,sympy__sympy-20590 \
+    --instance_ids httpie-cli__httpie-1088 sympy__sympy-20590 \
     --max_workers 2
 ```
 
