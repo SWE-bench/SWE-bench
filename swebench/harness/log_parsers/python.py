@@ -249,6 +249,94 @@ def parse_log_matplotlib(log: str, test_spec: TestSpec) -> dict[str, str]:
             test_status_map[test_case[1]] = test_case[0]
     return test_status_map
 
+def parser_pytest(
+    log: str,
+) -> dict[str, str]: 
+    test_result_dict: dict[str, str] = {}
+    pytest_ptr = re.compile(rf"({'|'.join(x.value for x in TestStatus)})\s+(.+)")
+    all_matches = pytest_ptr.findall(log)
+    for status, test_name in all_matches:
+        test_result_dict[test_name] = status
+    return test_result_dict
+
+
+def parser_unittest(
+    log: str
+) -> dict[str, str]:
+
+    UNITTEST_TO_PYTESTSTATUS = {
+        "error": TestStatus.ERROR,
+        "failed": TestStatus.FAILED,
+        "fail": TestStatus.FAILED,
+        "FAIL": TestStatus.FAILED,
+        "passed": TestStatus.PASSED,
+        "ok": TestStatus.PASSED,
+        "skipped": TestStatus.SKIPPED,
+        "x": TestStatus.XFAIL,
+        "u": TestStatus.ERROR,
+        "deprecated": TestStatus.SKIPPED,
+    }
+
+    test_result_dict: dict[str, str] = {}
+    # parser unit test
+    # first check pattern with ... inbetween, e.g. test ... status
+    pattern = rf"(test[_\w]*\s\([^\)]+\)|[^\s]+)\s*\.\.\.\s*({'|'.join(x for x in UNITTEST_TO_PYTESTSTATUS.keys())})"
+    all_matches = re.findall(pattern, log)
+    for test_name, status in all_matches:
+        # unit test name has to have a test in it
+        if "test" not in test_name:
+            continue
+        if test_name in test_result_dict:
+            continue
+        value = UNITTEST_TO_PYTESTSTATUS[status].value
+        test_result_dict[test_name] = value
+
+    # second check pattern with newline inbetween, e.g. test \nstatus
+    pattern = rf"([^\s]+)\n({'|'.join(x for x in UNITTEST_TO_PYTESTSTATUS.keys())})"
+    all_matches = re.findall(pattern, log)
+    for test_name, status in all_matches:
+        # unit test name has to have a test in it
+        if "test" not in test_name:
+            continue
+        if test_name in test_result_dict:
+            continue
+        value = UNITTEST_TO_PYTESTSTATUS[status].value
+        test_result_dict[test_name] = value
+
+    return test_result_dict
+
+
+def normalize_log(log:str)->str:
+    # Remove ASCI escape characters
+    to_escape = re.compile(r'(?i)\x1b\[[0-9]+m')
+    log = to_escape.sub('', log)
+
+    # Normalize non deterministic memory addresses
+    memory_addr_regex = r'0x[0-9A-Fa-f]{8}\b|0x[0-9A-Fa-f]{16}\b'
+    log = re.sub(memory_addr_regex, "0xXXXXXXXXX", log)
+    
+    SHORT_TEST_SUMMARY_SEPARATOR = "=========================== short test summary info ============================"
+    pytest_pattern = re.compile(rf"{SHORT_TEST_SUMMARY_SEPARATOR}(.*?)={{5,}}.*? in [\d\.]+s ={{5,}}", re.DOTALL)
+
+    if SHORT_TEST_SUMMARY_SEPARATOR in log:
+        if log.count(SHORT_TEST_SUMMARY_SEPARATOR) == 1:
+            log = log[log.find(SHORT_TEST_SUMMARY_SEPARATOR): ]
+        else:
+            matches = pytest_pattern.findall(log)
+            log = ''
+            for block in matches:
+                log += f'{block}\n'
+    return log
+
+
+def sw_parser(
+    log: str,
+    test_spec: TestSpec,
+) -> dict[str, str]:
+    log = normalize_log(log)  
+    test_result_dict = parser_pytest(log)
+    test_result_dict.update({k:v for k,v in parser_unittest(log).items() if k not in test_result_dict})
+    return test_result_dict
 
 parse_log_astroid = parse_log_pytest
 parse_log_flask = parse_log_pytest

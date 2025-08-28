@@ -147,6 +147,9 @@ def load_swebench_dataset(
             "lite",
         }:
             name = "SWE-bench/SWE-bench_Lite"
+        elif name.lower() in {'swabench', 'swa-bench', 'swa_bench', 'swa'}:
+            name = "LogicStar/SWA-Bench"
+
         if (Path(name) / split / "dataset_info.json").exists():
             dataset = cast(Dataset, load_from_disk(Path(name) / split))
         else:
