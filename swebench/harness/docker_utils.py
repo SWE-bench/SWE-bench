@@ -298,7 +298,7 @@ def should_remove(image_name: str, cache_level: str, clean: bool, prior_images: 
     """
     existed_before = image_name in prior_images
     if "/" in image_name:
-        image_name = image_name.split("/", 1)[-1]
+        image_name = image_name.rsplit("/", 1)[-1]
     if image_name.startswith("sweb.base"):
         if cache_level in {"none"} and (clean or not existed_before):
             return True
