@@ -44,6 +44,13 @@ jobs:
       - name: Install dev dependencies
         run: |
             uv pip install --python ${Python_ROOT_DIR} pytest pytest-cov
+      - name: Clean Python cache files
+        run: |
+          find . -name "__pycache__" -type d -exec rm -r {} +
+          find . -name "*.pyc" -delete
+      - name: Uninstall any installed swebench package
+        run: |
+          pip uninstall -y swebench || true
       - name: Run pytest
         uses: sjvrijn/pytest-last-failed@v2
         with:
