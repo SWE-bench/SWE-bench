@@ -31,7 +31,7 @@ In this section, we briefly describe each of the files in this directory and its
 
 **🧐 GitHub Repository Selection**
 * `get_top_pypi.py`
-    * Purpose: Retrieves the PyPI URL, GitHub URL, # of ⭐, and # of Issues + PRs for the [top 5000](https://hugovk.github.io/top-pypi-packages/") most downloaded PyPI packages.
+    * Purpose: Retrieves the PyPI URL, GitHub URL, # of ⭐, and # of Issues + PRs for the [top 5000](https://hugovk.github.io/top-pypi-packages/) most downloaded PyPI packages.
     * Usage: `python get_top_pypi.py`
 
 **⛏️ GitHub Data Collection**
