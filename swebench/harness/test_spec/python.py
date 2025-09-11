@@ -28,11 +28,26 @@ REPLACE_REQ_PACKAGES = [
 ]
 
 
+def get_authenticated_headers():
+    """Get request headers with GitHub token authentication if available"""
+    headers = HEADERS.copy()
+    
+    # Try to get GitHub Token from environment variables
+    github_token = os.environ.get('GITHUB_TOKEN')
+    if github_token:
+        headers['Authorization'] = f'token {github_token}'
+        print(f" Using GitHub token authentication")
+    else:
+        print(f" No GitHub token found, using anonymous requests")
+    
+    return headers
+
+
 @cache
 def get_environment_yml_by_commit(repo: str, commit: str, env_name: str) -> str:
     for req_path in MAP_REPO_TO_ENV_YML_PATHS[repo]:
         reqs_url = posixpath.join(SWE_BENCH_URL_RAW, repo, commit, req_path)
-        reqs = requests.get(reqs_url, headers=HEADERS)
+        reqs = requests.get(reqs_url, headers=get_authenticated_headers())
         if reqs.status_code == 200:
             break
     else:
@@ -138,7 +153,7 @@ def get_environment_yml(instance: SWEbenchInstance, env_name: str) -> str:
 def get_requirements_by_commit(repo: str, commit: str) -> str:
     for req_path in MAP_REPO_TO_REQS_PATHS[repo]:
         reqs_url = posixpath.join(SWE_BENCH_URL_RAW, repo, commit, req_path)
-        reqs = requests.get(reqs_url, headers=HEADERS)
+        reqs = requests.get(reqs_url, headers=get_authenticated_headers())
         if reqs.status_code == 200:
             break
     else:
@@ -165,7 +180,7 @@ def get_requirements_by_commit(repo: str, commit: str) -> str:
                 req_dir,
                 file_name,
             )
-            reqs = requests.get(reqs_url, headers=HEADERS)
+            reqs = requests.get(reqs_url, headers=get_authenticated_headers())
             if reqs.status_code == 200:
                 for line_extra in reqs.text.split("\n"):
                     if not exclude_line(line_extra):
