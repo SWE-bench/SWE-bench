@@ -79,20 +79,14 @@ Useful commands for managing Docker resources:
 # View Docker disk usage
 docker system df
 
-# Remove unused containers
+# Remove all stopped containers
 docker container prune
 
-# Remove unused images
+# Remove dangling images (untagged)
 docker image prune
 
 # Remove all unused Docker objects (containers, images, networks, volumes)
 docker system prune
-
-# Remove all stopped containers
-docker container prune
-
-# Remove all dangling images
-docker image prune
 ```
 
 ## Cache Level Configuration
