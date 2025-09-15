@@ -142,9 +142,15 @@ def get_requirements_by_commit(repo: str, commit: str) -> str:
         if reqs.status_code == 200:
             break
     else:
-        raise ValueError(
-            f"Could not find requirements.txt at paths {MAP_REPO_TO_REQS_PATHS[repo]} for repo {repo} at commit {commit}"
-        )
+        for req_path in MAP_REPO_TO_REQS_PATHS[repo]:
+            reqs_url = posixpath.join(SWE_BENCH_URL_RAW, repo, 'main', req_path)
+            reqs = requests.get(reqs_url, headers=HEADERS)
+            if reqs.status_code == 200:
+                break
+        else: 
+            raise ValueError(
+                f"Could not find requirements.txt at paths {MAP_REPO_TO_REQS_PATHS[repo]} for repo {repo} at commit {commit}"
+            )
 
     lines = reqs.text
     original_req = []
