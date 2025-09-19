@@ -63,15 +63,13 @@ USER root
 """
 
 from swebench.data_specs.javascript import MAP_REPO_VERSION_TO_SPECS_JS
-
-
-def make_heredoc_run_command(commands):
-    """Helper to create RUN commands with heredoc syntax"""
-    if not commands:
-        return ""
-    delimiter = "EOF"
-    command_str = "\n".join(commands)
-    return f"RUN <<{delimiter}\n{command_str}\n{delimiter}"
+from swebench.image_builder.docker_utils import (
+    make_heredoc_run_command,
+    git_clone_timesafe,
+)
+from swebench.image_builder.constants import (
+    CONTAINER_WORKDIR,
+)
 
 
 def make_env_script_list(instance, specs):
@@ -148,9 +146,8 @@ def make_repo_script_list(specs, repo, base_commit):
     Clone the repository, install dependencies, and run any build commands.
     """
     commands = [
-        f"git clone https://github.com/{repo}.git /testbed",
-        "cd /testbed",
-        f"git reset --hard {base_commit}",
+        *git_clone_timesafe(repo, base_commit, CONTAINER_WORKDIR),
+        f"cd {CONTAINER_WORKDIR}",
         "git clean -fdxq",
     ]
     commands.append("source $NVM_DIR/nvm.sh")
@@ -176,37 +173,23 @@ def _get_dockerfile(instance) -> str:
     version = instance.get("version")
     base_commit = instance["base_commit"]
     specs = MAP_REPO_VERSION_TO_SPECS_JS[repo][version]
-
-    # Start with base image
     dockerfile = _DOCKERFILE_BASE_JS
-
-    # Add Docker ENV statements for proper environment variable persistence
     docker_specs = specs.get("docker_specs", {})
     node_version = docker_specs.get("node_version", "18.17.1")
     pnpm_version = docker_specs.get("pnpm_version", None)
-
-    # Set ENV variables for Node.js
     dockerfile += f"\nENV NODE_VERSION {node_version}\n"
     dockerfile += "ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules\n"
     dockerfile += "ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH\n"
-
-    # Set ENV variables for pnpm if needed
     if pnpm_version:
         dockerfile += f"ENV PNPM_VERSION {pnpm_version}\n"
         dockerfile += "ENV PNPM_HOME /usr/local/pnpm\n"
         dockerfile += "ENV PATH $PNPM_HOME:$PATH\n"
-
-    # Add environment setup (Node.js installation, Python, dependencies)
     env_script = make_env_script_list(instance, specs)
     if env_script:
         dockerfile += f"\n{env_script}\n"
-
-    # Add repository setup (clone, install, build)
     repo_script = make_repo_script_list(specs, repo, base_commit)
     if repo_script:
         dockerfile += f"\n{repo_script}\n"
-
-    # Set final working directory
-    dockerfile += "\nWORKDIR /testbed/\n"
+    dockerfile += f"\nWORKDIR {CONTAINER_WORKDIR}\n"
 
     return dockerfile

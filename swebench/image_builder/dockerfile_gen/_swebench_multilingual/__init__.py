@@ -27,7 +27,7 @@ from swebench.image_builder.dockerfile_gen._swebench_multilingual.rust import (
     MAP_REPO_VERSION_TO_SPECS_RUST,
 )
 
-from swebench.image_builder.constants import CONTAINER_WORKDIR
+from swebench.image_builder.constants import CONTAINER_WORKDIR, CONTAINER_ENV_NAME
 
 MAP_REPO_VERSION_TO_SPECS = {
     **MAP_REPO_VERSION_TO_SPECS_C,
@@ -65,17 +65,8 @@ def make_repo_script_list(specs, repo, base_commit) -> list:
     This is the setup script for the instance image.
     """
     setup_commands = [
-        f"git clone -o origin --single-branch https://github.com/{repo} {CONTAINER_WORKDIR}",
-        f"chmod -R 777 {CONTAINER_WORKDIR}",  # So nonroot user can run tests
+        *git_clone_timesafe(repo, base_commit, CONTAINER_WORKDIR),
         f"cd {CONTAINER_WORKDIR}",
-        f"git reset --hard {base_commit}",
-        "git remote remove origin",
-        "git tag -d $(git tag -l)",
-        "git reflog expire --expire=now --all",
-        "git gc --prune=now --aggressive",
-        f"TARGET_TIMESTAMP=$(git show -s --format=%ci {base_commit})",
-        'COMMIT_COUNT=$(git log --oneline --since="$TARGET_TIMESTAMP" | wc -l)',
-        '[ "$COMMIT_COUNT" -eq 1 ] || exit 1',
     ]
     if "pre_install" in specs:
         setup_commands.extend(specs["pre_install"])
@@ -110,7 +101,7 @@ def _get_dockerfile(instance) -> str:
     repo_script = make_repo_script_list(specs, repo, base_commit)
     monolithic_dockerfile = get_dockerfile_base(instance, docker_specs)
     monolithic_dockerfile += f"\n{env_script}\n" if env_script else ""
-    monolithic_dockerfile += '\nRUN echo "source /opt/miniconda3/etc/profile.d/conda.sh && conda activate testbed" > /root/.bashrc\n'
+    monolithic_dockerfile += f'\nRUN echo "source /opt/miniconda3/etc/profile.d/conda.sh && conda activate {CONTAINER_ENV_NAME}" > /root/.bashrc\n'
     monolithic_dockerfile += f"\n{repo_script}\n" if repo_script else ""
-    monolithic_dockerfile += "\nWORKDIR /testbed/\n"
+    monolithic_dockerfile += f"\nWORKDIR {CONTAINER_WORKDIR}\n"
     return monolithic_dockerfile

@@ -12,15 +12,15 @@ from swebench.image_builder.dockerfile_gen._swebench.constants import (
     _DOCKERFILE_BASE,
     HEADERS,
     REPLACE_REQ_PACKAGES,
-    REPO_BASE_COMMIT_BRANCH,
+)
+from swebench.image_builder.docker_utils import (
+    git_clone_timesafe,
+    make_heredoc_run_command,
 )
 from swebench.image_builder.constants import CONTAINER_ENV_NAME, CONTAINER_WORKDIR
 from swebench.harness.constants import (
     NON_TEST_EXTS,
-    START_TEST_OUTPUT,
-    END_TEST_OUTPUT,
 )
-from swebench.utils import get_modified_files
 import posixpath
 import requests
 import re
@@ -264,26 +264,13 @@ def make_repo_script_list(specs, repo, base_commit) -> str:
     Create a heredoc-style RUN command to set up the repository for testing.
     This is the setup script for the instance image.
     """
-    branch = REPO_BASE_COMMIT_BRANCH.get(repo, {}).get(base_commit, "")
-    branch = f"--branch {branch}" if branch else ""
     setup_commands = [
-        # Clone and setup repository",
-        f"git clone -o origin {branch} --single-branch https://github.com/{repo} {CONTAINER_WORKDIR}",
-        f"chmod -R 777 {CONTAINER_WORKDIR}",  # So nonroot user can run tests
-        f"cd {CONTAINER_WORKDIR}",
-        f"git reset --hard {base_commit}",
-        "git remote remove origin",
-        f"TARGET_TIMESTAMP=$(git show -s --format=%ci {base_commit})",
-        'git tag -l | while read tag; do TAG_COMMIT=$(git rev-list -n 1 "$tag"); TAG_TIME=$(git show -s --format=%ci "$TAG_COMMIT"); if [[ "$TAG_TIME" > "$TARGET_TIMESTAMP" ]]; then git tag -d "$tag"; fi; done',
-        "git reflog expire --expire=now --all",
-        "git gc --prune=now --aggressive",
-        "AFTER_TIMESTAMP=$(date -d \"$TARGET_TIMESTAMP + 1 second\" '+%Y-%m-%d %H:%M:%S')",
-        'COMMIT_COUNT=$(git log --oneline --all --since="$AFTER_TIMESTAMP" | wc -l)',
-        '[ "$COMMIT_COUNT" -eq 0 ] || exit 1',
+        *git_clone_timesafe(repo, base_commit, CONTAINER_WORKDIR),
         # Setup conda environment and install
         "source /opt/miniconda3/bin/activate",
         f"conda activate {CONTAINER_ENV_NAME}",
         'echo "Current environment: $CONDA_DEFAULT_ENV"',
+        f"cd {CONTAINER_WORKDIR}",
     ]
     if repo in MAP_REPO_TO_INSTALL:
         setup_commands.append(MAP_REPO_TO_INSTALL[repo])
@@ -307,23 +294,6 @@ def make_repo_script_list(specs, repo, base_commit) -> str:
     ]
 
     return make_heredoc_run_command(setup_commands)
-
-
-def make_heredoc_run_command(commands: list[str]) -> str:
-    """
-    Create a heredoc-style RUN command from a list of shell commands.
-
-    Args:
-        commands: List of shell commands to execute
-    Returns:
-        A single heredoc-style RUN command string
-    """
-    if not commands:
-        return ""
-
-    heredoc_content = "\n".join(["#!/bin/bash", "set -euxo pipefail", *commands])
-    delimiter = generate_heredoc_delimiter(heredoc_content)
-    return f"RUN <<{delimiter}\n{heredoc_content}\n{delimiter}\n"
 
 
 def load_cached_environment_yml(instance_id: str) -> str:
@@ -411,55 +381,6 @@ def make_env_script_list(instance, specs) -> str:
         reqs_commands += [f"python -m pip install {' '.join(specs['pip_packages'])}"]
 
     return make_heredoc_run_command(reqs_commands)
-
-
-def make_eval_script_list(instance, specs, base_commit, test_patch) -> list:
-    """
-    Applies the test patch and runs the tests.
-    """
-    test_files = get_modified_files(test_patch)
-    delimiter = generate_heredoc_delimiter(test_patch)
-    apply_test_patch_command = (
-        f"git apply -v - <<'{delimiter}'\n{test_patch}\n{delimiter}"
-    )
-    test_command = " ".join(
-        [
-            MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]][
-                "test_cmd"
-            ],
-            *get_test_directives(instance),
-        ]
-    )
-    eval_commands = [
-        "source /opt/miniconda3/bin/activate",
-        f"conda activate {CONTAINER_ENV_NAME}",
-        f"cd {CONTAINER_WORKDIR}",
-    ]
-    if "eval_commands" in specs:
-        eval_commands += specs["eval_commands"]
-    eval_commands += [
-        f"git config --global --add safe.directory {CONTAINER_WORKDIR}",  # for nonroot user
-        f"cd {CONTAINER_WORKDIR}",
-        # This is just informational, so we have a record
-        "git status",
-        "git show",
-        f"git -c core.fileMode=false diff {base_commit}",
-        "source /opt/miniconda3/bin/activate",
-        f"conda activate {CONTAINER_ENV_NAME}",
-    ]
-    if "install" in specs:
-        eval_commands.append(specs["install"])
-    # Reset test files to the state they should be in before the patch.
-    reset_tests_command = f"git checkout {base_commit} {' '.join(test_files)}"
-    eval_commands += [
-        reset_tests_command,
-        apply_test_patch_command,
-        f": '{START_TEST_OUTPUT}'",
-        test_command,
-        f": '{END_TEST_OUTPUT}'",
-        reset_tests_command,  # Revert tests after done, leave the repo in the same state as before
-    ]
-    return eval_commands
 
 
 def _get_dockerfile(instance) -> str:

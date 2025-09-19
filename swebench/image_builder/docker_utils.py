@@ -4,6 +4,9 @@ import docker
 import docker.errors
 import traceback
 
+from swebench.utils import generate_heredoc_delimiter
+from swebench.image_builder.constants import REPO_BASE_COMMIT_BRANCH
+
 
 def _get_log_objects(logger):
     if not logger:
@@ -52,3 +55,43 @@ def list_images(client: docker.DockerClient):
     """
     # don't use this in multi-threaded context
     return {tag for i in client.images.list(all=True) for tag in i.tags}
+
+
+def make_heredoc_run_command(commands: list[str]) -> str:
+    """
+    Create a heredoc-style RUN command from a list of shell commands.
+
+    Args:
+        commands: List of shell commands to execute
+    Returns:
+        A single heredoc-style RUN command string
+    """
+    if not commands:
+        return ""
+
+    heredoc_content = "\n".join(["#!/bin/bash", "set -euxo pipefail", *commands])
+    delimiter = generate_heredoc_delimiter(heredoc_content)
+    return f"RUN <<{delimiter}\n{heredoc_content}\n{delimiter}\n"
+
+
+def git_clone_timesafe(repo: str, base_commit: str, workdir: str) -> list[str]:
+    """
+    Generate a list of shell commands to clone a Git repository and remove references to future information.
+    """
+    branch = REPO_BASE_COMMIT_BRANCH.get(repo, {}).get(base_commit, "")
+    branch = f"--branch {branch}" if branch else ""
+    return [
+        f"git clone -o origin {branch} --single-branch https://github.com/{repo} {workdir}",
+        f"chmod -R 777 {workdir}",  # So nonroot user can run tests
+        f"cd {workdir}",
+        f"git reset --hard {base_commit}",
+        "git remote remove origin",
+        f"TARGET_TIMESTAMP=$(git show -s --format=%ci {base_commit})",
+        'git tag -l | while read tag; do TAG_COMMIT=$(git rev-list -n 1 "$tag"); TAG_TIME=$(git show -s --format=%ci "$TAG_COMMIT"); if [[ "$TAG_TIME" > "$TARGET_TIMESTAMP" ]]; then git tag -d "$tag"; fi; done',
+        "git reflog expire --expire=now --all",
+        "git gc --prune=now --aggressive",
+        "AFTER_TIMESTAMP=$(date -d \"$TARGET_TIMESTAMP + 1 second\" '+%Y-%m-%d %H:%M:%S')",
+        'COMMIT_COUNT=$(git log --oneline --all --since="$AFTER_TIMESTAMP" | wc -l)',
+        '[ "$COMMIT_COUNT" -eq 0 ] || exit 1',
+        "cd - || true",
+    ]
