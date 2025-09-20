@@ -3,6 +3,25 @@ import re
 from unidiff import PatchSet
 
 
+def _get_log_objects(logger):
+    if not logger:
+        # if logger is None, print to stdout
+        log_info = print
+        log_error = print
+        raise_error = True
+    elif logger == "quiet":
+        # if logger is "quiet", don't print anything
+        log_info = lambda x: None
+        log_error = lambda x: None
+        raise_error = True
+    else:
+        # if logger is a logger object, use it
+        log_info = logger.info
+        log_error = logger.info
+        raise_error = False
+    return (log_info, log_error, raise_error)
+
+
 def generate_heredoc_delimiter(content: str) -> str:
     delimiter = f"EOF_{blake2b(content.encode()).hexdigest()[:12]}"
     while delimiter in content:

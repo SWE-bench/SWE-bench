@@ -1,34 +1,42 @@
-import sqlite3
-import importlib.resources as resources
-import swebench.resources
-from functools import cache
-from swebench.utils import generate_heredoc_delimiter
-from swebench.image_builder.dockerfile_gen._swebench.constants import (
+"""
+SWE-bench original dataset eval script generation.
+This handles all Python-based repositories in the original SWE-bench datasets.
+"""
+
+from swebench.data_specs import get_data_spec
+from swebench.types import SWEbenchInstance
+
+import os
+import posixpath
+import re
+import requests
+
+from swebench.harness.constants import (
+    NON_TEST_EXTS,
+    SWE_BENCH_URL_RAW,
+    START_TEST_OUTPUT,
+    END_TEST_OUTPUT,
+)
+from swebench.data_specs import (
     MAP_REPO_TO_ENV_YML_PATHS,
     MAP_REPO_TO_INSTALL,
     MAP_REPO_TO_REQS_PATHS,
-    MAP_REPO_VERSION_TO_SPECS,
-    SWE_BENCH_URL_RAW,
-    _DOCKERFILE_BASE,
-    HEADERS,
-    REPLACE_REQ_PACKAGES,
 )
-from swebench.image_builder.docker_utils import (
-    git_clone_timesafe,
-    make_heredoc_run_command,
-)
-from swebench.image_builder.constants import CONTAINER_ENV_NAME, CONTAINER_WORKDIR
-from swebench.harness.constants import (
-    NON_TEST_EXTS,
-)
-import posixpath
-import requests
-import re
-import os
+from swebench.utils import get_modified_files, generate_heredoc_delimiter
+from functools import cache
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
+}
+
+REPLACE_REQ_PACKAGES = [
+    # pkg-to-replace, replacement
+    ("types-pkg_resources", "types-setuptools")
+]
 
 
 @cache
-def get_environment_yml_by_commit(repo: str, commit: str) -> str:
+def get_environment_yml_by_commit(repo: str, commit: str, env_name: str) -> str:
     for req_path in MAP_REPO_TO_ENV_YML_PATHS[repo]:
         reqs_url = posixpath.join(SWE_BENCH_URL_RAW, repo, commit, req_path)
         reqs = requests.get(reqs_url, headers=HEADERS)
@@ -44,7 +52,7 @@ def get_environment_yml_by_commit(repo: str, commit: str) -> str:
     for line in lines:
         # Rename environment to given name
         if line.startswith("name:"):
-            cleaned.append(f"name: {CONTAINER_ENV_NAME}")
+            cleaned.append(f"name: {env_name}")
             continue
         cleaned.append(line)
 
@@ -112,12 +120,13 @@ def clean_environment_yml(yml_text: str) -> str:
     return prefix + pip_portion + suffix
 
 
-def get_environment_yml(instance: dict) -> str:
+def get_environment_yml(instance: SWEbenchInstance, env_name: str) -> str:
     """
     Get environment.yml for given task instance
 
     Args:
         instance (dict): SWE Bench Task instance
+        env_name (str): Rename retrieved environment.yml to this name
     Returns:
         environment.yml (str): Returns environment.yml as string
     """
@@ -127,7 +136,7 @@ def get_environment_yml(instance: dict) -> str:
         if "environment_setup_commit" in instance
         else instance["base_commit"]
     )
-    yml_text = get_environment_yml_by_commit(instance["repo"], commit)
+    yml_text = get_environment_yml_by_commit(instance["repo"], commit, env_name)
     yml_text = clean_environment_yml(yml_text)
     return yml_text
 
@@ -204,7 +213,7 @@ def clean_requirements(requirements_text: str) -> str:
     return requirements_text
 
 
-def get_requirements(instance: dict) -> str:
+def get_requirements(instance: SWEbenchInstance) -> str:
     """
     Get requirements.txt for given task instance
 
@@ -225,7 +234,7 @@ def get_requirements(instance: dict) -> str:
     return requirements_text
 
 
-def get_test_directives(instance: dict) -> list:
+def get_test_directives(instance: SWEbenchInstance) -> list:
     """
     Get test directives from the test_patch of a task instance
 
@@ -259,22 +268,30 @@ def get_test_directives(instance: dict) -> list:
     return directives
 
 
-def make_repo_script_list(specs, repo, base_commit) -> str:
+def make_repo_script_list_py(
+    specs, repo, repo_directory, base_commit, env_name
+) -> list:
     """
-    Create a heredoc-style RUN command to set up the repository for testing.
+    Create a list of bash commands to set up the repository for testing.
     This is the setup script for the instance image.
     """
     setup_commands = [
-        *git_clone_timesafe(repo, base_commit, CONTAINER_WORKDIR),
-        # Setup conda environment and install
+        f"git clone -o origin https://github.com/{repo} {repo_directory}",
+        f"chmod -R 777 {repo_directory}",  # So nonroot user can run tests
+        f"cd {repo_directory}",
+        f"git reset --hard {base_commit}",
+        # Remove the remote so the agent won't see newer commits.
+        "git remote remove origin",
+        # Make sure conda is available for later use
         "source /opt/miniconda3/bin/activate",
-        f"conda activate {CONTAINER_ENV_NAME}",
+        f"conda activate {env_name}",
         'echo "Current environment: $CONDA_DEFAULT_ENV"',
-        f"cd {CONTAINER_WORKDIR}",
     ]
     if repo in MAP_REPO_TO_INSTALL:
         setup_commands.append(MAP_REPO_TO_INSTALL[repo])
-    if specs.get("pre_install", None):
+
+    # Run pre-install set up if provided
+    if "pre_install" in specs:
         for pre_install in specs["pre_install"]:
             setup_commands.append(pre_install)
 
@@ -285,114 +302,169 @@ def make_repo_script_list(specs, repo, base_commit) -> str:
     # difficult to get a clean diff.  This ensures that `git diff`
     # will only reflect the changes from the user while retaining the
     # original state of the repository plus setup commands.
-    setup_commands += [
-        "",
-        "# Configure git",
-        "git config --global user.email setup@swebench.com",
+    clean_diff_commands = [
+        "git config --global user.email setup@swebench.config",
         "git config --global user.name SWE-bench",
         "git commit --allow-empty -am SWE-bench",
     ]
 
-    return make_heredoc_run_command(setup_commands)
+    setup_commands += clean_diff_commands
+
+    return setup_commands
 
 
-def load_cached_environment_yml(instance_id: str) -> str:
+def make_env_script_list_py(instance, specs, env_name) -> list:
     """
-    Load environment.yml from cache
+    Creates the list of commands to set up the conda environment for testing.
+    This is the setup script for the environment image.
     """
-    conn = sqlite3.connect(
-        resources.files(swebench.resources) / "swebench-og" / "environments.yml.db"
-    )
-    c = conn.cursor()
-    c.execute(
-        "SELECT environment_yml FROM environments WHERE instance_id = ?", (instance_id,)
-    )
-    result = c.fetchone()
-    conn.close()
-    if result:
-        return result[0]
-    else:
-        return None
-
-
-def make_env_script_list_from_conda(instance, specs, cached_environment_yml) -> list:
-    delimiter = generate_heredoc_delimiter(cached_environment_yml)
     reqs_commands = [
         "source /opt/miniconda3/bin/activate",
-        f"cat <<'{delimiter}' > /root/environment.yml\n{cached_environment_yml}\n{delimiter}",
-        "conda env create -f /root/environment.yml",
-        f"conda activate {CONTAINER_ENV_NAME}",
     ]
+    # Create conda environment according to install instructinos
+    pkgs = specs.get("packages", "")
+    if pkgs == "requirements.txt":
+        # Create environment
+        cmd = f"conda create -n {env_name} python={specs['python']} -y"
+        reqs_commands.append(cmd)
+
+        # Install dependencies
+        reqs = get_requirements(instance)
+        path_to_reqs = "$HOME/requirements.txt"
+        delimeter = generate_heredoc_delimiter(reqs)
+        reqs_commands.append(
+            f"cat <<'{delimeter}' > {path_to_reqs}\n{reqs}\n{delimeter}"
+        )
+        cmd = f"conda activate {env_name} && python -m pip install -r {path_to_reqs}"
+        reqs_commands.append(cmd)
+        reqs_commands.append(f"rm {path_to_reqs}")
+    elif pkgs == "environment.yml":
+        # Create environment from yml
+        reqs = get_environment_yml(instance, env_name)
+        path_to_reqs = "environment.yml"
+        delimiter = generate_heredoc_delimiter(reqs)
+        reqs_commands.append(
+            f"cat <<'{delimiter}' > {path_to_reqs}\n{reqs}\n{delimiter}"
+        )
+        if "no_use_env" in specs and specs["no_use_env"]:
+            # `conda create` based installation
+            cmd = (
+                f"conda create -c conda-forge -n {env_name} python={specs['python']} -y"
+            )
+            reqs_commands.append(cmd)
+
+            # Install dependencies
+            cmd = f"conda env update -f {path_to_reqs}"
+            reqs_commands.append(cmd)
+        else:
+            # `conda env create` based installation
+            cmd = f"conda env create --file {path_to_reqs}"
+            reqs_commands.append(cmd)
+
+            cmd = f"conda activate {env_name} && conda install python={specs['python']} -y"
+            reqs_commands.append(cmd)
+
+        # Remove environment.yml
+        reqs_commands.append(f"rm {path_to_reqs}")
+    else:
+        # Create environment + install dependencies
+        cmd = f"conda create -n {env_name} python={specs['python']} {pkgs} -y"
+        reqs_commands.append(cmd)
+
+    reqs_commands.append(f"conda activate {env_name}")
+
+    # Install additional packages if specified
+    if "pip_packages" in specs:
+        pip_packages = " ".join(specs["pip_packages"])
+        cmd = f"python -m pip install {pip_packages}"
+        reqs_commands.append(cmd)
     return reqs_commands
 
 
-def make_env_script_list(instance, specs) -> str:
+def _make_eval_script_list(
+    instance, specs, env_name, repo_directory, base_commit, test_patch
+) -> list:
     """
-    Creates a heredoc-style RUN command to set up the conda environment for testing.
-    This is the setup script for the environment image.
+    Applies the test patch and runs the tests.
     """
-    cached_environment_yml = load_cached_environment_yml(instance["instance_id"])
-    if cached_environment_yml:
-        return make_heredoc_run_command(
-            make_env_script_list_from_conda(instance, specs, cached_environment_yml)
-        )
-    reqs_commands = [
+    delimiter = generate_heredoc_delimiter(test_patch)
+    test_files = get_modified_files(test_patch)
+    # Reset test files to the state they should be in before the patch.
+    reset_tests_command = f"git checkout {base_commit} {' '.join(test_files)}"
+    apply_test_patch_command = (
+        f"git apply -v - <<'{delimiter}'\n{test_patch}\n{delimiter}"
+    )
+    test_command = " ".join(
+        [
+            get_data_spec(instance["repo"], instance["version"])["test_cmd"],
+            *get_test_directives(instance),
+        ]
+    )
+    eval_commands = [
         "source /opt/miniconda3/bin/activate",
+        f"conda activate {env_name}",
+        f"cd {repo_directory}",
     ]
-    pkgs = specs.get("packages", "")
-    if pkgs == "requirements.txt":
-        reqs = get_requirements(instance)
-        path_to_reqs = "/root/requirements.txt"
-        reqs_commands += [
-            f"conda create -n {CONTAINER_ENV_NAME} python={specs['python']} -y",
-            f"conda activate {CONTAINER_ENV_NAME}",
-            "",
-            "# Create requirements file",
-            f"cat > {path_to_reqs} << 'REQUIREMENTS_EOF'",
-            reqs,
-            "REQUIREMENTS_EOF",
-            "",
-            "# Install requirements",
-            f"python -m pip install -r {path_to_reqs}",
-            f"rm {path_to_reqs}",
-        ]
-    elif pkgs == "environment.yml":
-        reqs = get_environment_yml(instance, CONTAINER_ENV_NAME)
-        path_to_reqs = "environment.yml"
-        reqs_commands += [f"cat > {path_to_reqs} << 'ENV_EOF'", reqs, "ENV_EOF"]
-        if specs.get("no_use_env", None):
-            reqs_commands += [
-                f"conda create -c conda-forge -n {CONTAINER_ENV_NAME} python={specs['python']} -y",
-                f"conda env update -f {path_to_reqs}",
-            ]
-        else:
-            reqs_commands += [
-                f"conda env create --file {path_to_reqs}",
-                f"conda activate {CONTAINER_ENV_NAME} && conda install python={specs['python']} -y",
-            ]
-        reqs_commands += [f"rm {path_to_reqs}"]
-    else:
-        reqs_commands += [
-            f"conda create -n {CONTAINER_ENV_NAME} python={specs['python']} {pkgs} -y"
-        ]
-
-    reqs_commands.append(f"conda activate {CONTAINER_ENV_NAME}")
-    if specs.get("pip_packages", None):
-        reqs_commands += [f"python -m pip install {' '.join(specs['pip_packages'])}"]
-
-    return make_heredoc_run_command(reqs_commands)
+    if "eval_commands" in specs:
+        eval_commands += specs["eval_commands"]
+    eval_commands += [
+        f"git config --global --add safe.directory {repo_directory}",  # for nonroot user
+        f"cd {repo_directory}",
+        # This is just informational, so we have a record
+        "git status",
+        "git show",
+        f"git -c core.fileMode=false diff {base_commit}",
+        "source /opt/miniconda3/bin/activate",
+        f"conda activate {env_name}",
+    ]
+    if "install" in specs:
+        eval_commands.append(specs["install"])
+    eval_commands += [
+        reset_tests_command,
+        apply_test_patch_command,
+        f": '{START_TEST_OUTPUT}'",
+        test_command,
+        f": '{END_TEST_OUTPUT}'",
+        reset_tests_command,  # Revert tests after done, leave the repo in the same state as before
+    ]
+    return eval_commands
 
 
-def _get_dockerfile(instance) -> str:
+def get_eval_script_list(instance: SWEbenchInstance) -> list[str]:
+    """
+    Generate eval script commands list for SWE-bench original (Python) instances.
+
+    Args:
+        instance: SWE-bench instance dictionary
+
+    Returns:
+        List of bash commands for evaluation
+    """
+    instance_id = instance["instance_id"]
     repo = instance["repo"]
     version = instance.get("version")
     base_commit = instance["base_commit"]
-    specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
-    env_script = make_env_script_list(instance, specs)
-    repo_script = make_repo_script_list(specs, repo, base_commit)
-    dockerfile = _DOCKERFILE_BASE
-    dockerfile += f"\n{env_script}\n" if env_script else ""
-    dockerfile += '\nRUN echo "source /opt/miniconda3/etc/profile.d/conda.sh && conda activate testbed" > /root/.bashrc\n'
-    dockerfile += f"\n{repo_script}\n" if repo_script else ""
-    dockerfile += "\nWORKDIR /testbed/\n"
-    return dockerfile
+    test_patch = instance["test_patch"]
+
+    env_name = "testbed"
+    repo_directory = f"/{env_name}"
+    specs = get_data_spec(repo, version)
+
+    return _make_eval_script_list(
+        instance, specs, env_name, repo_directory, base_commit, test_patch
+    )
+
+
+def get_eval_script(instance: SWEbenchInstance) -> str:
+    """
+    Generate complete eval script for SWE-bench original (Python) instances.
+
+    Args:
+        instance: SWE-bench instance dictionary
+
+    Returns:
+        Complete bash script as string
+    """
+    eval_script_list = get_eval_script_list(instance)
+
+    return "\n".join(["#!/bin/bash", "set -uxo pipefail"] + eval_script_list) + "\n"

@@ -9,10 +9,20 @@ from datasets import Dataset, load_dataset, load_from_disk
 from dotenv import load_dotenv
 from pathlib import Path
 from tqdm import tqdm
-from typing import cast
-from swebench.constants import SWEbenchInstance
+from typing import cast, Union
+from swebench.types import SWEbenchInstance, TestSpec
+
 
 load_dotenv()
+
+
+# Import here to avoid circular import
+def get_eval_script_list(instance: SWEbenchInstance, dataset_name: str) -> list[str]:
+    from swebench.harness.eval_script_gen import (
+        get_eval_script_list as _get_eval_script_list,
+    )
+
+    return _get_eval_script_list(instance, dataset_name)
 
 
 class EvaluationError(Exception):
@@ -312,3 +322,71 @@ def get_repo_file(repo, commit, filepath):
         return None
     except:
         return None
+
+
+def get_test_specs_from_dataset(
+    dataset: Union[list[SWEbenchInstance], list[TestSpec]],
+) -> list[TestSpec]:
+    """
+    Idempotent function that converts a list of SWEbenchInstance objects to a list of TestSpec objects.
+    """
+    if isinstance(dataset[0], TestSpec):
+        return cast(list[TestSpec], dataset)
+    return list(
+        map(
+            lambda x: make_test_spec(
+                x, dataset_name="SWE-bench/SWE-bench_Verified"
+            ),  # Default for backward compatibility
+            cast(list[SWEbenchInstance], dataset),
+        )
+    )
+
+
+def make_test_spec(
+    instance: SWEbenchInstance,
+    dataset_name: str = "SWE-bench/SWE-bench_Verified",  # Default for backward compatibility
+) -> TestSpec:
+    """
+    Create a TestSpec from a SWEbenchInstance for evaluation purposes.
+    Expects the instance to have an 'image' field pointing to a pre-built Docker image.
+    """
+    if isinstance(instance, TestSpec):
+        return instance
+
+    instance_id = instance["instance_id"]
+    repo = instance["repo"]
+    version = instance.get("version")
+    base_commit = instance["base_commit"]
+    test_patch = instance["test_patch"]
+
+    if "image" not in instance:
+        raise ValueError(f"Instance {instance_id} missing required 'image' field")
+    image = instance["image"]
+
+    def _from_json_or_obj(key: str) -> Union[dict, list]:
+        """If key points to string, load with json"""
+        if key not in instance:
+            # If P2P, F2P keys not found, it's a validation instance
+            return []
+        if isinstance(instance[key], str):
+            return json.loads(instance[key])
+        return instance[key]
+
+    pass_to_pass = _from_json_or_obj("PASS_TO_PASS")
+    fail_to_pass = _from_json_or_obj("FAIL_TO_PASS")
+
+    env_name = "testbed"
+    repo_directory = f"/{env_name}"
+    specs = get_data_spec(repo, version)
+
+    eval_script_list = get_eval_script_list(instance, dataset_name)
+
+    return TestSpec(
+        instance_id=instance_id,
+        image=image,
+        eval_script_list=eval_script_list,
+        repo=repo,
+        version=version,
+        FAIL_TO_PASS=fail_to_pass,
+        PASS_TO_PASS=pass_to_pass,
+    )

@@ -1,3 +1,11 @@
+"""
+SWE-bench Multimodal dataset eval script generation.
+This handles all JavaScript-based repositories in the SWE-bench Multimodal datasets.
+"""
+
+from swebench.data_specs import get_data_spec
+from swebench.types import SWEbenchInstance
+
 import json
 import re
 
@@ -6,7 +14,9 @@ from swebench.harness.constants import (
     END_TEST_OUTPUT,
     START_TEST_OUTPUT,
 )
-from swebench.harness.test_spec.utils import make_eval_script_list_common
+from swebench.harness.eval_script_gen._swebench_multilingual import (
+    _make_eval_script_list as make_eval_script_list_common,
+)
 from unidiff import PatchSet
 
 
@@ -103,3 +113,43 @@ def make_eval_script_list_js(
         idx_end_test_out = eval_commands.index(f": '{END_TEST_OUTPUT}'")
         eval_commands[idx_start_test_out + 1 : idx_end_test_out] = test_commands
     return eval_commands
+
+
+def get_eval_script_list(instance: SWEbenchInstance) -> list[str]:
+    """
+    Generate eval script commands list for SWE-bench Multimodal (JavaScript) instances.
+
+    Args:
+        instance: SWE-bench instance dictionary
+
+    Returns:
+        List of bash commands for evaluation
+    """
+    instance_id = instance["instance_id"]
+    repo = instance["repo"]
+    version = instance.get("version")
+    base_commit = instance["base_commit"]
+    test_patch = instance["test_patch"]
+
+    env_name = "testbed"
+    repo_directory = f"/{env_name}"
+    specs = get_data_spec(repo, version)
+
+    return make_eval_script_list_js(
+        instance, specs, env_name, repo_directory, base_commit, test_patch
+    )
+
+
+def get_eval_script(instance: SWEbenchInstance) -> str:
+    """
+    Generate complete eval script for SWE-bench Multimodal (JavaScript) instances.
+
+    Args:
+        instance: SWE-bench instance dictionary
+
+    Returns:
+        Complete bash script as string
+    """
+    eval_script_list = get_eval_script_list(instance)
+
+    return "\n".join(["#!/bin/bash", "set -uxo pipefail"] + eval_script_list) + "\n"

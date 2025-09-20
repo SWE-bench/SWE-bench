@@ -4,7 +4,7 @@ from swebench.collect.build_dataset import main as build_dataset
 from swebench.collect.get_tasks_pipeline import main as get_tasks_pipeline
 from swebench.collect.print_pulls import main as print_pulls
 
-from swebench.constants import (
+from swebench.types import (
     SWEbenchInstance,
 )
 

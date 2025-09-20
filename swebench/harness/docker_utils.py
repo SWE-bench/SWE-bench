@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import os
-import signal
 import tarfile
 import threading
 import time
 import traceback
+import subprocess
 from pathlib import Path
 
 from docker.models.containers import Container
 
-from swebench.utils import generate_heredoc_delimiter
+from swebench.utils import generate_heredoc_delimiter, _get_log_objects
 
 
 def copy_to_container(container: Container, src: Path, dst: Path):
@@ -22,30 +22,17 @@ def copy_to_container(container: Container, src: Path, dst: Path):
         src (Path): Source file path
         dst (Path): Destination file path in the container
     """
-    # Check if destination path is valid
     if os.path.dirname(dst) == "":
         raise ValueError(
             f"Destination path parent directory cannot be empty!, dst: {dst}"
         )
-
-    # temporary tar file
     tar_path = src.with_suffix(".tar")
     with tarfile.open(tar_path, "w") as tar:
-        tar.add(
-            src, arcname=dst.name
-        )  # use destination name, so after `put_archive`, name is correct
-
-    # get bytes for put_archive cmd
+        tar.add(src, arcname=dst.name)
     with open(tar_path, "rb") as tar_file:
         data = tar_file.read()
-
-    # Make directory if necessary
     container.exec_run(f"mkdir -p {dst.parent}")
-
-    # Send tar file to container and extract
     container.put_archive(os.path.dirname(dst), data)
-
-    # clean up in locally and in container
     tar_path.unlink()
 
 
@@ -60,11 +47,11 @@ def write_to_container(container: Container, data: str, dst: Path):
 
 def cleanup_container(client, container, logger):
     """
-    Stop and remove a Docker container.
-    Performs this forcefully if the container cannot be stopped with the python API.
+    Stop and remove a Docker container using subprocess commands.
+    Performs this forcefully if the container cannot be stopped with the standard docker stop.
 
     Args:
-        client (docker.DockerClient): Docker client.
+        client (docker.DockerClient): Docker client (unused, kept for compatibility).
         container (docker.models.containers.Container): Container to remove.
         logger (logging.Logger): Logger to use for output. If None, print to stdout
     """
@@ -72,64 +59,50 @@ def cleanup_container(client, container, logger):
         return
 
     container_id = container.id
+    container_name = container.name
 
-    if not logger:
-        # if logger is None, print to stdout
-        log_error = print
-        log_info = print
-        raise_error = True
-    elif logger == "quiet":
-        # if logger is "quiet", don't print anything
-        log_info = lambda x: None
-        log_error = lambda x: None
-        raise_error = True
-    else:
-        # if logger is a logger object, use it
-        log_error = logger.info
-        log_info = logger.info
-        raise_error = False
+    log_info, log_error, raise_error = _get_log_objects(logger)
 
-    # Attempt to stop the container
     try:
-        if container:
-            log_info(f"Attempting to stop container {container.name}...")
-            container.stop(timeout=15)
-    except Exception as e:
+        log_info(f"Attempting to stop container {container_name}...")
+        cmd = ["docker", "stop", "--time=15", container_id]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if result.returncode != 0:
+            raise subprocess.CalledProcessError(result.returncode, cmd, result.stderr)
+        log_info(f"Container {container_name} stopped successfully.")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
         log_error(
-            f"Failed to stop container {container.name}: {e}. Trying to forcefully kill..."
+            f"Failed to stop container {container_name}: {e}. Trying to forcefully kill..."
         )
         try:
-            # Get the PID of the container
-            container_info = client.api.inspect_container(container_id)
-            pid = container_info["State"].get("Pid", 0)
-
-            # If container PID found, forcefully kill the container
-            if pid > 0:
-                log_info(
-                    f"Forcefully killing container {container.name} with PID {pid}..."
-                )
-                os.kill(pid, signal.SIGKILL)
+            log_info(f"Forcefully killing container {container_name}...")
+            cmd = ["docker", "kill", container_id]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                log_info(f"Container {container_name} killed successfully.")
             else:
-                log_error(f"PID for container {container.name}: {pid} - not killing.")
+                log_error(f"Failed to kill container {container_name}: {result.stderr}")
         except Exception as e2:
             if raise_error:
                 raise e2
             log_error(
-                f"Failed to forcefully kill container {container.name}: {e2}\n"
+                f"Failed to forcefully kill container {container_name}: {e2}\n"
                 f"{traceback.format_exc()}"
             )
-
-    # Attempt to remove the container
     try:
-        log_info(f"Attempting to remove container {container.name}...")
-        container.remove(force=True)
-        log_info(f"Container {container.name} removed.")
-    except Exception as e:
+        log_info(f"Attempting to remove container {container_name}...")
+        cmd = ["docker", "rm", "--force", container_id]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            log_info(f"Container {container_name} removed successfully.")
+        else:
+            raise subprocess.CalledProcessError(result.returncode, cmd, result.stderr)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
         if raise_error:
             raise e
         log_error(
-            f"Failed to remove container {container.name}: {e}\n"
-            f"{traceback.format_exc()}"
+            f"Failed to remove container {container_name}: {e}\n"
+            f"Command output: {getattr(e, 'stderr', 'N/A')}"
         )
 
 
@@ -142,13 +115,11 @@ def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
         cmd (str): Command to run.
         timeout (int): Timeout in seconds.
     """
-    # Local variables to store the result of executing the command
     exec_result = b""
     exec_id = None
     exception = None
     timed_out = False
 
-    # Wrapper function to run the command
     def run_command():
         nonlocal exec_result, exec_id, exception
         try:
@@ -159,16 +130,12 @@ def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
         except Exception as e:
             exception = e
 
-    # Start the command in a separate thread
     thread = threading.Thread(target=run_command)
     start_time = time.time()
     thread.start()
     thread.join(timeout)
-
     if exception:
         raise exception
-
-    # If the thread is still alive, the command timed out
     if thread.is_alive():
         if exec_id is not None:
             exec_pid = container.client.api.exec_inspect(exec_id)["Pid"]

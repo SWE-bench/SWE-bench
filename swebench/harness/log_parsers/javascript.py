@@ -1,7 +1,7 @@
 import re
 
 from swebench.harness.constants import TestStatus
-from swebench.harness.test_spec.test_spec import TestSpec
+from swebench.types import TestSpec
 from swebench.utils import ansi_escape
 
 

@@ -2,7 +2,7 @@ import re
 import xml.etree.ElementTree as ET
 
 from swebench.harness.constants import TestStatus
-from swebench.harness.test_spec.test_spec import TestSpec
+from swebench.types import TestSpec
 
 
 def parse_log_redis(log: str, test_spec: TestSpec) -> dict[str, str]:

@@ -1,21 +1,12 @@
 from argparse import ArgumentParser
+from swebench.constants import (
+    OG_SWE_BENCH_DATASETS,
+    SWE_BENCH_MULTIMODAL_DATASETS,
+    SWE_BENCH_MULTILINGUAL_DATASETS,
+)
 from swebench.harness.utils import load_swebench_dataset
 from swebench.image_builder.constants import IMAGE_BUILDER_LOG_DIR
 from pathlib import Path
-
-OG_SWE_BENCH_DATASETS = {
-    "SWE-bench/SWE-bench",
-    "SWE-bench/SWE-bench_Lite",
-    "SWE-bench/SWE-bench_Verified",
-    "princeton-nlp/SWE-bench",
-    "princeton-nlp/SWE-bench_Lite",
-    "princeton-nlp/SWE-bench_Verified",
-}
-
-SWE_BENCH_MULTIMODAL_DATASETS = {
-    "SWE-bench/SWE-bench_Multimodal",
-    "princeton-nlp/SWE-bench_Multimodal",
-}
 
 
 def get_dockerfile(instance: dict, dataset_name: str) -> str:
@@ -32,12 +23,15 @@ def get_dockerfile(instance: dict, dataset_name: str) -> str:
         )
 
         return _get_dockerfile(instance)
-    elif dataset_name == "SWE-bench/SWE-bench_Multilingual":
+    elif dataset_name in SWE_BENCH_MULTILINGUAL_DATASETS:
         from swebench.image_builder.dockerfile_gen._swebench_multilingual import (
             _get_dockerfile,
         )
 
         return _get_dockerfile(instance)
+    elif dataset_name in SWE_BENCH_MULTILINGUAL_DATASETS:
+        # TODO: Implement this
+        raise NotImplementedError("Multilingual dataset not yet supported")
     else:
         raise ValueError(f"Invalid dataset name: {dataset_name}")
 

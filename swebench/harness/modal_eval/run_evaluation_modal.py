@@ -36,7 +36,8 @@ from swebench.harness.constants import (
     RUN_EVALUATION_LOG_DIR,
 )
 from swebench.harness.grading import get_eval_report
-from swebench.harness.test_spec.test_spec import make_test_spec, TestSpec
+from swebench.types import TestSpec
+from swebench.harness.utils import make_test_spec
 
 
 @dataclass

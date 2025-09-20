@@ -16,7 +16,7 @@ from swebench.harness.constants import (
     ResolvedStatus,
     TestStatus,
 )
-from swebench.harness.test_spec.test_spec import TestSpec
+from swebench.types import TestSpec
 from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
 from swebench.data_specs import get_data_spec
 

@@ -8,7 +8,7 @@ from swebench.harness.constants import (
     LOG_REPORT,
 )
 from swebench.image_builder.docker_utils import list_images
-from swebench.harness.test_spec.test_spec import make_test_spec
+from swebench.harness.utils import make_test_spec
 
 
 def make_run_report(

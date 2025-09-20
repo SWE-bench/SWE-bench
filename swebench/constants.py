@@ -2,19 +2,20 @@
 Shared constants between swebench.harness and swebench.image_builder modules.
 """
 
-from typing import TypedDict
+OG_SWE_BENCH_DATASETS = {
+    "SWE-bench/SWE-bench",
+    "SWE-bench/SWE-bench_Lite",
+    "SWE-bench/SWE-bench_Verified",
+    "princeton-nlp/SWE-bench",
+    "princeton-nlp/SWE-bench_Lite",
+    "princeton-nlp/SWE-bench_Verified",
+}
 
+SWE_BENCH_MULTIMODAL_DATASETS = {
+    "SWE-bench/SWE-bench_Multimodal",
+    "princeton-nlp/SWE-bench_Multimodal",
+}
 
-class SWEbenchInstance(TypedDict):
-    repo: str
-    instance_id: str
-    base_commit: str
-    patch: str
-    test_patch: str
-    problem_statement: str
-    hints_text: str
-    created_at: str
-    version: str
-    FAIL_TO_PASS: str
-    PASS_TO_PASS: str
-    environment_setup_commit: str
+SWE_BENCH_MULTILINGUAL_DATASETS = {
+    "SWE-bench/SWE-bench_Multilingual",
+}

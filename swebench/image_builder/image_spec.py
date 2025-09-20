@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Union, cast
 
-from swebench.constants import (
+from swebench.types import (
     SWEbenchInstance,
 )
 from swebench.image_builder.dockerfile_gen import get_dockerfile

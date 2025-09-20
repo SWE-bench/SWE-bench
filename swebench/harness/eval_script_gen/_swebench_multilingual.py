@@ -1,23 +1,24 @@
+"""
+SWE-bench Multilingual dataset eval script generation.
+This handles all repositories in the SWE-bench Multilingual datasets using common eval script generation.
+"""
+
+from swebench.data_specs import get_data_spec
+from swebench.types import SWEbenchInstance
 from swebench.harness.constants import (
     END_TEST_OUTPUT,
     START_TEST_OUTPUT,
 )
 from swebench.utils import get_modified_files, generate_heredoc_delimiter
-from swebench.data_specs import get_data_spec
 
 
 # MARK: Test Command Creation Functions
-
-
 def get_test_cmds(instance) -> list:
     test_cmd = get_data_spec(instance["repo"], instance["version"])["test_cmd"]
     return [test_cmd] if isinstance(test_cmd, str) else test_cmd
 
 
-# MARK: Script Creation Functions
-
-
-def make_eval_script_list_common(
+def _make_eval_script_list(
     instance, specs, env_name, repo_directory, base_commit, test_patch
 ) -> list:
     """
@@ -56,3 +57,43 @@ def make_eval_script_list_common(
         reset_tests_command,
     ]
     return eval_commands
+
+
+def get_eval_script_list(instance: SWEbenchInstance) -> list[str]:
+    """
+    Generate eval script commands list for SWE-bench Multilingual instances.
+
+    Args:
+        instance: SWE-bench instance dictionary
+
+    Returns:
+        List of bash commands for evaluation
+    """
+    instance_id = instance["instance_id"]
+    repo = instance["repo"]
+    version = instance.get("version")
+    base_commit = instance["base_commit"]
+    test_patch = instance["test_patch"]
+
+    env_name = "testbed"
+    repo_directory = f"/{env_name}"
+    specs = get_data_spec(repo, version)
+
+    return _make_eval_script_list(
+        instance, specs, env_name, repo_directory, base_commit, test_patch
+    )
+
+
+def get_eval_script(instance: SWEbenchInstance) -> str:
+    """
+    Generate complete eval script for SWE-bench Multilingual instances.
+
+    Args:
+        instance: SWE-bench instance dictionary
+
+    Returns:
+        Complete bash script as string
+    """
+    eval_script_list = get_eval_script_list(instance)
+
+    return "\n".join(["#!/bin/bash", "set -uxo pipefail"] + eval_script_list) + "\n"

@@ -7,7 +7,7 @@ from swebench.harness import (
     constants,
     log_parsers,
     modal_eval,
-    test_spec,
+    eval_script_gen,
 )
 
 __all__ = [
@@ -19,5 +19,5 @@ __all__ = [
     "constants",
     "log_parsers",
     "modal_eval",
-    "test_spec",
+    "eval_script_gen",
 ]
