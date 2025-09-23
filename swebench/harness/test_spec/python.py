@@ -15,7 +15,7 @@ from swebench.harness.constants import (
     END_TEST_OUTPUT,
     REPO_BASE_COMMIT_BRANCH,
 )
-from swebench.harness.utils import get_modified_files, load_cached_environment_yml
+from swebench.harness.utils import get_patch_files, load_cached_environment_yml
 from functools import cache
 
 HEADERS = {
@@ -409,9 +409,10 @@ def make_eval_script_list_py(
     Applies the test patch and runs the tests.
     """
     HEREDOC_DELIMITER = "EOF_114329324912"
-    test_files = get_modified_files(test_patch)
+    test_files = get_patch_files(test_patch)
     # Reset test files to the state they should be in before the patch.
-    reset_tests_command = f"git checkout {base_commit} {' '.join(test_files)}"
+    reset_tests_command = f'for f in {" ".join(test_files)}; do git checkout HEAD -- "$f" || true; done'
+    
     apply_test_patch_command = (
         f"git apply -v - <<'{HEREDOC_DELIMITER}'\n{test_patch}\n{HEREDOC_DELIMITER}"
     )
