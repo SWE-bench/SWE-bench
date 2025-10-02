@@ -22,6 +22,9 @@ Check out the other projects that are part of the SWE-bench ecosystem!
     <a href="https://swebench.com/sb-cli">
         <img src="assets/icons/sb-cli-button.svg" alt="SWE-bench CLI" style="max-height: 5em; border: 2px solid rgb(0, 0, 0); border-radius: 5px; padding: 5px;"/>
     </a>
+    <a href="https://mini-swe-agent.com">
+        <img src="assets/icons/mini-swe-agent-banner.svg" alt="mini-swe" style="max-height: 5em; border: 2px solid rgb(0, 0, 0); border-radius: 5px; padding: 5px;"/>
+    </a>
 </div>
 
 ## 🏆 Leaderboard
