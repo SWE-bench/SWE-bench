@@ -13,7 +13,7 @@
 
 ---
 <p align="center">
-您可以在我们的ICLR 2024的论文<a href="http://swe-bench.github.io/paper.pdf">《SWE-bench: Can Language Models Resolve Real-World GitHub Issues?》</a>中找到我们的代码和数据
+您可以在我们的ICLR 2024的论文<a href="https://arxiv.org/abs/2310.06770">《SWE-bench: Can Language Models Resolve Real-World GitHub Issues?》</a>中找到我们的代码和数据
     </br>
     </br>
     <a href="https://www.python.org/">
