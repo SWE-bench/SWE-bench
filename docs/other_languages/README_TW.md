@@ -81,7 +81,7 @@ python -m swebench.harness.run_evaluation \
 
 ## 💽 使用
 
-> [!警告]
+> [!warning]
 > 在SWE-bench上運行快速評估可能會消耗大量資源
 > 我們建議在一台具有至少120GB可用存儲空間、16GB RAM和8個CPU核心的`x86_64`機器上運行評估工具。
 > 你可能需要嘗試調整`--max_workers`參數以找到適合你機器的最佳工作進程數,但我們建議使用少於`min(0.75 * os.cpu_count(), 24)`的數值。
