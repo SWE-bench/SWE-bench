@@ -1,5 +1,7 @@
+import json
+from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Optional
 
 from swebench.harness.constants import (
     APPLY_PATCH_FAIL,
@@ -307,6 +309,7 @@ def get_eval_report(
     test_spec: TestSpec,
     prediction: dict[str, str],
     test_log_path: str,
+    eval_metrics_path: Optional[Path],
     include_tests_status: bool,
 ) -> dict[str, Any]:
     """
@@ -339,6 +342,13 @@ def get_eval_report(
 
     # Get evaluation logs
     eval_status_map, found = get_logs_eval(test_spec, test_log_path)
+
+    if eval_metrics_path:
+        with open(eval_metrics_path, "r") as f:
+            eval_metrics = json.load(f)
+        report_map[instance_id]["eval_metrics"] = eval_metrics
+    else:
+        report_map[instance_id]["eval_metrics"] = None
 
     if not found:
         return report_map

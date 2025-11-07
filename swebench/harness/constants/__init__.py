@@ -78,6 +78,7 @@ DOCKER_WORKDIR = "/testbed"
 LOG_REPORT = "report.json"
 LOG_INSTANCE = "run_instance.log"
 LOG_TEST_OUTPUT = "test_output.txt"
+LOG_EVAL_METRICS = "eval_metrics.json"
 UTF8 = "utf-8"
 
 # Constants - Logging

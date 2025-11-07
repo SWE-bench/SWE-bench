@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 import docker
 import json
@@ -23,6 +24,7 @@ from swebench.harness.constants import (
     KEY_INSTANCE_ID,
     KEY_MODEL,
     KEY_PREDICTION,
+    LOG_EVAL_METRICS,
     LOG_REPORT,
     LOG_INSTANCE,
     LOG_TEST_OUTPUT,
@@ -37,6 +39,7 @@ from swebench.harness.docker_utils import (
     copy_to_container,
     exec_run_with_timeout,
     list_images,
+    read_file_from_container,
     remove_image,
     should_remove,
 )
@@ -197,8 +200,7 @@ def run_instance(
                 for host_path, guest_path in cp_dict.items():
                     host_file = Path(host_path)
                     if not host_file.exists():
-                        logger.error(f"Host file {host_path} does not exist, skipping copy")
-                        continue
+                        raise FileNotFoundError(f"Host file {host_path} does not exist")
                     
                     # Convert guest_path to be relative to DOCKER_WORKDIR
                     if guest_path.startswith('/'):
@@ -245,6 +247,19 @@ def run_instance(
                     logger,
                 )
 
+        # Read eval metrics from container
+        eval_metrics_path: Optional[Path] = None
+        try:
+            eval_metrics_str = read_file_from_container(container, PurePosixPath("/eval_metrics.json"))
+            eval_metrics_path = log_dir / LOG_EVAL_METRICS
+            with open(eval_metrics_path, "w") as f:
+                f.write(eval_metrics_str)
+                logger.info(f"Eval metrics for {instance_id} written to {eval_metrics_path}")
+        except Exception as e:
+            logger.error(f"Failed to read eval metrics from container: {e}")
+
+        
+
         # Get git diff after running eval script (ignore permission changes)
         git_diff_output_after = (
             container.exec_run(
@@ -265,6 +280,7 @@ def run_instance(
             test_spec=test_spec,
             prediction=pred,
             test_log_path=test_output_path,
+            eval_metrics_path=eval_metrics_path,
             include_tests_status=True,
         )
         logger.info(

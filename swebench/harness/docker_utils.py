@@ -60,6 +60,23 @@ def write_to_container(container: Container, data: str, dst: Path):
     container.exec_run(command)
 
 
+def read_file_from_container(container: Container, src: Path) -> str:
+    """
+    Read a file from a docker container
+
+    Args:
+        container (Container): Docker container to read from
+        src (Path): Source file path in the container
+
+    Returns:
+        str: Contents of the file as a string
+    """
+    exit_code, output = container.exec_run(f"cat {src}")
+    if exit_code != 0:
+        raise RuntimeError(f"Failed to read file {src} from container. Exit code: {exit_code}")
+    return output.decode("utf-8")
+
+
 def remove_image(client, image_id, logger=None):
     """
     Remove a Docker image by ID.
