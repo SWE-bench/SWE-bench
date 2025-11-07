@@ -120,6 +120,10 @@ def run_agent_on_instance(
                     container_agents_md_path = PurePosixPath(DOCKER_WORKDIR) / "AGENTS.md"
                     copy_to_container(container, agents_md_path, container_agents_md_path)
                     logger_instance.info(f"AGENTS.md file copied to container at {container_agents_md_path}")
+                    
+                    container_claude_md_path = PurePosixPath(DOCKER_WORKDIR) / "CLAUDE.md"
+                    copy_to_container(container, agents_md_path, container_claude_md_path)
+                    logger_instance.info(f"AGENTS.md file copied to container at {container_claude_md_path}")
             
             # Replace $PROBLEM_STATEMENT placeholder in agent command
             actual_command = agent_command.replace("$PROBLEM_STATEMENT", problem_file_path)
