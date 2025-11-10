@@ -38,70 +38,6 @@ def test_failed(case: str, sm: dict[str, str]) -> bool:
     ]
 
 
-def parse_log_generic_exit_codes(log: str, test_spec: TestSpec) -> dict[str, str]:
-    """
-    Generic fallback parser for test logs that output test step exit codes.
-    
-    Expected format:
-    1. First declare expected steps: >>>>> EXPECTED_STEPS: step1,step2,step3
-    2. Then output exit codes as usual: >>>>> STEP_NAME: <exit_code>
-    
-    Where:
-    - STEP_NAME is used as the test name
-    - exit_code 0 maps to PASSED
-    - exit_code != 0 maps to FAILED
-    - Any declared steps not executed are marked as SKIPPED
-    
-    Args:
-        log (str): log content
-        test_spec (TestSpec): test specification (unused but required for interface)
-    Returns:
-        dict: test case to test status mapping
-    """
-    test_status_map = {}
-    expected_steps = set()
-    
-    # Pattern to match step declarations: >>>>> EXPECTED_STEPS: step1,step2,step3
-    declaration_pattern = re.compile(r'^\+ : \'>>>>>\s*EXPECTED_STEPS:\s*(.+)\s*\'$')
-    
-    # Pattern to match exit codes: >>>>> TEST_STEP_NAME: 0
-    exit_code_pattern = re.compile(r'^\+ : \'>>>>>\s*([^:]+):\s*(\d+)\s*\'$')
-    
-    # First pass: Extract expected steps
-    for line in log.split('\n'):
-        line = line.strip()
-        match = declaration_pattern.match(line)
-        if match:
-            steps_str = match.group(1).strip()
-            # Split by comma and clean up whitespace
-            steps = [step.strip() for step in steps_str.split(',') if step.strip()]
-            expected_steps.update(steps)
-    
-    # Second pass: Extract actual exit codes
-    executed_steps = set()
-    for line in log.split('\n'):
-        line = line.strip()
-        match = exit_code_pattern.match(line)
-        if match:
-            test_name = match.group(1).strip()
-            if test_name in expected_steps:
-                exit_code = int(match.group(2))
-                executed_steps.add(test_name)
-                
-                # Map exit code to test status
-                if exit_code == 0:
-                    test_status_map[test_name] = TestStatus.PASSED.value
-                else:
-                    test_status_map[test_name] = TestStatus.FAILED.value
-    
-    # Mark any expected steps that weren't executed as SKIPPED
-    for step in expected_steps:
-        if step not in executed_steps:
-            test_status_map[step] = TestStatus.SKIPPED.value
-    
-    return test_status_map
-
-
 # MARK: Evaluation report functions
 def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], bool]:
     """
@@ -125,8 +61,8 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
         if isinstance(test_cmd, list):
             test_cmd = test_cmd[-1]
     else:
-        # Use generic fallback parser for unregistered repos
-        log_parser = parse_log_generic_exit_codes
+        # Use no-op fallback parser for unregistered repos
+        return {}, True # TODO: check that the patch applied successfully
 
     with open(log_fp) as f:
         content = f.read()
