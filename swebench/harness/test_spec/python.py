@@ -278,13 +278,13 @@ def make_repo_script_list_py(
         # Remove the remote and tags so the agent won't see newer commits.
         "git remote remove origin",
         # Remove only tags pointing to commits after target timestamp
-        f"TARGET_TIMESTAMP=$(git show -s --format=%ci {base_commit})",
-        'git tag -l | while read tag; do TAG_COMMIT=$(git rev-list -n 1 "$tag"); TAG_TIME=$(git show -s --format=%ci "$TAG_COMMIT"); if [[ "$TAG_TIME" > "$TARGET_TIMESTAMP" ]]; then git tag -d "$tag"; fi; done',
+        f"TARGET_TS=$(git show -s --format=%ct {base_commit})",
+        'git tag -l | while read tag; do TAG_COMMIT=$(git rev-list -n 1 "$tag"); TAG_TS=$(git show -s --format=%ct "$TAG_COMMIT"); if (( TAG_TS > TARGET_TS )); then git tag -d "$tag"; fi; done',
         "git reflog expire --expire=now --all",
         "git gc --prune=now --aggressive",
         # Verify future logs aren't available
-        "AFTER_TIMESTAMP=$(date -d \"$TARGET_TIMESTAMP + 1 second\" '+%Y-%m-%d %H:%M:%S')",
-        'COMMIT_COUNT=$(git log --oneline --all --since="$AFTER_TIMESTAMP" | wc -l)',
+        "AFTER_TS=$((TARGET_TS + 1))",
+        'COMMIT_COUNT=$(git log --oneline --all --after="$AFTER_TS" | wc -l)',
         '[ "$COMMIT_COUNT" -eq 0 ] || exit 1',
         # Make sure conda is available for later use
         "source /opt/miniconda3/bin/activate",
