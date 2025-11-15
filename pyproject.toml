@@ -27,6 +27,7 @@ dependencies = [
     "docker",
     "ghapi",
     "GitPython",
+    "beam-client",
     "modal",
     "pre-commit",
     "python-dotenv",
