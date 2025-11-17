@@ -1,5 +1,11 @@
+import tempfile
 import unittest
-from swebench.harness.utils import run_threadpool
+import yaml
+from pathlib import Path
+from swebench.harness.utils import (
+    run_threadpool,
+    load_swebench_dataset,
+)
 from swebench.harness.test_spec.python import clean_environment_yml, clean_requirements
 
 
@@ -195,3 +201,83 @@ class UtilTests(unittest.TestCase):
         )
         cleaned = clean_requirements(requirements)
         self.assertEqual(cleaned, expected_requirements)
+
+    def test_load_swebench_dataset_from_yaml(self):
+        """Test loading SWE-bench dataset from YAML file"""
+        dataset = [
+            {
+                "instance_id": "test-1",
+                "repo": "test/repo",
+                "patch": "test patch 1",
+                "problem_statement": "test problem 1",
+            },
+            {
+                "instance_id": "test-2",
+                "repo": "test/repo",
+                "patch": "test patch 2",
+                "problem_statement": "test problem 2",
+            },
+        ]
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            yaml.dump(dataset, f)
+            yaml_path = f.name
+        
+        try:
+            loaded = load_swebench_dataset(yaml_path)
+            self.assertEqual(len(loaded), 2)
+            self.assertEqual(loaded[0]["instance_id"], "test-1")
+            self.assertEqual(loaded[1]["instance_id"], "test-2")
+        finally:
+            Path(yaml_path).unlink()
+        
+        # Test with .yml extension
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+            yaml.dump(dataset, f)
+            yml_path = f.name
+        
+        try:
+            loaded = load_swebench_dataset(yml_path)
+            self.assertEqual(len(loaded), 2)
+        finally:
+            Path(yml_path).unlink()
+
+    def test_load_swebench_dataset_from_yaml_with_filter(self):
+        """Test loading SWE-bench dataset from YAML file with instance_ids filter"""
+        dataset = [
+            {"instance_id": "test-1", "repo": "test/repo", "patch": "patch1"},
+            {"instance_id": "test-2", "repo": "test/repo", "patch": "patch2"},
+            {"instance_id": "test-3", "repo": "test/repo", "patch": "patch3"},
+        ]
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            yaml.dump(dataset, f)
+            yaml_path = f.name
+        
+        try:
+            # Load only specific instances
+            loaded = load_swebench_dataset(yaml_path, instance_ids=["test-1", "test-3"])
+            self.assertEqual(len(loaded), 2)
+            instance_ids = {inst["instance_id"] for inst in loaded}
+            self.assertEqual(instance_ids, {"test-1", "test-3"})
+        finally:
+            Path(yaml_path).unlink()
+
+    def test_load_swebench_dataset_from_yaml_invalid_format(self):
+        """Test that loading non-list YAML raises appropriate error"""
+        # Create a YAML file with a dict instead of a list
+        dataset = {
+            "key1": {"instance_id": "test-1"},
+            "key2": {"instance_id": "test-2"},
+        }
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            yaml.dump(dataset, f)
+            yaml_path = f.name
+        
+        try:
+            with self.assertRaises(ValueError) as context:
+                load_swebench_dataset(yaml_path)
+            self.assertIn("YAML dataset must contain a list", str(context.exception))
+        finally:
+            Path(yaml_path).unlink()

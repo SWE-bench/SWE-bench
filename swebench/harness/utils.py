@@ -2,6 +2,7 @@ import json
 import re
 import requests
 import traceback
+import yaml
 from importlib import resources
 import swebench.resources
 
@@ -134,16 +135,20 @@ def load_swebench_dataset(
     name="SWE-bench/SWE-bench", split="test", instance_ids=None
 ) -> list[SWEbenchInstance]:
     """
-    Load SWE-bench dataset from Hugging Face Datasets or local .json/.jsonl file
+    Load SWE-bench dataset from Hugging Face Datasets or local .json/.jsonl/.yaml/.yml file
     """
     # check that all instance IDs are in the dataset
     if instance_ids:
         instance_ids = set(instance_ids)
-    # Load from local .json/.jsonl file
+    # Load from local .json/.jsonl/.yaml/.yml file
     if name.endswith(".json"):
         dataset = json.loads(Path(name).read_text())
     elif name.endswith(".jsonl"):
         dataset = [json.loads(line) for line in Path(name).read_text().splitlines()]
+    elif name.endswith(".yaml") or name.endswith(".yml"):
+        dataset = yaml.safe_load(Path(name).read_text())
+        if not isinstance(dataset, list):
+            raise ValueError("YAML dataset must contain a list of instances")
     else:
         # Load from Hugging Face Datasets
         if name.lower() in {"swe-bench", "swebench", "swe_bench"}:

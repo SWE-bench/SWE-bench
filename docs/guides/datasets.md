@@ -84,6 +84,16 @@ The multimodal dataset also includes:
 
 Note that for the `test` split of the multimodal dataset, the `patch`, `test_patch`, and `image_assets` fields will be empty.
 
+## Loading Local Datasets
+
+In addition to loading datasets from Hugging Face, you can load datasets from local files in multiple formats:
+
+### Supported Formats
+
+- **JSON** (`.json`) - Single JSON file containing a list of instances
+- **JSONL** (`.jsonl`) - Line-delimited JSON, one instance per line
+- **YAML** (`.yaml` or `.yml`) - YAML file containing a list of instances
+
 ## Paper's Retrieval Datasets
 
 For the BM25 retrieval datasets used in the SWE-bench paper, you can load the datasets as follows:

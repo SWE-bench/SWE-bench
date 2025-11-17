@@ -30,6 +30,7 @@ dependencies = [
     "modal",
     "pre-commit",
     "python-dotenv",
+    "PyYAML",
     "requests",
     "rich",
     "tenacity",

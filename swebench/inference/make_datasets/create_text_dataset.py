@@ -7,6 +7,7 @@ Create a dataset for text-to-text training from the raw task instance outputs.
 import json
 import logging
 import os
+import yaml
 from argparse import ArgumentParser
 from pathlib import Path
 from datasets import Dataset, DatasetDict, load_dataset, load_from_disk
@@ -31,8 +32,14 @@ def load_jsonl_file(filename):
     elif filename.name.endswith(".json"):
         with open(filename) as f:
             return json.load(f)
+    elif filename.name.endswith(".yaml") or filename.name.endswith(".yml"):
+        with open(filename) as f:
+            data = yaml.safe_load(f)
+            if not isinstance(data, list):
+                raise ValueError(f"YAML file must contain a list of instances: {filename}")
+            return data
     else:
-        raise ValueError(f"Unknown file type {filename}")
+        raise ValueError(f"Unknown file type {filename}. Must be .json, .jsonl, .yaml, or .yml")
 
 
 def instances_generator(files):
