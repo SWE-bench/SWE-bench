@@ -166,6 +166,7 @@ def build_base_images(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
+    cli_docker_specs: dict = None,
 ):
     """
     Builds the base images required for the dataset if they do not already exist.
@@ -174,6 +175,7 @@ def build_base_images(
         client (docker.DockerClient): Docker client to use for building the images
         dataset (list): List of test specs or dataset to build images for
         force_rebuild (bool): Whether to force rebuild the images even if they already exist
+        cli_docker_specs (dict): Docker specs from CLI to override config values
     """
     # Get the base images to build from the dataset
     test_specs = get_test_specs_from_dataset(
@@ -181,6 +183,7 @@ def build_base_images(
         namespace=namespace,
         instance_image_tag=instance_image_tag,
         env_image_tag=env_image_tag,
+        cli_docker_specs=cli_docker_specs,
     )
     base_images = {
         x.base_image_key: (x.base_dockerfile, x.platform) for x in test_specs
@@ -218,6 +221,7 @@ def get_env_configs_to_build(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
+    cli_docker_specs: dict = None,
 ):
     """
     Returns a dictionary of image names to build scripts and dockerfiles for environment images.
@@ -226,6 +230,7 @@ def get_env_configs_to_build(
     Args:
         client (docker.DockerClient): Docker client to use for building the images
         dataset (list): List of test specs or dataset to build images for
+        cli_docker_specs (dict): Docker specs from CLI to override config values
     """
     image_scripts = dict()
     base_images = dict()
@@ -234,6 +239,7 @@ def get_env_configs_to_build(
         namespace=namespace,
         instance_image_tag=instance_image_tag,
         env_image_tag=env_image_tag,
+        cli_docker_specs=cli_docker_specs,
     )
 
     for test_spec in test_specs:
@@ -275,6 +281,7 @@ def build_env_images(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
+    cli_docker_specs: dict = None,
 ):
     """
     Builds the environment images required for the dataset if they do not already exist.
@@ -284,6 +291,7 @@ def build_env_images(
         dataset (list): List of test specs or dataset to build images for
         force_rebuild (bool): Whether to force rebuild the images even if they already exist
         max_workers (int): Maximum number of workers to use for building images
+        cli_docker_specs (dict): Docker specs from CLI to override config values
     """
     # Get the environment images to build from the dataset
     if force_rebuild:
@@ -294,15 +302,16 @@ def build_env_images(
                 namespace=namespace,
                 instance_image_tag=instance_image_tag,
                 env_image_tag=env_image_tag,
+                cli_docker_specs=cli_docker_specs,
             )
         }
         for key in env_image_keys:
             remove_image(client, key, "quiet")
     build_base_images(
-        client, dataset, force_rebuild, namespace, instance_image_tag, env_image_tag
+        client, dataset, force_rebuild, namespace, instance_image_tag, env_image_tag, cli_docker_specs
     )
     configs_to_build = get_env_configs_to_build(
-        client, dataset, namespace, instance_image_tag, env_image_tag
+        client, dataset, namespace, instance_image_tag, env_image_tag, cli_docker_specs
     )
     if len(configs_to_build) == 0:
         print("No environment images need to be built.")
@@ -341,6 +350,7 @@ def build_instance_images(
     namespace: str = None,
     tag: str = None,
     env_image_tag: str = None,
+    cli_docker_specs: dict = None,
 ):
     """
     Builds the instance images required for the dataset if they do not already exist.
@@ -350,6 +360,7 @@ def build_instance_images(
         client (docker.DockerClient): Docker client to use for building the images
         force_rebuild (bool): Whether to force rebuild the images even if they already exist
         max_workers (int): Maximum number of workers to use for building images
+        cli_docker_specs (dict): Docker specs from CLI to override config values
     """
     # Build environment images (and base images as needed) first
     test_specs = list(
@@ -359,6 +370,7 @@ def build_instance_images(
                 namespace=namespace,
                 instance_image_tag=tag,
                 env_image_tag=env_image_tag,
+                cli_docker_specs=cli_docker_specs,
             ),
             dataset,
         )
@@ -366,7 +378,7 @@ def build_instance_images(
     if force_rebuild:
         for spec in test_specs:
             remove_image(client, spec.instance_image_key, "quiet")
-    _, env_failed = build_env_images(client, test_specs, force_rebuild, max_workers)
+    _, env_failed = build_env_images(client, test_specs, force_rebuild, max_workers, cli_docker_specs=cli_docker_specs)
 
     if len(env_failed) > 0:
         # Don't build images for instances that depend on failed-to-build env images

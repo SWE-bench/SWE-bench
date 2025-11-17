@@ -37,6 +37,9 @@ class SWEbenchInstance(TypedDict):
     PASS_TO_PASS: str
     environment_setup_commit: str
     test_cmd: list[str] | None  # Optional per-task test command(s)
+    dockerfile_base: dict | None  # Optional custom base Dockerfile ({"path": "..."} or {"contents": "..."})
+    dockerfile_env: dict | None  # Optional custom env Dockerfile ({"path": "..."} or {"contents": "..."})
+    dockerfile_instance: dict | None  # Optional custom instance Dockerfile ({"path": "..."} or {"contents": "..."})
 
 
 # Constants - Test Types, Statuses, Commands
@@ -131,8 +134,6 @@ DEFAULT_DOCKER_SPECS = {
     "python_version": "3.9",
     "ubuntu_version": "22.04",
 }
-if "ANTHROPIC_API_KEY" in os.environ:
-    DEFAULT_DOCKER_SPECS["anthropic_api_key"] = os.environ["ANTHROPIC_API_KEY"]
 FAIL_ONLY_REPOS = {
     "chartjs/Chart.js",
     "processing/p5.js",

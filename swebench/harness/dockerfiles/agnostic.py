@@ -1,51 +1,36 @@
-_DOCKERFILE_BASE_AGNOSTIC = r"""
-FROM --platform={platform} ubuntu:{ubuntu_version}
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+_DOCKERFILE_BASE_AGNOSTIC = r"""FROM --platform={platform} ubuntu:{ubuntu_version}
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
-RUN apt update && apt install -y \
-    wget \
-    git \
+RUN apt-get update && apt-get install -y \
+    bash \
     build-essential \
-    libtool \
-    automake \
-    autoconf \
-    tcl \
-    bison \
-    flex \
-    cmake \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python-is-python3 \
-    jq \
+    ca-certificates \
     curl \
-    locales \
-    locales-all \
+    git \
+    jq \
+    liblzma-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    make \
+    tar \
     tzdata \
-    && rm -rf /var/lib/apt/lists/*
+    unzip \
+    wget \
+    xz-utils \
+    zip \
+    zlib1g-dev \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
+WORKDIR /testbed/
+"""
 
-RUN pip install pytest
+_DOCKERFILE_ENV_AGNOSTIC = r"""FROM --platform={platform} {base_image_key}
 
-# Install NVM
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-ENV NVM_DIR=/root/.nvm
-RUN bash -c "source $NVM_DIR/nvm.sh && nvm install node"
-
-# Install Claude Code
-RUN bash -c "source $NVM_DIR/nvm.sh && npm install -g @anthropic-ai/claude-code"
-ENV ANTHROPIC_API_KEY={anthropic_api_key}
-
-RUN adduser --disabled-password --gecos 'dog' nonroot
-
-
-ENTRYPOINT ["bash", "-c", "source $NVM_DIR/nvm.sh && exec \"$@\"", "--"]
-CMD ["/bin/bash"]
+WORKDIR /testbed/
 """
 
 _DOCKERFILE_INSTANCE_AGNOSTIC = r"""FROM --platform={platform} {env_image_name}

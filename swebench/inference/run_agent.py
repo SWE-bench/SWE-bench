@@ -215,6 +215,7 @@ def run_agent_inference(
     env_image_tag: str = "latest",
     existing_ids: Optional[set] = None,
     agents_md: Optional[str] = None,
+    cli_docker_specs: Optional[dict] = None,
 ) -> None:
     """
     Run agent inference on the entire dataset.
@@ -256,6 +257,7 @@ def run_agent_inference(
             namespace=namespace,
             instance_image_tag=instance_image_tag,
             env_image_tag=env_image_tag,
+            cli_docker_specs=cli_docker_specs,
         )
         test_specs.append((test_spec, instance))
     
@@ -273,6 +275,7 @@ def run_agent_inference(
             namespace,
             instance_image_tag,
             env_image_tag,
+            cli_docker_specs,
         )
         logger.info("Environment images built successfully")
     
@@ -330,10 +333,20 @@ def main(
     repo_specs_override: Optional[str] = None,
     repo_ext_override: Optional[str] = None,
     agents_md: Optional[str] = None,
+    docker_spec: Optional[List[str]] = None,
 ):
     """
     Main function to run agent inference on SWE-bench dataset.
     """
+    # Parse docker_spec arguments (e.g., ["ubuntu_version=20.04", "python_version=3.11"])
+    cli_docker_specs = {}
+    if docker_spec:
+        for spec in docker_spec:
+            if "=" not in spec:
+                raise ValueError(f"Invalid docker_spec format: '{spec}'. Expected KEY=VALUE format.")
+            key, value = spec.split("=", 1)
+            cli_docker_specs[key.strip()] = value.strip()
+        logger.info(f"CLI Docker specs: {cli_docker_specs}")
     # Validate agent command has the required placeholder
     if "$PROBLEM_STATEMENT" not in agent_command:
         raise ValueError("Agent command must contain $PROBLEM_STATEMENT placeholder")
@@ -410,15 +423,13 @@ def main(
         env_image_tag=env_image_tag,
         existing_ids=existing_ids,
         agents_md=agents_md,
+        cli_docker_specs=cli_docker_specs,
     )
     
     logger.info(f"Agent inference completed. Results written to {output_file}")
 
 
 if __name__ == "__main__":
-    if "anthropic_api_key" not in DEFAULT_DOCKER_SPECS:
-        raise ValueError("ANTHROPIC_API_KEY is not set in the environment")
-
     parser = ArgumentParser(
         description=__doc__,
         formatter_class=ArgumentDefaultsHelpFormatter,
@@ -510,6 +521,13 @@ if __name__ == "__main__":
         type=str,
         help="Path to a file to copy into the container as AGENTS.md"
     )
+    parser.add_argument(
+        "--docker_spec",
+        action="append",
+        type=str,
+        metavar="KEY=VALUE",
+        help="Override docker spec variables (can be used multiple times). Example: --docker_spec ubuntu_version=20.04 --docker_spec python_version=3.11"
+    )
     
     args = parser.parse_args()
     
@@ -529,5 +547,6 @@ if __name__ == "__main__":
         repo_specs_override=args.repo_specs_override,
         repo_ext_override=args.repo_ext_override,
         agents_md=args.agents_md,
+        docker_spec=args.docker_spec,
     )
 

@@ -328,6 +328,7 @@ def run_instances(
     instance_image_tag: str = "latest",
     env_image_tag: str = "latest",
     rewrite_reports: bool = False,
+    cli_docker_specs: dict | None = None,
 ):
     """
     Run all instances for the given predictions in parallel.
@@ -350,6 +351,7 @@ def run_instances(
                 namespace=namespace,
                 instance_image_tag=instance_image_tag,
                 env_image_tag=env_image_tag,
+                cli_docker_specs=cli_docker_specs,
             ),
             instances,
         )
@@ -534,10 +536,21 @@ def main(
     report_dir: str = ".",
     repo_specs_override: str | None = None,
     repo_ext_override: str | None = None,
+    docker_spec: list[str] | None = None,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
     """
+    # Parse docker_spec arguments (e.g., ["ubuntu_version=20.04", "python_version=3.11"])
+    cli_docker_specs = {}
+    if docker_spec:
+        for spec in docker_spec:
+            if "=" not in spec:
+                raise ValueError(f"Invalid docker_spec format: '{spec}'. Expected KEY=VALUE format.")
+            key, value = spec.split("=", 1)
+            cli_docker_specs[key.strip()] = value.strip()
+        print(f"CLI Docker specs: {cli_docker_specs}")
+    
     if dataset_name == "SWE-bench/SWE-bench_Multimodal" and split == "test":
         print(
             "⚠️ Local evaluation for the test split of SWE-bench Multimodal is not supported. "
@@ -627,6 +640,7 @@ def main(
                 namespace,
                 instance_image_tag,
                 env_image_tag,
+                cli_docker_specs,
             )
         run_instances(
             predictions,
@@ -641,6 +655,7 @@ def main(
             instance_image_tag=instance_image_tag,
             env_image_tag=env_image_tag,
             rewrite_reports=rewrite_reports,
+            cli_docker_specs=cli_docker_specs,
         )
 
     # clean images + make final report
@@ -758,6 +773,13 @@ if __name__ == "__main__":
         "--repo_ext_override",
         type=str,
         help="Path to JSON file containing repository extension overrides for MAP_REPO_TO_EXT"
+    )
+    parser.add_argument(
+        "--docker_spec",
+        action="append",
+        type=str,
+        metavar="KEY=VALUE",
+        help="Override docker spec variables (can be used multiple times). Example: --docker_spec ubuntu_version=20.04 --docker_spec python_version=3.11"
     )
 
     # Modal execution args

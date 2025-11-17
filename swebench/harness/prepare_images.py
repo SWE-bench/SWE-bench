@@ -18,6 +18,7 @@ def filter_dataset_to_build(
     namespace: str = None,
     tag: str = None,
     env_image_tag: str = None,
+    cli_docker_specs: dict = None,
 ):
     """
     Filter the dataset to only include instances that need to be built.
@@ -27,6 +28,7 @@ def filter_dataset_to_build(
         instance_ids (list): List of instance IDs to build.
         client (docker.DockerClient): Docker client.
         force_rebuild (bool): Whether to force rebuild all images.
+        cli_docker_specs (dict): Docker specs from CLI to override config values.
     """
     # Get existing images
     existing_images = list_images(client)
@@ -53,6 +55,7 @@ def filter_dataset_to_build(
             namespace=namespace,
             instance_image_tag=tag,
             env_image_tag=env_image_tag,
+            cli_docker_specs=cli_docker_specs,
         )
         if force_rebuild:
             data_to_build.append(instance)
@@ -72,6 +75,7 @@ def main(
     namespace,
     tag,
     env_image_tag,
+    docker_spec=None,
 ):
     """
     Build Docker images for the specified instances.
@@ -81,7 +85,18 @@ def main(
         max_workers (int): Number of workers for parallel processing.
         force_rebuild (bool): Whether to force rebuild all images.
         open_file_limit (int): Open file limit.
+        docker_spec (list): List of docker spec overrides in KEY=VALUE format.
     """
+    # Parse docker_spec arguments
+    cli_docker_specs = {}
+    if docker_spec:
+        for spec in docker_spec:
+            if "=" not in spec:
+                raise ValueError(f"Invalid docker_spec format: '{spec}'. Expected KEY=VALUE format.")
+            key, value = spec.split("=", 1)
+            cli_docker_specs[key.strip()] = value.strip()
+        print(f"CLI Docker specs: {cli_docker_specs}")
+    
     # Set open file limit
     resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
     client = docker.from_env()
@@ -89,7 +104,7 @@ def main(
     # Filter out instances that were not specified
     dataset = load_swebench_dataset(dataset_name, split)
     dataset = filter_dataset_to_build(
-        dataset, instance_ids, client, force_rebuild, namespace, tag, env_image_tag
+        dataset, instance_ids, client, force_rebuild, namespace, tag, env_image_tag, cli_docker_specs
     )
 
     if len(dataset) == 0:
@@ -105,6 +120,7 @@ def main(
         namespace=namespace,
         tag=tag,
         env_image_tag=env_image_tag,
+        cli_docker_specs=cli_docker_specs,
     )
     print(f"Successfully built {len(successful)} images")
     print(f"Failed to build {len(failed)} images")
@@ -145,6 +161,13 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--env_image_tag", type=str, default=None, help="Environment image tag to use"
+    )
+    parser.add_argument(
+        "--docker_spec",
+        action="append",
+        type=str,
+        metavar="KEY=VALUE",
+        help="Override docker spec variables (can be used multiple times). Example: --docker_spec ubuntu_version=22.04 --docker_spec python_version=3.11"
     )
     args = parser.parse_args()
     main(**vars(args))
