@@ -3,6 +3,7 @@ from __future__ import annotations
 import docker
 import docker.errors
 import logging
+import subprocess
 import sys
 import traceback
 
@@ -78,7 +79,6 @@ def build_image(
     setup_scripts: dict,
     dockerfile: str,
     platform: str,
-    client: docker.DockerClient,
     build_dir: Path,
     nocache: bool = False,
 ):
@@ -90,7 +90,6 @@ def build_image(
         setup_scripts (dict): Dictionary of setup script names to setup script contents
         dockerfile (str): Contents of the Dockerfile
         platform (str): Platform to build the image for
-        client (docker.DockerClient): Docker client to use for building the image
         build_dir (Path): Directory for the build context (will also contain logs, scripts, and artifacts)
         nocache (bool): Whether to use the cache when building
     """
@@ -120,38 +119,60 @@ def build_image(
         with open(dockerfile_path, "w") as f:
             f.write(dockerfile)
 
-        # Build the image
+        # Build the image using Docker CLI
+        # Note, we use the Docker CLI instead of the Docker API to build the image
+        # because the Docker API does not support BuildKit (https://github.com/docker/docker-py/issues/2230),
+        # which is needed for some modern Dockerfile features, like HEREDOC (https://www.docker.com/blog/introduction-to-heredocs-in-dockerfiles/).
         logger.info(
             f"Building docker image {image_name} in {build_dir} with platform {platform}"
         )
-        response = client.api.build(
-            path=str(build_dir),
-            tag=image_name,
-            rm=True,
-            forcerm=True,
-            decode=True,
-            platform=platform,
-            nocache=nocache,
+        
+        # Construct the docker build command
+        cmd = [
+            "docker", "build",
+            "-t", image_name,
+            "--platform", platform,
+            "--rm",
+            "--force-rm",
+        ]
+        
+        if nocache:
+            cmd.append("--no-cache")
+        
+        # Add the build context path as the last argument
+        cmd.append(str(build_dir))
+        
+        logger.info(f"Running command: {' '.join(cmd)}")
+        
+        # Run the docker build command
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
         )
-
+        
         # Log the build process continuously
         buildlog = ""
-        for chunk in response:
-            if "stream" in chunk:
-                # Remove ANSI escape sequences from the log
-                chunk_stream = ansi_escape(chunk["stream"])
-                logger.info(chunk_stream.strip())
-                buildlog += chunk_stream
-            elif "errorDetail" in chunk:
-                # Decode error message, raise BuildError
-                logger.error(f"Error: {ansi_escape(chunk['errorDetail']['message'])}")
-                raise docker.errors.BuildError(
-                    chunk["errorDetail"]["message"], buildlog
-                )
+        for line in process.stdout:
+            # Remove ANSI escape sequences from the log
+            clean_line = ansi_escape(line)
+            logger.info(clean_line.rstrip())
+            buildlog += clean_line
+        
+        # Wait for the process to complete
+        return_code = process.wait()
+        
+        if return_code != 0:
+            error_msg = f"Docker build failed with exit code {return_code}"
+            logger.error(error_msg)
+            raise BuildImageError(image_name, error_msg, logger)
+        
         logger.info("Image built successfully!")
-    except docker.errors.BuildError as e:
-        logger.error(f"docker.errors.BuildError during {image_name}: {e}")
-        raise BuildImageError(image_name, str(e), logger) from e
+    except BuildImageError:
+        # Re-raise BuildImageError without wrapping it
+        raise
     except Exception as e:
         logger.error(f"Error building image {image_name}: {e}")
         raise BuildImageError(image_name, str(e), logger) from e
@@ -209,7 +230,6 @@ def build_base_images(
             setup_scripts={},
             dockerfile=dockerfile,
             platform=platform,
-            client=client,
             build_dir=BASE_IMAGE_BUILD_DIR / image_name.replace(":", "__"),
         )
     print("Base images built successfully.")
@@ -326,7 +346,6 @@ def build_env_images(
                 {"setup_env.sh": config["setup_script"]},
                 config["dockerfile"],
                 config["platform"],
-                client,
                 ENV_IMAGE_BUILD_DIR / image_name.replace(":", "__"),
             )
         )
@@ -468,7 +487,6 @@ def build_instance_image(
             },
             dockerfile=dockerfile,
             platform=test_spec.platform,
-            client=client,
             build_dir=build_dir,
             nocache=nocache,
         )
