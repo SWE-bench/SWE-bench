@@ -48,6 +48,8 @@ def make_run_report(
     # get instances with empty patches
     empty_patch_ids = set()
 
+    unaggregated_results = {}
+
     # iterate through dataset and check if the instance has been run
     for instance in full_dataset:
         instance_id = instance[KEY_INSTANCE_ID]
@@ -80,6 +82,7 @@ def make_run_report(
                     resolved_ids.add(instance_id)
                 else:
                     unresolved_ids.add(instance_id)
+                unaggregated_results[instance_id] = report[instance_id]
             except (json.JSONDecodeError, KeyError):
                 # If the report file is not valid JSON or missing keys, treat as error
                 error_ids.add(instance_id)
@@ -140,6 +143,7 @@ def make_run_report(
         "resolved_ids": list(sorted(resolved_ids)),
         "unresolved_ids": list(sorted(unresolved_ids)),
         "error_ids": list(sorted(error_ids)),
+        "unaggregated_results": unaggregated_results,
         "schema_version": 2,
     }
     if not client:
