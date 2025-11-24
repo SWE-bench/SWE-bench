@@ -502,10 +502,6 @@ def main(
 
     # set open file limit
     assert len(run_id) > 0, "Run ID must be provided"
-    if report_dir is not None:
-        report_dir = Path(report_dir)
-        if not report_dir.exists():
-            report_dir.mkdir(parents=True)
 
     if force_rebuild and namespace is not None:
         raise ValueError("Cannot force rebuild and use a namespace at the same time.")
@@ -574,6 +570,7 @@ def main(
         namespace,
         instance_image_tag,
         env_image_tag,
+        report_dir,
     )
 
 
