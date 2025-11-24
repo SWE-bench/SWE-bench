@@ -180,11 +180,13 @@ def run_instance(
                 user=DOCKER_USER,
             )
             if val.exit_code == 0:
+                logger.info(f"Applied patch to container using command: {git_apply_cmd} {DOCKER_PATCH}")
                 logger.info(f"{APPLY_PATCH_PASS}:\n{val.output.decode(UTF8)}")
                 applied_patch = True
                 break
             else:
-                logger.info(f"Failed to apply patch to container: {git_apply_cmd}")
+                logger.info(f"Failed to apply patch to container using command: {git_apply_cmd} {DOCKER_PATCH}")
+                logger.info(f"Patch Command Output:\n{val.output.decode(UTF8)}")
         if not applied_patch:
             logger.info(f"{APPLY_PATCH_FAIL}:\n{val.output.decode(UTF8)}")
             raise EvaluationError(
