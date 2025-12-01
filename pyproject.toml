@@ -21,6 +21,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
+    "anthropic>=0.54.0",
     "beautifulsoup4",
     "chardet",
     "datasets",
@@ -28,11 +29,13 @@ dependencies = [
     "ghapi",
     "GitPython",
     "modal",
+    "openai>=1.86.0",
     "pre-commit",
     "python-dotenv",
     "requests",
     "rich",
     "tenacity",
+    "tiktoken>=0.9.0",
     "tqdm",
     "unidiff",
 ]
