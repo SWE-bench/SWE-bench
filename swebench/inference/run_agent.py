@@ -9,13 +9,11 @@ iterates over a dataset, and runs the agent on each task instance.
 Usage:
     python -m swebench.inference.run_agent \
         --dataset_name dataset.jsonl \
-        --agent_name claude \
+        --run_id claude-1 \
         --agent_command 'prompt="$(cat $PROBLEM_STATEMENT)" ; claude --permission-mode bypassPermissions "$prompt"' \
         --output_dir ./agent_results \
         --max_workers 1 \
-        --namespace '' \
-        --repo_specs_override specs.json \
-        --repo_ext_override exts.json
+        --namespace ''
 """
 
 import json
@@ -40,6 +38,7 @@ from swebench.harness.constants import (
     KEY_PREDICTION,
     MAP_REPO_TO_EXT,
     MAP_REPO_VERSION_TO_SPECS,
+    RUN_AGENT_INFERENCE_LOG_DIR,
     RUN_EVALUATION_LOG_DIR,
     UTF8,
 )
@@ -56,7 +55,6 @@ logger = logging.getLogger(__name__)
 def run_agent_on_instance(
     test_spec: TestSpec,
     instance: Dict,
-    agent_name: str,
     agent_command: str,
     client: docker.DockerClient,
     run_id: str,
@@ -83,9 +81,9 @@ def run_agent_on_instance(
     instance_id = instance[KEY_INSTANCE_ID]
     
     # Set up logging
-    log_dir = RUN_EVALUATION_LOG_DIR / run_id / instance_id
+    log_dir = RUN_AGENT_INFERENCE_LOG_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
-    logger_instance = setup_logger(instance_id, log_dir / "run_agent.log")
+    logger_instance = setup_logger(instance_id, log_dir / f"{run_id}-{instance_id}.log")
     
     container = None
     try:
@@ -169,7 +167,6 @@ def run_agent_on_instance(
             return {
                 KEY_INSTANCE_ID: instance_id,
                 KEY_PREDICTION: model_patch,
-                KEY_MODEL: agent_name,
                 "agent_command": actual_command,
                 "agent_output": agent_output,
             }
@@ -187,7 +184,6 @@ def run_agent_on_instance(
         return {
             KEY_INSTANCE_ID: instance_id,
             KEY_PREDICTION: "",
-            KEY_MODEL: agent_name,
             "error": error_msg,
         }
         
@@ -204,7 +200,7 @@ def run_agent_on_instance(
 
 def run_agent_inference(
     dataset: List[Dict],
-    agent_name: str,
+    run_id: str,
     agent_command: str,
     output_file: Path,
     max_workers: int = 1,
@@ -262,7 +258,6 @@ def run_agent_inference(
         test_specs.append((test_spec, instance))
     
     client = docker.from_env()
-    run_id = Path(output_file).stem
     
     # Build environment images first (same as run_evaluation.py)
     if namespace is None:
@@ -285,7 +280,7 @@ def run_agent_inference(
             # Sequential processing
             for test_spec, instance in tqdm(test_specs, desc="Processing instances"):
                 result = run_agent_on_instance(
-                    test_spec, instance, agent_name, agent_command, client, run_id, 
+                    test_spec, instance, agent_command, client, run_id, 
                     timeout=timeout, force_rebuild=force_rebuild, agents_md=agents_md
                 )
                 print(json.dumps(result), file=f, flush=True)
@@ -296,7 +291,7 @@ def run_agent_inference(
                 for test_spec, instance in test_specs:
                     future = executor.submit(
                         run_agent_on_instance,
-                        test_spec, instance, agent_name, agent_command, client, run_id,
+                        test_spec, instance, agent_command, client, run_id,
                         timeout, force_rebuild, agents_md
                     )
                     futures[future] = instance[KEY_INSTANCE_ID]
@@ -311,7 +306,6 @@ def run_agent_inference(
                         error_result = {
                             KEY_INSTANCE_ID: instance_id,
                             KEY_PREDICTION: "",
-                            KEY_MODEL: agent_name,
                             "error": str(e),
                         }
                         print(json.dumps(error_result), file=f, flush=True)
@@ -320,7 +314,7 @@ def run_agent_inference(
 def main(
     dataset_name: str,
     split: str,
-    agent_name: str,
+    run_id: str,
     agent_command: str,
     output_dir: str,
     max_workers: int = 1,
@@ -394,8 +388,7 @@ def main(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    dataset_nickname = dataset_name.split('/')[-1] if '/' in dataset_name else dataset_name
-    output_file = output_dir / f"{agent_name}__{dataset_nickname}__{split}.jsonl"
+    output_file = output_dir / f"{run_id}.jsonl"
     
     # Check for existing results
     existing_ids = set()
@@ -412,7 +405,7 @@ def main(
     # Run agent inference
     run_agent_inference(
         dataset=dataset,
-        agent_name=agent_name,
+        run_id=run_id,
         agent_command=agent_command,
         output_file=output_file,
         max_workers=max_workers,
@@ -448,10 +441,10 @@ if __name__ == "__main__":
         help="Dataset split to use",
     )
     parser.add_argument(
-        "--agent_name",
+        "--run_id",
         type=str,
         required=True,
-        help="Name of the agent",
+        help="Unique ID for the run",
     )
     parser.add_argument(
         "--agent_command",
@@ -534,7 +527,7 @@ if __name__ == "__main__":
     main(
         dataset_name=args.dataset_name,
         split=args.split,
-        agent_name=args.agent_name,
+        run_id=args.run_id,
         agent_command=args.agent_command,
         output_dir=args.output_dir,
         max_workers=args.max_workers,

@@ -15,6 +15,10 @@ This module provides utilities for writing integration tests inside containers, 
 
 **`swebench.testing` is intentionally stdlib-only and will remain that way.** This is a core design constraint to ensure the module can be used in any environment without dependency conflicts, network access, or installation overhead. Perfect for container-based testing scenarios.
 
+### Implementation Note
+
+The main `swebench` package uses lazy imports (via `__getattr__`) to avoid loading heavy dependencies until they're actually needed. This allows `pip install --no-deps swebench` to work perfectly for the testing module, while maintaining backwards compatibility for existing code that imports from the top-level package.
+
 ## Installation
 
 ### Default Installation (Backwards Compatible)
@@ -37,7 +41,13 @@ pip install --no-deps swebench
 
 This installs **only** the `swebench.testing` module with **zero external dependencies**. It uses only Python's standard library (`subprocess`, `threading`, `time`, `typing`).
 
-**Important:** With `--no-deps`, only `swebench.testing` will work. Other modules (harness, collect, inference) require their dependencies.
+**How it works:** The package uses lazy imports, so `swebench.testing` can be imported without triggering any dependency loads. You can safely do:
+
+```python
+from swebench.testing import run_command_with_monitoring  # ✅ Works!
+```
+
+**Important:** With `--no-deps`, only `swebench.testing` will work. Other modules (harness, collect, inference) require their dependencies and will raise `ImportError` if you try to use them.
 
 ### Feature-Specific Installation
 

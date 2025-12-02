@@ -89,18 +89,17 @@ def run_instance(
 
     Args:
         test_spec (TestSpec): TestSpec instance
-        pred (dict): Prediction w/ model_name_or_path, model_patch, instance_id
+        pred (dict): Prediction w/ run_id, model_patch, instance_id
         rm_image (bool): Whether to remove the image after running
         force_rebuild (bool): Whether to force rebuild the image
         client (docker.DockerClient): Docker client
-        run_id (str): Run ID
         timeout (int): Timeout for running tests
         rewrite_reports (bool): True if eval run is just to reformat existing report
     """
     # Set up logging directory
     instance_id = test_spec.instance_id
-    model_name_or_path = pred.get(KEY_MODEL, "None").replace("/", "__")
-    log_dir = RUN_EVALUATION_LOG_DIR / run_id / model_name_or_path / instance_id
+    run_id = run_id.replace("/", "__")
+    log_dir = RUN_EVALUATION_LOG_DIR / run_id / instance_id
 
     # Set up report file
     report_path = log_dir / LOG_REPORT
@@ -324,8 +323,8 @@ def run_instances(
     clean: bool,
     force_rebuild: bool,
     max_workers: int,
-    run_id: str,
     timeout: int,
+    run_id: str,
     namespace: str | None = "swebench",
     instance_image_tag: str = "latest",
     env_image_tag: str = "latest",
@@ -342,7 +341,6 @@ def run_instances(
         clean (bool): Clean images above cache level
         force_rebuild (bool): Force rebuild images
         max_workers (int): Maximum number of workers
-        run_id (str): Run ID
         timeout (int): Timeout for running tests
     """
     client = docker.from_env()
@@ -423,8 +421,8 @@ def get_dataset_from_preds(
     split: str,
     instance_ids: list,
     predictions: dict,
-    run_id: str,
     rewrite_reports: bool,
+    run_id: str,
     exclude_completed: bool = True,
 ):
     """
@@ -465,8 +463,7 @@ def get_dataset_from_preds(
             prediction = predictions[instance[KEY_INSTANCE_ID]]
             test_output_file = (
                 RUN_EVALUATION_LOG_DIR
-                / run_id
-                / prediction["model_name_or_path"].replace("/", "__")
+                / run_id.replace("/", "__")
                 / prediction[KEY_INSTANCE_ID]
                 / "test_output.txt"
             )
@@ -489,8 +486,7 @@ def get_dataset_from_preds(
         prediction = predictions[instance[KEY_INSTANCE_ID]]
         report_file = (
             RUN_EVALUATION_LOG_DIR
-            / run_id
-            / prediction[KEY_MODEL].replace("/", "__")
+            / run_id.replace("/", "__")
             / prediction[KEY_INSTANCE_ID]
             / LOG_REPORT
         )
@@ -610,7 +606,7 @@ def main(
 
     # get dataset from predictions
     dataset = get_dataset_from_preds(
-        dataset_name, split, instance_ids, predictions, run_id, rewrite_reports
+        dataset_name, split, instance_ids, predictions, rewrite_reports, run_id
     )
     full_dataset = load_swebench_dataset(dataset_name, split, instance_ids)
 
@@ -651,8 +647,8 @@ def main(
             clean,
             force_rebuild,
             max_workers,
-            run_id,
             timeout,
+            run_id,
             namespace=namespace,
             instance_image_tag=instance_image_tag,
             env_image_tag=env_image_tag,
