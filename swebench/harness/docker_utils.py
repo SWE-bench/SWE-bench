@@ -5,6 +5,7 @@ import docker.errors
 import os
 import signal
 import tarfile
+import tempfile
 import threading
 import time
 import traceback
@@ -30,25 +31,28 @@ def copy_to_container(container: Container, src: Path, dst: Path):
             f"Destination path parent directory cannot be empty!, dst: {dst}"
         )
 
-    # temporary tar file
-    tar_path = src.with_suffix(".tar")
-    with tarfile.open(tar_path, "w") as tar:
-        tar.add(
-            src, arcname=dst.name
-        )  # use destination name, so after `put_archive`, name is correct
+    # Use a unique temporary tar file to avoid race conditions when called concurrently
+    with tempfile.NamedTemporaryFile(suffix=".tar", delete=False) as tmp:
+        tar_path = Path(tmp.name)
 
-    # get bytes for put_archive cmd
-    with open(tar_path, "rb") as tar_file:
-        data = tar_file.read()
+    try:
+        with tarfile.open(tar_path, "w") as tar:
+            tar.add(
+                src, arcname=dst.name
+            )  # use destination name, so after `put_archive`, name is correct
 
-    # Make directory if necessary
-    container.exec_run(f"mkdir -p {dst.parent}")
+        # get bytes for put_archive cmd
+        with open(tar_path, "rb") as tar_file:
+            data = tar_file.read()
 
-    # Send tar file to container and extract
-    container.put_archive(os.path.dirname(dst), data)
+        # Make directory if necessary
+        container.exec_run(f"mkdir -p {dst.parent}")
 
-    # clean up in locally and in container
-    tar_path.unlink()
+        # Send tar file to container and extract
+        container.put_archive(os.path.dirname(dst), data)
+    finally:
+        # clean up locally
+        tar_path.unlink()
 
 
 def write_to_container(container: Container, data: str, dst: Path):
