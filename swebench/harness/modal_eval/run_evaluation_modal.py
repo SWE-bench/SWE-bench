@@ -156,14 +156,273 @@ class ModalSandboxRuntime:
             finally:
                 self._stream_tasks = []
 
+
+    @staticmethod
+    def _get_base_image(test_spec: TestSpec) -> modal.Image:
+        """
+        Construct the base image for the given test spec.
+        """
+        language = test_spec.language
+        if language == "py":
+            return (
+                modal.Image.from_registry("ubuntu:22.04", add_python="3.11")
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                .apt_install(
+                    "wget",
+                    "git",
+                    "build-essential",
+                    "libffi-dev",
+                    "libtiff-dev",
+                    "jq",
+                    "curl",
+                    "locales",
+                    "locales-all",
+                    "tzdata",
+                )
+                .run_commands(
+                    "wget 'https://repo.anaconda.com/miniconda/Miniconda3-py311_23.11.0-2-Linux-x86_64.sh' -O miniconda.sh",
+                    "bash miniconda.sh -b -p /opt/miniconda3",
+                    "echo 'export PATH=/opt/miniconda3/bin:$PATH' >> ~/.bashrc",
+                    "/opt/miniconda3/bin/conda init --all",
+                    "/opt/miniconda3/bin/conda config --append channels conda-forge",
+                    "adduser --disabled-password --gecos 'dog' nonroot",
+                )
+            )
+        elif language == "c":
+            return (
+                modal.Image.from_registry("ubuntu:22.04", add_python="3.11")
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                # Uncomment deb-src lines. Only works on Ubuntu 22.04 and below
+                .run_commands("sed -i 's/^# deb-src/deb-src/' /etc/apt/sources.list")
+                .apt_install(
+                    "wget",
+                    "git",
+                    "build-essential",
+                    "libtool",
+                    "automake",
+                    "autoconf",
+                    "tcl",
+                    "bison",
+                    "flex",
+                    "cmake",
+                    "python3",
+                    "python3-pip",
+                    "python3-venv",
+                    "python-is-python3",
+                )
+                .run_commands(
+                    "rm -rf /var/lib/apt/lists/*",
+                    "adduser --disabled-password --gecos 'dog' nonroot",
+                )
+            )
+        elif language == "go":
+            go_version = test_spec.docker_specs.get("go_version", "1.21")
+            return (
+                modal.Image.from_registry("ubuntu:22.04", add_python="3.11")
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                .apt_install("wget", "git", "build-essential")
+                .run_commands("rm -rf /var/lib/apt/lists/*")
+                .run_commands(
+                    f"""
+                        set -eux; \
+                        now="$(date '+%s')"; \
+                        arch="$(dpkg --print-architecture)"; \
+                        url=; \
+                        case "$arch" in \
+                            'amd64') \
+                                url='https://dl.google.com/go/go{go_version}.linux-amd64.tar.gz'; \
+                                ;; \
+                            'armhf') \
+                                url='https://dl.google.com/go/go{go_version}.linux-armv6l.tar.gz'; \
+                                ;; \
+                            'arm64') \
+                                url='https://dl.google.com/go/go{go_version}.linux-arm64.tar.gz'; \
+                                ;; \
+                            'i386') \
+                                url='https://dl.google.com/go/go{go_version}.linux-386.tar.gz'; \
+                                ;; \
+                            'mips64el') \
+                                url='https://dl.google.com/go/go{go_version}.linux-mips64le.tar.gz'; \
+                                ;; \
+                            'ppc64el') \
+                                url='https://dl.google.com/go/go{go_version}.linux-ppc64le.tar.gz'; \
+                                ;; \
+                            'riscv64') \
+                                url='https://dl.google.com/go/go{go_version}.linux-riscv64.tar.gz'; \
+                                ;; \
+                            's390x') \
+                                url='https://dl.google.com/go/go{go_version}.linux-s390x.tar.gz'; \
+                                ;; \
+                            *) echo >&2 "error: unsupported architecture '$arch' (likely packaging update needed)"; exit 1 ;; \
+                        esac; \
+                        \
+                        wget -O go.tgz "$url" --progress=dot:giga; \
+                        tar -C /usr/local -xzf go.tgz; \
+                        rm go.tgz;
+                    """
+                )
+                .env({"PATH": "/usr/local/go/bin:$PATH"})
+                .run_commands(
+                    "go version",
+                    "adduser --disabled-password --gecos 'dog' nonroot",
+                )
+            )
+        elif language == "java":
+            java_version = test_spec.docker_specs.get("java_version", "11")
+            return (
+                modal.Image.from_registry(
+                    f"maven:3.9-eclipse-temurin-{java_version}", add_python="3.11"
+                )
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                .apt_install(
+                    "wget", "git", "build-essential", "ant", "unzip", "python3-pip"
+                )
+                .run_commands("rm -rf /var/lib/apt/lists/*")
+                .run_commands(
+                    "curl -fsSL -o mvnd.zip https://downloads.apache.org/maven/mvnd/1.0.2/maven-mvnd-1.0.2-linux-amd64.zip && "
+                    "unzip mvnd.zip -d /tmp && "
+                    "mv /tmp/maven-mvnd-1.0.2-linux-amd64 /usr/local/mvnd && "
+                    "rm mvnd.zip && "
+                    "rm -rf /tmp/maven-mvnd-1.0.2-linux-amd64"
+                )
+                .env({"MVND_HOME": "/usr/local/mvnd"})
+                .env({"PATH": "$MVND_HOME/bin:$PATH"})
+                .run_commands("adduser --disabled-password --gecos 'dog' nonroot")
+            )
+        elif language == "js":
+            # Simplified JS setup using official node image or ubuntu + node
+            # The JS dockerfile in the harness is complex (installs Chrome, etc.)
+            # We'll try to replicate essential parts.
+            # Using ubuntu base as in _DOCKERFILE_BASE_JS
+            ubuntu_version = "22.04"
+            return (
+                modal.Image.from_registry(
+                    f"ubuntu:{ubuntu_version}", add_python="3.11"
+                )
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                .run_commands("rm /bin/sh && ln -s /bin/bash /bin/sh")
+                .apt_install(
+                    "build-essential",
+                    "curl",
+                    "git",
+                    "libssl-dev",
+                    "software-properties-common",
+                    "wget",
+                    "gnupg",
+                    "jq",
+                    "ca-certificates",
+                    "dbus",
+                    "ffmpeg",
+                    "imagemagick",
+                    "python3-pip",  # Ensure pip is present for python interactions if needed
+                )
+                .run_commands("rm -rf /var/lib/apt/lists/*")
+                # Install Chrome (simplified, might skip if not strictly needed for non-GUI modal runs, but keeping for safety)
+                .run_commands(
+                    "wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -",
+                    'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list',
+                    "apt-get update",
+                    "apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 --no-install-recommends",
+                    "rm -rf /var/lib/apt/lists/*",
+                )
+                # Install NVM
+                .env({"NVM_DIR": "/usr/local/nvm"})
+                .run_commands(
+                    "mkdir -p $NVM_DIR",
+                    "curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | bash",
+                )
+                # Install libraries for Chrome
+                .run_commands(
+                    "apt-get update && apt-get install -y procps libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 libdrm2 libgbm1 libgconf-2-4 libgdk-pixbuf2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libxrandr2 libxss1 libxshmfence1 libglu1 && apt-get -y autoclean && rm -rf /var/lib/apt/lists/*"
+                )
+                .env({"CHROME_BIN": "/usr/bin/google-chrome"})
+                .run_commands('echo "CHROME_BIN=$CHROME_BIN" >> /etc/environment')
+                .run_commands(
+                    "mkdir -p /run/dbus",
+                    "dbus-daemon --system --fork",
+                )
+                .env(
+                    {
+                        "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket"
+                    }
+                )
+                .env({"PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"})
+                .env({"OPENSSL_CONF": "/etc/ssl"})
+                .run_commands(
+                    "useradd -m chromeuser",
+                    "adduser --disabled-password --gecos 'dog' nonroot",
+                )
+            )
+        elif language == "php":
+            php_version = test_spec.docker_specs.get("php_version", "8.0")
+            return (
+                modal.Image.from_registry(
+                    f"php:{php_version}", add_python="3.11"
+                )  # PHP base image
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                .apt_install(
+                    "wget",
+                    "git",
+                    "build-essential",
+                    "libgd-dev",
+                    "libzip-dev",
+                    "libgmp-dev",
+                    "libftp-dev",
+                    "libcurl4-openssl-dev",
+                    "python3-pip",
+                )
+                .run_commands(
+                    "apt-get -y autoclean",
+                    "rm -rf /var/lib/apt/lists/*",
+                )
+                .run_commands(
+                    "docker-php-ext-install gd zip gmp ftp curl pcntl"
+                )
+                .run_commands(
+                    "curl -sS https://getcomposer.org/installer | php -- --2.2 --install-dir=/usr/local/bin --filename=composer"
+                )
+                .run_commands("adduser --disabled-password --gecos 'dog' nonroot")
+            )
+        elif language == "rb":
+            ruby_version = test_spec.docker_specs.get("ruby_version", "3.1")
+            return (
+                modal.Image.from_registry(f"ruby:{ruby_version}", add_python="3.11")
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                .apt_install("wget", "git", "build-essential", "jq", "python3-pip")
+                .run_commands("rm -rf /var/lib/apt/lists/*")
+                .run_commands("adduser --disabled-password --gecos 'dog' nonroot")
+            )
+        elif language == "rs":
+            rust_version = test_spec.docker_specs.get("rust_version", "1.70")
+            return (
+                modal.Image.from_registry(f"rust:{rust_version}", add_python="3.11")
+                .run_commands("apt update")
+                .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
+                .apt_install("wget", "git", "build-essential", "python3-pip")
+                .run_commands("rm -rf /var/lib/apt/lists/*")
+                .run_commands("adduser --disabled-password --gecos 'dog' nonroot")
+            )
+        else:
+            raise ValueError(f"Unsupported language: {language}")
+
     @staticmethod
     def get_instance_image(test_spec: TestSpec) -> modal.Image:
+        image = ModalSandboxRuntime._get_base_image(test_spec)
+
         env_script = test_spec.setup_env_script
         # add trusted host flag for Modal's PyPI mirror
-        env_script = env_script.replace(
-            "conda activate testbed && python -m pip install -r $HOME/requirements.txt",
-            "conda activate testbed && python -m pip install --trusted-host pypi-mirror.modal.local -r $HOME/requirements.txt",
-        )
+        if test_spec.language == "python":
+            env_script = env_script.replace(
+                "conda activate testbed && python -m pip install -r $HOME/requirements.txt",
+                "conda activate testbed && python -m pip install --trusted-host pypi-mirror.modal.local -r $HOME/requirements.txt",
+            )
         repo_script = test_spec.install_repo_script
 
         remote_env_script_path = "/root/setup_env.sh"
@@ -174,44 +433,29 @@ class ModalSandboxRuntime:
 
         # Modal automatically caches images
         # https://modal.com/docs/guide/custom-container#image-caching-and-rebuilds
-        return (
-            modal.Image.from_registry("ubuntu:22.04", add_python="3.11")
-            .run_commands("apt update")
-            .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
-            .apt_install(
-                "wget",
-                "git",
-                "build-essential",
-                "libffi-dev",
-                "libtiff-dev",
-                "jq",
-                "curl",
-                "locales",
-                "locales-all",
-                "tzdata",
-            )
-            .run_commands(
-                "wget 'https://repo.anaconda.com/miniconda/Miniconda3-py311_23.11.0-2-Linux-x86_64.sh' -O miniconda.sh",
-                "bash miniconda.sh -b -p /opt/miniconda3",
-                "echo 'export PATH=/opt/miniconda3/bin:$PATH' >> ~/.bashrc",
-                "/opt/miniconda3/bin/conda init --all",
-                "/opt/miniconda3/bin/conda config --append channels conda-forge",
-                "adduser --disabled-password --gecos 'dog' nonroot",
-            )
-            .add_local_file(
+        image = (
+            image.add_local_file(
                 Path(remote_env_script_path), remote_env_script_path, copy=True
             )
             .add_local_file(
                 Path(remote_repo_script_path), remote_repo_script_path, copy=True
             )
             .run_commands(
-                f"chmod +x {remote_env_script_path}",
-                f"/bin/bash -c 'source ~/.bashrc && {remote_env_script_path}'",
-                "echo 'source /opt/miniconda3/etc/profile.d/conda.sh && conda activate testbed' >> /root/.bashrc",
-                f"/bin/bash {remote_repo_script_path}",
+                 f"chmod +x {remote_env_script_path}",
+                 f"/bin/bash -c 'source ~/.bashrc && {remote_env_script_path}'",
             )
-            .workdir("/testbed/")
         )
+
+        # For Python/Conda we have specific activation logic in .bashrc
+        if test_spec.language == "python":
+            image = image.run_commands(
+                "echo 'source /opt/miniconda3/etc/profile.d/conda.sh && conda activate testbed' >> /root/.bashrc",
+            )
+
+        image = image.run_commands(
+             f"/bin/bash {remote_repo_script_path}",
+        ).workdir("/testbed/")
+        return image
 
 
 def get_log_dir(pred: dict, run_id: str, instance_id: str) -> Path:
