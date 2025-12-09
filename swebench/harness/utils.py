@@ -23,6 +23,92 @@ from unidiff import PatchSet
 load_dotenv()
 
 
+def load_dataset_file(filepath: str | Path) -> list:
+    """
+    Load a dataset from a local file (.json, .jsonl, .jsonl.all, .yaml, .yml) or directory.
+
+    Args:
+        filepath: Path to the dataset file or directory
+
+    Returns:
+        list: List of dataset instances
+
+    Raises:
+        ValueError: If file type is unsupported or YAML doesn't contain a list
+    """
+    filepath = Path(filepath)
+
+    if filepath.is_dir():
+        return _load_dataset_directory(filepath)
+
+    name = filepath.name
+
+    if name.endswith(".json"):
+        return json.loads(filepath.read_text())
+    elif name.endswith(".jsonl") or name.endswith(".jsonl.all"):
+        return [json.loads(line) for line in filepath.read_text().splitlines() if line.strip()]
+    elif name.endswith(".yaml") or name.endswith(".yml"):
+        data = yaml.safe_load(filepath.read_text())
+        if not isinstance(data, list):
+            raise ValueError(f"YAML file must contain a list of instances: {filepath}")
+        return data
+    else:
+        raise ValueError(f"Unsupported file type: {filepath}. Must be .json, .jsonl, .jsonl.all, .yaml, .yml, or a directory")
+
+
+def _load_dataset_directory(dirpath: Path) -> list:
+    """
+    Load a dataset from a directory where each subdirectory is an instance.
+
+    Each subdirectory name is the instance_id and must contain a task.yaml file.
+    The task.yaml contains: repo, base_commit, problem_statement, cp, test_cmd, dockerfile_base.
+    Other fields are derived or defaulted.
+
+    Args:
+        dirpath: Path to the dataset directory
+
+    Returns:
+        list: List of dataset instances
+    """
+    instances = []
+
+    for subdir in sorted(dirpath.iterdir()):
+        if not subdir.is_dir():
+            continue
+
+        task_file = subdir / "task.yaml"
+        if not task_file.exists():
+            continue
+
+        instance_id = subdir.name
+        task_data = yaml.safe_load(task_file.read_text())
+
+        instance = {
+            "instance_id": instance_id,
+            "repo": task_data["repo"],
+            "base_commit": task_data["base_commit"],
+            "problem_statement": task_data.get("problem_statement", ""),
+            "patch": "",
+            "test_patch": "",
+            "hints_text": "",
+            "created_at": "",
+            "version": "",
+            "FAIL_TO_PASS": "[]",
+            "PASS_TO_PASS": "[]",
+            "environment_setup_commit": task_data["base_commit"],
+            "task_dir": str(subdir.resolve()),
+        }
+
+        # Copy through optional fields
+        for key in ("cp", "test_cmd", "dockerfile_base"):
+            if key in task_data:
+                instance[key] = task_data[key]
+
+        instances.append(instance)
+
+    return instances
+
+
 class EvaluationError(Exception):
     def __init__(self, instance_id, message, logger):
         super().__init__(message)
@@ -131,24 +217,26 @@ def run_sequential(func, payloads):
     return succeeded, failed
 
 
+def _is_local_dataset_path(path: str) -> bool:
+    """Check if path refers to a local dataset file or directory."""
+    p = Path(path)
+    if p.is_dir():
+        return True
+    return any(path.endswith(ext) for ext in (".json", ".jsonl", ".jsonl.all", ".yaml", ".yml"))
+
+
 def load_swebench_dataset(
     name="SWE-bench/SWE-bench", split="test", instance_ids=None
 ) -> list[SWEbenchInstance]:
     """
-    Load SWE-bench dataset from Hugging Face Datasets or local .json/.jsonl/.yaml/.yml file
+    Load SWE-bench dataset from Hugging Face Datasets or local file/directory
     """
     # check that all instance IDs are in the dataset
     if instance_ids:
         instance_ids = set(instance_ids)
-    # Load from local .json/.jsonl/.yaml/.yml file
-    if name.endswith(".json"):
-        dataset = json.loads(Path(name).read_text())
-    elif name.endswith(".jsonl"):
-        dataset = [json.loads(line) for line in Path(name).read_text().splitlines()]
-    elif name.endswith(".yaml") or name.endswith(".yml"):
-        dataset = yaml.safe_load(Path(name).read_text())
-        if not isinstance(dataset, list):
-            raise ValueError("YAML dataset must contain a list of instances")
+    # Load from local file or directory
+    if _is_local_dataset_path(name):
+        dataset = load_dataset_file(name)
     else:
         # Load from Hugging Face Datasets
         if name.lower() in {"swe-bench", "swebench", "swe_bench"}:

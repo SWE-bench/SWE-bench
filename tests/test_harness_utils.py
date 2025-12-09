@@ -278,6 +278,137 @@ class UtilTests(unittest.TestCase):
         try:
             with self.assertRaises(ValueError) as context:
                 load_swebench_dataset(yaml_path)
-            self.assertIn("YAML dataset must contain a list", str(context.exception))
+            self.assertIn("YAML file must contain a list", str(context.exception))
         finally:
             Path(yaml_path).unlink()
+
+    def test_load_swebench_dataset_from_directory(self):
+        """Test loading SWE-bench dataset from a directory of task.yaml files"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            
+            # Create two instance directories
+            instance1_dir = tmpdir / "test-instance-1"
+            instance1_dir.mkdir()
+            task1 = {
+                "repo": "test/repo1",
+                "base_commit": "abc123",
+                "problem_statement": "Fix bug 1",
+            }
+            (instance1_dir / "task.yaml").write_text(yaml.dump(task1))
+            
+            instance2_dir = tmpdir / "test-instance-2"
+            instance2_dir.mkdir()
+            task2 = {
+                "repo": "test/repo2",
+                "base_commit": "def456",
+                "problem_statement": "Fix bug 2",
+            }
+            (instance2_dir / "task.yaml").write_text(yaml.dump(task2))
+            
+            # Load the dataset
+            loaded = load_swebench_dataset(str(tmpdir))
+            
+            self.assertEqual(len(loaded), 2)
+            
+            # Should be sorted by instance_id (directory name)
+            self.assertEqual(loaded[0]["instance_id"], "test-instance-1")
+            self.assertEqual(loaded[1]["instance_id"], "test-instance-2")
+            
+            # Check fields are populated correctly
+            self.assertEqual(loaded[0]["repo"], "test/repo1")
+            self.assertEqual(loaded[0]["base_commit"], "abc123")
+            self.assertEqual(loaded[0]["problem_statement"], "Fix bug 1")
+            self.assertEqual(loaded[0]["environment_setup_commit"], "abc123")  # Should match base_commit
+            
+            # Check defaults for excluded fields
+            self.assertEqual(loaded[0]["patch"], "")
+            self.assertEqual(loaded[0]["test_patch"], "")
+            self.assertEqual(loaded[0]["FAIL_TO_PASS"], "[]")
+            self.assertEqual(loaded[0]["PASS_TO_PASS"], "[]")
+
+    def test_load_swebench_dataset_from_directory_sets_task_dir(self):
+        """Test that task_dir is set correctly when loading from directory"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            
+            instance_dir = tmpdir / "my-task"
+            instance_dir.mkdir()
+            task = {
+                "repo": "test/repo",
+                "base_commit": "abc123",
+            }
+            (instance_dir / "task.yaml").write_text(yaml.dump(task))
+            
+            loaded = load_swebench_dataset(str(tmpdir))
+            
+            self.assertEqual(len(loaded), 1)
+            self.assertEqual(loaded[0]["task_dir"], str(instance_dir.resolve()))
+
+    def test_load_swebench_dataset_from_directory_with_optional_fields(self):
+        """Test loading directory dataset with optional fields like cp, test_cmd, dockerfile_base"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            
+            instance_dir = tmpdir / "task-with-extras"
+            instance_dir.mkdir()
+            
+            # Create a dockerfile in the instance directory
+            (instance_dir / "Dockerfile.base").write_text("FROM ubuntu:22.04")
+            
+            task = {
+                "repo": "test/repo",
+                "base_commit": "abc123",
+                "problem_statement": "Test task",
+                "test_cmd": ["pytest", "test.py"],
+                "cp": {"local_file.py": "remote_file.py"},
+                "dockerfile_base": {"path": "Dockerfile.base"},
+            }
+            (instance_dir / "task.yaml").write_text(yaml.dump(task))
+            
+            loaded = load_swebench_dataset(str(tmpdir))
+            
+            self.assertEqual(len(loaded), 1)
+            self.assertEqual(loaded[0]["test_cmd"], ["pytest", "test.py"])
+            self.assertEqual(loaded[0]["cp"], {"local_file.py": "remote_file.py"})
+            self.assertEqual(loaded[0]["dockerfile_base"], {"path": "Dockerfile.base"})
+
+    def test_load_swebench_dataset_from_directory_skips_non_directories(self):
+        """Test that files in the dataset directory are ignored"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            
+            # Create a valid instance directory
+            instance_dir = tmpdir / "valid-task"
+            instance_dir.mkdir()
+            task = {"repo": "test/repo", "base_commit": "abc123"}
+            (instance_dir / "task.yaml").write_text(yaml.dump(task))
+            
+            # Create a file that should be ignored
+            (tmpdir / "README.md").write_text("This should be ignored")
+            
+            loaded = load_swebench_dataset(str(tmpdir))
+            
+            self.assertEqual(len(loaded), 1)
+            self.assertEqual(loaded[0]["instance_id"], "valid-task")
+
+    def test_load_swebench_dataset_from_directory_skips_dirs_without_task_yaml(self):
+        """Test that directories without task.yaml are ignored"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            
+            # Create a valid instance directory
+            valid_dir = tmpdir / "valid-task"
+            valid_dir.mkdir()
+            task = {"repo": "test/repo", "base_commit": "abc123"}
+            (valid_dir / "task.yaml").write_text(yaml.dump(task))
+            
+            # Create a directory without task.yaml
+            invalid_dir = tmpdir / "invalid-task"
+            invalid_dir.mkdir()
+            (invalid_dir / "other_file.txt").write_text("No task.yaml here")
+            
+            loaded = load_swebench_dataset(str(tmpdir))
+            
+            self.assertEqual(len(loaded), 1)
+            self.assertEqual(loaded[0]["instance_id"], "valid-task")

@@ -1,5 +1,4 @@
-import json
-import yaml
+from swebench.harness.utils import load_dataset_file
 
 
 def get_instances(instance_path: str) -> list:
@@ -11,22 +10,7 @@ def get_instances(instance_path: str) -> list:
     Returns:
         task_instances (list): List of task instances
     """
-    if any([instance_path.endswith(x) for x in [".jsonl", ".jsonl.all"]]):
-        task_instances = list()
-        with open(instance_path) as f:
-            for line in f.readlines():
-                task_instances.append(json.loads(line))
-        return task_instances
-    elif any([instance_path.endswith(x) for x in [".yaml", ".yml"]]):
-        with open(instance_path) as f:
-            task_instances = yaml.safe_load(f)
-            if not isinstance(task_instances, list):
-                raise ValueError(f"YAML file must contain a list of instances: {instance_path}")
-        return task_instances
-
-    with open(instance_path) as f:
-        task_instances = json.load(f)
-    return task_instances
+    return load_dataset_file(instance_path)
 
 
 def split_instances(input_list: list, n: int) -> list:

@@ -37,7 +37,9 @@ class SWEbenchInstance(TypedDict):
     FAIL_TO_PASS: str
     PASS_TO_PASS: str
     environment_setup_commit: str
+    task_dir: str | None  # Directory containing the task definition (for resolving relative paths)
     test_cmd: list[str] | None  # Optional per-task test command(s)
+    cp: dict[str, str] | None  # Optional files to copy into container ({host_path: guest_path})
     dockerfile_base: dict | None  # Optional custom base Dockerfile ({"path": "..."} or {"contents": "..."})
     dockerfile_env: dict | None  # Optional custom env Dockerfile ({"path": "..."} or {"contents": "..."})
     dockerfile_instance: dict | None  # Optional custom instance Dockerfile ({"path": "..."} or {"contents": "..."})

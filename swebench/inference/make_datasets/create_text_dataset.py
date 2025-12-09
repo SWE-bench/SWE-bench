@@ -7,12 +7,12 @@ Create a dataset for text-to-text training from the raw task instance outputs.
 import json
 import logging
 import os
-import yaml
 from argparse import ArgumentParser
 from pathlib import Path
 from datasets import Dataset, DatasetDict, load_dataset, load_from_disk
 from tqdm.auto import tqdm
 
+from swebench.harness.utils import load_dataset_file
 from swebench.inference.make_datasets.create_instance import (
     add_text_inputs,
     PROMPT_FUNCTIONS,
@@ -23,29 +23,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 
-def load_jsonl_file(filename):
-    if type(filename) == str:
-        filename = Path(filename)
-    if filename.name.endswith(".jsonl") or filename.name.endswith(".jsonl.all"):
-        with open(filename) as f:
-            return [json.loads(line) for line in f]
-    elif filename.name.endswith(".json"):
-        with open(filename) as f:
-            return json.load(f)
-    elif filename.name.endswith(".yaml") or filename.name.endswith(".yml"):
-        with open(filename) as f:
-            data = yaml.safe_load(f)
-            if not isinstance(data, list):
-                raise ValueError(f"YAML file must contain a list of instances: {filename}")
-            return data
-    else:
-        raise ValueError(f"Unknown file type {filename}. Must be .json, .jsonl, .yaml, or .yml")
-
-
 def instances_generator(files):
     all_data = list()
     for file in tqdm(files, desc="Loading instance files"):
-        all_data.extend(load_jsonl_file(file))
+        all_data.extend(load_dataset_file(file))
     return all_data
 
 

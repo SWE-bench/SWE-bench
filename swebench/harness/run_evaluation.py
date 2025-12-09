@@ -195,13 +195,17 @@ def run_instance(
             )
 
         # Copy additional files if specified in the dataset instance
-        if instance and "cp" in instance:
+        if instance and instance.get("cp") is not None:
             cp_dict = instance["cp"]
             if isinstance(cp_dict, dict):
+                task_dir = instance.get("task_dir")
                 for host_path, guest_path in cp_dict.items():
                     host_file = Path(host_path)
+                    # Resolve relative paths against task_dir if present
+                    if task_dir is not None and not host_file.is_absolute():
+                        host_file = Path(task_dir) / host_file
                     if not host_file.exists():
-                        raise FileNotFoundError(f"Host file {host_path} does not exist")
+                        raise FileNotFoundError(f"Host file {host_file} does not exist")
                     
                     # Convert guest_path to be relative to DOCKER_WORKDIR
                     if guest_path.startswith('/'):

@@ -27,7 +27,7 @@ from swebench.harness.test_spec.create_scripts import (
 )
 
 
-def load_dockerfile_content(dockerfile_spec) -> str | None:
+def load_dockerfile_content(dockerfile_spec, base_dir: str | Path | None = None) -> str | None:
     """
     Load Dockerfile content from a specification dict.
     
@@ -37,6 +37,7 @@ def load_dockerfile_content(dockerfile_spec) -> str | None:
     
     Args:
         dockerfile_spec: Dict with 'path' or 'contents', or None
+        base_dir: Base directory for resolving relative paths (e.g., task_dir)
         
     Returns:
         Dockerfile content as string, or None if dockerfile_spec is None
@@ -70,6 +71,9 @@ def load_dockerfile_content(dockerfile_spec) -> str | None:
     
     if has_path:
         path = Path(dockerfile_spec["path"])
+        # Resolve relative paths against base_dir if provided
+        if base_dir is not None and not path.is_absolute():
+            path = Path(base_dir) / path
         if not path.exists():
             raise FileNotFoundError(
                 f"Dockerfile not found at path: {path}\n"
@@ -341,9 +345,11 @@ def make_test_spec(
     )
     
     # Extract and load custom dockerfile content if specified
-    custom_dockerfile_base = load_dockerfile_content(instance.get("dockerfile_base"))
-    custom_dockerfile_env = load_dockerfile_content(instance.get("dockerfile_env"))
-    custom_dockerfile_instance = load_dockerfile_content(instance.get("dockerfile_instance"))
+    # Resolve paths relative to task_dir if present
+    task_dir = instance.get("task_dir")
+    custom_dockerfile_base = load_dockerfile_content(instance.get("dockerfile_base"), task_dir)
+    custom_dockerfile_env = load_dockerfile_content(instance.get("dockerfile_env"), task_dir)
+    custom_dockerfile_instance = load_dockerfile_content(instance.get("dockerfile_instance"), task_dir)
     
     return TestSpec(
         instance_id=instance_id,
