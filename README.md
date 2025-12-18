@@ -86,6 +86,7 @@ python -m swebench.harness.run_evaluation \
     # use --predictions_path 'gold' to verify the gold patches
     # use --run_id to name the evaluation run
     # use --modal true to run on Modal
+    # use --beam true to run on Beam
 ```
 
 This command will generate docker build logs (`logs/build_images`) and evaluation logs (`logs/run_evaluation`) in the current directory.
@@ -110,6 +111,7 @@ See the [evaluation tutorial](docs/guides/evaluation.md) for the full rundown on
 If you're looking for non-local, cloud based evaluations, check out...
 * [sb-cli](https://github.com/swe-bench/sb-cli), our tool for running evaluations automatically on AWS, or...
 * Running SWE-bench evaluation on [Modal](https://modal.com/). Details [here](docs/guides/evaluation.md#Cloud-Based-Evaluation)
+* Running SWE-bench evaluation on [Beam](https://beam.cloud/). Details [here](docs/guides/evaluation.md#Cloud-Based-Evaluation)
 
 Additionally, you can also:
 * [Train](https://github.com/swe-bench/SWE-bench/tree/main/swebench/inference/make_datasets) your own models on our pre-processed datasets. (🆕 Check out [SWE-smith](https://swesmith.com/), a dedicated toolkit for creating SWE training data.)
