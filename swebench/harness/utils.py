@@ -331,14 +331,13 @@ def get_repo_file(repo, commit, filepath):
         return None
 
 
-def get_modified_files(patch: str) -> list[str]:
+def get_patch_files(patch: str) -> list[str]:
     """
-    Get the list of modified files in a patch
+    Get the list of new and modified files in a patch
     """
     source_files = []
     for file in PatchSet(patch):
-        if file.source_file != "/dev/null":
-            source_files.append(file.source_file)
+        source_files.append(file.source_file)
     source_files = [x[2:] for x in source_files if x.startswith("a/")]
     return source_files
 
