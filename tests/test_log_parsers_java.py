@@ -1,4 +1,4 @@
-from swebench.harness.log_parsers.java import parse_log_gradle_custom
+from swebench.harness.log_parsers.java import parse_log_gradle_custom, parse_log_maven
 from swebench.harness.constants import TestStatus
 
 
@@ -42,3 +42,36 @@ FAILED
         assert result["com.example.Test > testOne"] == TestStatus.PASSED.value
         assert result["com.example.Test > testTwo"] == TestStatus.PASSED.value
         assert result["com.example.Test > testThree"] == TestStatus.FAILED.value
+
+
+class TestParseLogMaven:
+    """Tests for parse_log_maven used by Gson, Druid, JavaParser."""
+
+    def test_parse_sequential_output(self):
+        """Test parsing when commands and results are sequential."""
+        log = """+ mvnd test -B -Dtest=com.example.Test#testOne
+[INFO] BUILD SUCCESS
++ mvnd test -B -Dtest=com.example.Test#testTwo
+[INFO] BUILD FAILURE
+"""
+        result = parse_log_maven(log, test_spec=None)
+
+        assert len(result) == 2
+        assert result["com.example.Test#testOne"] == TestStatus.PASSED.value
+        assert result["com.example.Test#testTwo"] == TestStatus.FAILED.value
+
+    def test_interleaved_commands_race_condition(self):
+        """Test parsing when multiple commands appear before their results."""
+        log = """+ mvnd test -B -Dtest=com.example.Test#testOne
++ mvnd test -B -Dtest=com.example.Test#testTwo
+[INFO] BUILD SUCCESS
+[INFO] BUILD SUCCESS
++ mvnd test -B -Dtest=com.example.Test#testThree
+[INFO] BUILD FAILURE
+"""
+        result = parse_log_maven(log, test_spec=None)
+
+        assert len(result) == 3
+        assert result["com.example.Test#testOne"] == TestStatus.PASSED.value
+        assert result["com.example.Test#testTwo"] == TestStatus.PASSED.value
+        assert result["com.example.Test#testThree"] == TestStatus.FAILED.value

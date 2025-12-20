@@ -10,13 +10,16 @@ def parse_log_maven(log: str, test_spec: TestSpec) -> dict[str, str]:
     parser to work, each test must be run individually, and then we look for
     BUILD (SUCCESS|FAILURE) in the logs.
 
+    Handles race conditions where multiple test commands appear before their
+    BUILD results due to concurrent output from shell tracing and Maven.
+
     Args:
         log (str): log content
     Returns:
         dict: test case to test status mapping
     """
     test_status_map = {}
-    current_test_name = "---NO TEST NAME FOUND YET---"
+    pending_tests: list[str] = []
 
     # Get the test name from the command used to execute the test.
     # Assumes we run evaluation with set -x
@@ -26,15 +29,16 @@ def parse_log_maven(log: str, test_spec: TestSpec) -> dict[str, str]:
     for line in log.split("\n"):
         test_name_match = re.match(test_name_pattern, line.strip())
         if test_name_match:
-            current_test_name = test_name_match.groups()[0]
+            pending_tests.append(test_name_match.groups()[0])
 
         result_match = re.match(result_pattern, line.strip())
-        if result_match:
+        if result_match and pending_tests:
+            test_name = pending_tests.pop(0)
             status = result_match.groups()[0]
             if status == "SUCCESS":
-                test_status_map[current_test_name] = TestStatus.PASSED.value
+                test_status_map[test_name] = TestStatus.PASSED.value
             elif status == "FAILURE":
-                test_status_map[current_test_name] = TestStatus.FAILED.value
+                test_status_map[test_name] = TestStatus.FAILED.value
 
     return test_status_map
 
