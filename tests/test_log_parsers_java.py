@@ -75,3 +75,18 @@ class TestParseLogMaven:
         assert result["com.example.Test#testOne"] == TestStatus.PASSED.value
         assert result["com.example.Test#testTwo"] == TestStatus.PASSED.value
         assert result["com.example.Test#testThree"] == TestStatus.FAILED.value
+
+    def test_delayed_build_result_after_marker(self):
+        """Test when BUILD SUCCESS appears after end marker due to buffering."""
+        log = """+ mvnd test -B -Dtest=com.example.Test#testOne
+[INFO] BUILD SUCCESS
++ mvnd test -B -Dtest=com.example.Test#testTwo
++ : '>>>>> End Test Output'
++ git checkout somefile.java
+[INFO] BUILD SUCCESS
+"""
+        result = parse_log_maven(log, test_spec=None)
+
+        assert len(result) == 2
+        assert result["com.example.Test#testOne"] == TestStatus.PASSED.value
+        assert result["com.example.Test#testTwo"] == TestStatus.PASSED.value

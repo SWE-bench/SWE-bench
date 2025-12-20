@@ -20,6 +20,7 @@ def parse_log_maven(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     test_status_map = {}
     pending_tests: list[str] = []
+    unmatched_results: list[str] = []
 
     # Get the test name from the command used to execute the test.
     # Assumes we run evaluation with set -x
@@ -32,13 +33,27 @@ def parse_log_maven(log: str, test_spec: TestSpec) -> dict[str, str]:
             pending_tests.append(test_name_match.groups()[0])
 
         result_match = re.match(result_pattern, line.strip())
-        if result_match and pending_tests:
-            test_name = pending_tests.pop(0)
+        if result_match:
             status = result_match.groups()[0]
-            if status == "SUCCESS":
-                test_status_map[test_name] = TestStatus.PASSED.value
-            elif status == "FAILURE":
-                test_status_map[test_name] = TestStatus.FAILED.value
+            if pending_tests:
+                test_name = pending_tests.pop(0)
+                if status == "SUCCESS":
+                    test_status_map[test_name] = TestStatus.PASSED.value
+                elif status == "FAILURE":
+                    test_status_map[test_name] = TestStatus.FAILED.value
+            else:
+                # Track unmatched results for later matching
+                unmatched_results.append(status)
+
+    # Match any remaining pending tests with unmatched results (FIFO order)
+    # This handles cases where BUILD results appear after other output
+    while pending_tests and unmatched_results:
+        test_name = pending_tests.pop(0)
+        status = unmatched_results.pop(0)
+        if status == "SUCCESS":
+            test_status_map[test_name] = TestStatus.PASSED.value
+        elif status == "FAILURE":
+            test_status_map[test_name] = TestStatus.FAILED.value
 
     return test_status_map
 
