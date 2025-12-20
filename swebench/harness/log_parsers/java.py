@@ -60,19 +60,55 @@ def parse_log_gradle_custom(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     Parser for test logs generated with 'gradle test'. Assumes that the
     pre-install script to update the gradle config has run.
+
+    Handles race conditions where test name and status appear on different lines
+    due to interleaved log output from concurrent processes.
     """
     test_status_map = {}
 
-    pattern = r"^([^>].+)\s+(PASSED|FAILED)$"
+    # Pattern for normal case: test name and status on the same line
+    # e.g., "com.example.Test > testMethod PASSED"
+    full_pattern = r"^([^>].+)\s+(PASSED|FAILED)$"
+
+    # Pattern for test name without status (race condition case)
+    # e.g., "com.example.Test > testMethod" followed by warnings, then "PASSED"
+    test_name_pattern = r"^(\S+\s+>\s+\S+)$"
+
+    # Pattern for standalone status line
+    status_only_pattern = r"^(PASSED|FAILED)$"
+
+    pending_test_name = None
 
     for line in log.split("\n"):
-        match = re.match(pattern, line.strip())
+        stripped = line.strip()
+
+        # Check for full match (test name + status on same line)
+        match = re.match(full_pattern, stripped)
         if match:
             test_name, status = match.groups()
             if status == "PASSED":
                 test_status_map[test_name] = TestStatus.PASSED.value
             elif status == "FAILED":
                 test_status_map[test_name] = TestStatus.FAILED.value
+            pending_test_name = None
+            continue
+
+        # Check for test name without status
+        test_name_match = re.match(test_name_pattern, stripped)
+        if test_name_match:
+            pending_test_name = test_name_match.group(1)
+            continue
+
+        # Check for standalone status (applies to pending test name)
+        if pending_test_name:
+            status_match = re.match(status_only_pattern, stripped)
+            if status_match:
+                status = status_match.group(1)
+                if status == "PASSED":
+                    test_status_map[pending_test_name] = TestStatus.PASSED.value
+                elif status == "FAILED":
+                    test_status_map[pending_test_name] = TestStatus.FAILED.value
+                pending_test_name = None
 
     return test_status_map
 
