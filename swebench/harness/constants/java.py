@@ -448,7 +448,9 @@ SPECS_LUCENE = {
         "docker_specs": {"java_version": "21"},
         "pre_install": make_lucene_pre_install_script(),
         "test_cmd": [
-            "./gradlew test --tests org.apache.lucene.analysis.opennlp.TestOpenNLPSentenceBreakIterator"
+            # -Ptests.useSecurityManager=false disables extra logging that can cause the test output
+            # parser to incorrectly mark a passing test as failed
+            "./gradlew test --tests org.apache.lucene.analysis.opennlp.TestOpenNLPSentenceBreakIterator -Ptests.useSecurityManager=false"
         ],
     },
     "12196": {
