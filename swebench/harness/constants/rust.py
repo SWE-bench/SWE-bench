@@ -205,7 +205,7 @@ TOKIO_SPECS = {
         # docker's coarse timer resolution. These tests should be skipped in the test command and
         # the PASS_TO_PASS list updated.
         "test_cmd": [
-            'RUST_BACKTRACE=1 RUSTFLAGS="-Awarnings --cfg tokio_unstable" cargo test --features full --test rt_metrics'
+            'RUSTFLAGS="-Awarnings --cfg tokio_unstable" cargo test --features full --test rt_metrics'
         ],
     },
     "6603": {
@@ -230,7 +230,7 @@ TOKIO_SPECS = {
         # The test file (net_types_unwind.rs) is introduced by the PR and doesn't exist in the base
         # commit, so we install using a related test (net_lookup_host)
         "install": [
-            "RUSTFLAGS=-Awarnings cargo test --package tokio --test net_lookup_host --features full --no-fail-fast --no-run"
+            "RUSTFLAGS=-Awarnings cargo test --locked --package tokio --test net_lookup_host --features full --no-fail-fast --no-run"
         ],
         "test_cmd": [
             "RUSTFLAGS=-Awarnings cargo test --package tokio --test net_types_unwind --features full --no-fail-fast"
