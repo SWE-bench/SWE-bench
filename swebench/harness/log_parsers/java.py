@@ -55,6 +55,13 @@ def parse_log_maven(log: str, test_spec: TestSpec) -> dict[str, str]:
         elif status == "FAILURE":
             test_status_map[test_name] = TestStatus.FAILED.value
 
+    # Warn if there are still pending tests without results
+    if pending_tests:
+        print(
+            f"[WARNING] Maven log parser: {len(pending_tests)} test(s) had no BUILD result: "
+            f"{pending_tests}"
+        )
+
     return test_status_map
 
 
@@ -87,11 +94,13 @@ def parse_log_gradle_custom(log: str, test_spec: TestSpec) -> dict[str, str]:
 
     # Pattern for normal case: test name and status on the same line
     # e.g., "com.example.Test > testMethod PASSED"
+    # [^>] ensures we don't match lines starting with > (shell prompts, etc.)
     full_pattern = r"^([^>].+)\s+(PASSED|FAILED)$"
 
     # Pattern for test name without status (race condition case)
     # e.g., "com.example.Test > testMethod" followed by warnings, then "PASSED"
-    test_name_pattern = r"^(\S+\s+>\s+\S+)$"
+    # Must also start with [^>] for consistency
+    test_name_pattern = r"^([^>]\S*\s+>\s+\S+)$"
 
     # Pattern for standalone status line
     status_only_pattern = r"^(PASSED|FAILED)$"
@@ -128,6 +137,12 @@ def parse_log_gradle_custom(log: str, test_spec: TestSpec) -> dict[str, str]:
                 elif status == "FAILED":
                     test_status_map[pending_test_name] = TestStatus.FAILED.value
                 pending_test_name = None
+
+    # Warn if there's a pending test without a result
+    if pending_test_name:
+        print(
+            f"[WARNING] Gradle log parser: test had no status result: {pending_test_name}"
+        )
 
     return test_status_map
 
