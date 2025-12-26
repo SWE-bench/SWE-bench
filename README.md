@@ -92,6 +92,9 @@ This command will generate docker build logs (`logs/build_images`) and evaluatio
 
 The final evaluation results will be stored in the `evaluation_results` directory.
 
+> [!NOTE]
+> **Result Caching**: The evaluation harness caches results by `run_id` and `instance_id` only. If you run the same instance with the same `run_id` multiple times, even with different prediction diffs, the harness will reuse the cached results from the first run and will not re-evaluate. To re-evaluate an instance with a different prediction diff, you must use a different `run_id`.
+
 > [!WARNING]
 > SWE-bench evaluation can be resource intensive
 > We recommend running on an `x86_64` machine with at least 120GB of free storage, 16GB of RAM, and 8 CPU cores.
