@@ -37,6 +37,13 @@ from swebench.harness.grading import get_eval_report
 from swebench.harness.test_spec.test_spec import make_test_spec, TestSpec
 
 
+GIT_APPLY_CMDS = [
+    "git apply --verbose",
+    "git apply --verbose --reject",
+    "patch --batch --fuzz=5 -p1 -i",
+]
+
+
 @dataclass
 class TestOutput:
     instance_id: str
@@ -226,28 +233,25 @@ def run_instance_modal(
         patch_file = "/tmp/patch.diff"
         runner.write_file(patch_file, patch_diff)
 
-        apply_patch_output, returncode = runner.exec(
-            "cd /testbed && git apply -v /tmp/patch.diff",
-        )
-
-        if returncode != 0:
-            logger.info("Failed to apply patch to container, trying again...")
-
+        applied_patch = False
+        for git_apply_cmd in GIT_APPLY_CMDS:
             apply_patch_output, returncode = runner.exec(
-                "cd /testbed && patch --batch --fuzz=5 -p1 -i /tmp/patch.diff",
+                f"cd /testbed && {git_apply_cmd} /tmp/patch.diff",
             )
-
-            if returncode != 0:
-                logger.info(f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}")
-                raise EvaluationError(
-                    instance_id,
-                    f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}",
-                    logger,
-                )
-            else:
+            if returncode == 0:
                 logger.info(f"{APPLY_PATCH_PASS}:\n{apply_patch_output}")
-        else:
-            logger.info(f"{APPLY_PATCH_PASS}:\n{apply_patch_output}")
+                applied_patch = True
+                break
+            else:
+                logger.info(f"Failed to apply patch to container: {git_apply_cmd}")
+
+        if not applied_patch:
+            logger.info(f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}")
+            raise EvaluationError(
+                instance_id,
+                f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}",
+                logger,
+            )
 
         # Get git diff before running eval script
         git_diff_output_before, returncode = runner.exec(
