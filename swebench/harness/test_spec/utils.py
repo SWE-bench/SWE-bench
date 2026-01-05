@@ -3,7 +3,7 @@ from swebench.harness.constants import (
     MAP_REPO_VERSION_TO_SPECS,
     START_TEST_OUTPUT,
 )
-from swebench.harness.utils import get_modified_files
+from swebench.harness.utils import get_patch_files
 
 
 # MARK: Test Command Creation Functions
@@ -63,12 +63,9 @@ def make_eval_script_list_common(
     Applies the test patch and runs the tests.
     """
     HEREDOC_DELIMITER = "EOF_114329324912"
-    test_files = get_modified_files(test_patch)
+    test_files = get_patch_files(test_patch)
     # Reset test files to the state they should be in before the patch.
-    if test_files:
-        reset_tests_command = f"git checkout {base_commit} {' '.join(test_files)}"
-    else:
-        reset_tests_command = 'echo "No test files to reset"'
+    reset_tests_command = f'for f in {" ".join(test_files)}; do git checkout HEAD -- "$f" || true; done'
 
     build_commands = []
     if "build" in specs:
