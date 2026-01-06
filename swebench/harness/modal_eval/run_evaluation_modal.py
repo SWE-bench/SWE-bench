@@ -93,11 +93,11 @@ class ModalSandboxRuntime:
         )
 
     async def _read_stream(
-        self, stream: modal.io_streams.StreamReader, output_list: list[str]
+        self, stream: modal.io_streams.StreamReader, output: list[str]
     ):
         try:
             async for line in stream:
-                output_list.append(line)
+                output.append(line)
                 if self.verbose:
                     print(line)
         except asyncio.CancelledError:
@@ -108,12 +108,11 @@ class ModalSandboxRuntime:
     async def _read_output(
         self,
         p: modal.container_process.ContainerProcess,
-        stdout: list[str],
-        stderr: list[str],
+        output: list[str],
     ):
         self._stream_tasks = [
-            asyncio.create_task(self._read_stream(p.stdout, stdout)),
-            asyncio.create_task(self._read_stream(p.stderr, stderr)),
+            asyncio.create_task(self._read_stream(p.stdout, output)),
+            asyncio.create_task(self._read_stream(p.stderr, output)),
         ]
         try:
             await asyncio.gather(*self._stream_tasks)
@@ -131,17 +130,16 @@ class ModalSandboxRuntime:
             tuple[str, int]: Sandbox output and return code.
         """
         p = self.sandbox.exec("python", "-m", SANDBOX_ENTRYPOINT, command)
-        stdout = []
-        stderr = []
+        output = []
         try:
-            # We separate stdout/stderr because some tests rely on them being separate.
+            # We interleave stdout/stderr using a shared output list.
             # We still read stdout/stderr simultaneously to continuously
             # flush both streams and avoid blocking.
-            asyncio.run(self._read_output(p, stdout, stderr))
+            asyncio.run(self._read_output(p, output))
         except Exception as e:
             print(f"Error during command execution: {e}")
         p.wait()
-        return "".join(stdout + stderr), p.returncode
+        return "".join(output), p.returncode
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._stream_tasks:

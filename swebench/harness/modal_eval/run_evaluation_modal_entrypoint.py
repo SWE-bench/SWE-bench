@@ -17,12 +17,11 @@ async def exec(command: str) -> int:
     p = await asyncio.create_subprocess_shell(
         command,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,  # Combine stdout and stderr
         limit=1024 * 1024,
     )
 
-    stdout_lines = []
-    stderr_lines = []
+    output_lines = []
 
     async def read_stream(stream, lines, fd):
         tokens = STDIO_RATE_LIMIT_BYTES_PER_SEC
@@ -100,10 +99,8 @@ async def exec(command: str) -> int:
 
             lines.append(line)
 
-    await asyncio.gather(
-        read_stream(p.stdout, stdout_lines, "stdout"),
-        read_stream(p.stderr, stderr_lines, "stderr"),
-    )
+    # Read from the combined stream
+    await read_stream(p.stdout, output_lines, "stdout")
 
     return await p.wait()
 
