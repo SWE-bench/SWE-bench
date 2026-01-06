@@ -88,6 +88,10 @@ class ModalSandboxRuntime:
             cpu=4,
         )
 
+    @tenacity.retry(
+        stop=tenacity.stop_after_attempt(3),
+        wait=tenacity.wait_exponential(multiplier=1, min=4, max=10),
+    )
     def write_file(self, file_path: str, content: str):
         self.sandbox.open(file_path, "w").write(content)
 
