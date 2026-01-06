@@ -67,8 +67,6 @@ class ModalSandboxRuntime:
         self.image = ModalSandboxRuntime.get_instance_image(test_spec)
         self.sandbox = self._get_sandbox(timeout)
 
-        # Hack for pylint
-        self.write_file("/sys/fs/cgroup/cpu/cpu.shares", "2048")
 
     @tenacity.retry(
         stop=tenacity.stop_after_attempt(7),
@@ -175,9 +173,11 @@ def run_instance_modal(
 
     logger = setup_logger(instance_id, log_file, add_stdout=True)
 
+    # Initialize patch_diff before try block so it's available in exception handlers
+    patch_diff = pred.get("model_patch", "")
+
     try:
         with ModalSandboxRuntime(test_spec, timeout) as runner:
-            patch_diff = pred.get("model_patch", "")
             patch_file = "/tmp/patch.diff"
             runner.write_file(patch_file, patch_diff)
 
