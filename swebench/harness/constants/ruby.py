@@ -1,4 +1,18 @@
 # Constants - Task Instance Installation Environment
+def wrap_specs_with_tmpdir(specs: dict) -> dict:
+    """Wrap all test commands in a specs dict with tmpdir setup to avoid Ruby's world-writable directory check."""
+    wrapped_specs = {}
+    for test_id, test_spec in specs.items():
+        wrapped_spec = test_spec.copy()
+        if "test_cmd" in wrapped_spec:
+            original_cmds = wrapped_spec["test_cmd"]
+            wrapped_spec["test_cmd"] = ["mkdir -p /testbed/tmp"] + [
+                f"TMPDIR=/testbed/tmp {cmd}" for cmd in original_cmds
+            ]
+        wrapped_specs[test_id] = wrapped_spec
+    return wrapped_specs
+
+
 FASTLANE_RSPEC_JQ_TRANSFORM = (
     r"""sed -n '/^{/,$p' | jq -r '.examples[] | "\(.description) - \(.id) - \(.status)"'"""
 )
@@ -146,56 +160,49 @@ SPECS_FASTLANE = {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/lane_manager_base_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/lane_manager_base_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "20958": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/import_from_git_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/import_from_git_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "20642": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./frameit/spec/device_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./frameit/spec/device_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "19765": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/download_dsyms_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/download_dsyms_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "20975": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./match/spec/storage/s3_storage_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./match/spec/storage/s3_storage_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "19304": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "19207": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
 }
@@ -351,12 +358,12 @@ SPECS_RUBOCOP = {
 
 
 MAP_REPO_VERSION_TO_SPECS_RUBY = {
-    "jekyll/jekyll": SPECS_JEKYLL,
-    "fluent/fluentd": SPECS_FLUENTD,
-    "fastlane/fastlane": SPECS_FASTLANE,
-    "jordansissel/fpm": SPECS_FPM,
-    "faker-ruby/faker": SPECS_FAKER,
-    "rubocop/rubocop": SPECS_RUBOCOP,
+    "jekyll/jekyll": wrap_specs_with_tmpdir(SPECS_JEKYLL),
+    "fluent/fluentd": wrap_specs_with_tmpdir(SPECS_FLUENTD),
+    "fastlane/fastlane": wrap_specs_with_tmpdir(SPECS_FASTLANE),
+    "jordansissel/fpm": wrap_specs_with_tmpdir(SPECS_FPM),
+    "faker-ruby/faker": wrap_specs_with_tmpdir(SPECS_FAKER),
+    "rubocop/rubocop": wrap_specs_with_tmpdir(SPECS_RUBOCOP),
 }
 
 # Constants - Repository Specific Installation Instructions
