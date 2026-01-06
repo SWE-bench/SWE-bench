@@ -61,13 +61,11 @@ class ModalSandboxRuntime:
     """
 
     def __init__(
-        self, test_spec: TestSpec, timeout: int | None = None, verbose: bool = True
+        self, test_spec: TestSpec, timeout: int | None = None
     ):
         self.test_spec = test_spec
         self.image = ModalSandboxRuntime.get_instance_image(test_spec)
         self.sandbox = self._get_sandbox(timeout)
-        self.verbose = verbose
-        self._stream_tasks = []
 
         # Hack for pylint
         self.write_file("/sys/fs/cgroup/cpu/cpu.shares", "2048")
@@ -92,74 +90,36 @@ class ModalSandboxRuntime:
             cpu=4,
         )
 
-    async def _read_stream(
-        self, stream: modal.io_streams.StreamReader, output: list[str]
-    ):
-        try:
-            async for line in stream:
-                output.append(line)
-                if self.verbose:
-                    print(line)
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            print(f"Error reading stream: {e}")
-
-    async def _read_output(
-        self,
-        p: modal.container_process.ContainerProcess,
-        output: list[str],
-    ):
-        self._stream_tasks = [
-            asyncio.create_task(self._read_stream(p.stdout, output)),
-            asyncio.create_task(self._read_stream(p.stderr, output)),
-        ]
-        try:
-            await asyncio.gather(*self._stream_tasks)
-        except asyncio.CancelledError:
-            pass
-
     def write_file(self, file_path: str, content: str):
         self.sandbox.open(file_path, "w").write(content)
 
     def exec(self, command: str) -> tuple[str, int]:
         """
-        Execute a command in the sandbox.
+        Execute a command in the sandbox and retrieve output via a log file.
 
         Returns:
             tuple[str, int]: Sandbox output and return code.
         """
-        p = self.sandbox.exec("python", "-m", SANDBOX_ENTRYPOINT, command)
-        output = []
-        try:
-            # We interleave stdout/stderr using a shared output list.
-            # We still read stdout/stderr simultaneously to continuously
-            # flush both streams and avoid blocking.
-            asyncio.run(self._read_output(p, output))
-        except Exception as e:
-            print(f"Error during command execution: {e}")
+        log_file = "/tmp/modal_exec.log"
+        p = self.sandbox.exec("python", "-m", SANDBOX_ENTRYPOINT, command, log_file)
         p.wait()
-        return "".join(output), p.returncode
+        
+        output = ""
+        try:
+            output = self.sandbox.open(log_file, "r").read()
+        except Exception as e:
+            print(f"Error reading log file {log_file}: {e}")
+            
+        return output, p.returncode
+
+    def __enter__(self):
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._stream_tasks:
-            try:
-                # Forcefully kill remaining streams
-                for task in self._stream_tasks:
-                    if not task.done():
-                        task.cancel()
-                        try:
-                            asyncio.wait_for(task, timeout=0.1)
-                        except asyncio.TimeoutError:
-                            pass
-                        except Exception:
-                            pass
-
-                self.sandbox.terminate()
-            except Exception:
-                pass
-            finally:
-                self._stream_tasks = []
+        try:
+            self.sandbox.terminate()
+        except Exception:
+            pass
 
 
     @staticmethod
@@ -216,104 +176,94 @@ def run_instance_modal(
     logger = setup_logger(instance_id, log_file, add_stdout=True)
 
     try:
-        runner = ModalSandboxRuntime(test_spec, timeout)
-    except Exception as e:
-        print(f"Error creating sandbox: {e}")
-        raise EvaluationError(
-            instance_id,
-            f"Error creating sandbox: {e}",
-            logger,
-        ) from e
+        with ModalSandboxRuntime(test_spec, timeout) as runner:
+            patch_diff = pred.get("model_patch", "")
+            patch_file = "/tmp/patch.diff"
+            runner.write_file(patch_file, patch_diff)
 
-    patch_diff = pred.get("model_patch", "")
+            applied_patch = False
+            for git_apply_cmd in GIT_APPLY_CMDS:
+                apply_patch_output, returncode = runner.exec(
+                    f"cd /testbed && {git_apply_cmd} /tmp/patch.diff",
+                )
+                if returncode == 0:
+                    logger.info(f"{APPLY_PATCH_PASS}:\n{apply_patch_output}")
+                    applied_patch = True
+                    break
+                else:
+                    logger.info(f"Failed to apply patch to container: {git_apply_cmd}")
 
-    try:
-        patch_file = "/tmp/patch.diff"
-        runner.write_file(patch_file, patch_diff)
+            if not applied_patch:
+                logger.info(f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}")
+                raise EvaluationError(
+                    instance_id,
+                    f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}",
+                    logger,
+                )
 
-        applied_patch = False
-        for git_apply_cmd in GIT_APPLY_CMDS:
-            apply_patch_output, returncode = runner.exec(
-                f"cd /testbed && {git_apply_cmd} /tmp/patch.diff",
+            # Get git diff before running eval script
+            git_diff_output_before, returncode = runner.exec(
+                "cd /testbed && git diff",
             )
-            if returncode == 0:
-                logger.info(f"{APPLY_PATCH_PASS}:\n{apply_patch_output}")
-                applied_patch = True
-                break
-            else:
-                logger.info(f"Failed to apply patch to container: {git_apply_cmd}")
+            logger.info(f"Git diff before:\n{git_diff_output_before}")
 
-        if not applied_patch:
-            logger.info(f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}")
-            raise EvaluationError(
-                instance_id,
-                f"{APPLY_PATCH_FAIL}:\n{apply_patch_output}",
-                logger,
+            eval_file = "/root/eval.sh"
+            eval_script = test_spec.eval_script
+            # django hack
+            eval_script = eval_script.replace("locale-gen", "locale-gen en_US.UTF-8")
+            runner.write_file(eval_file, eval_script)
+
+            start_time = time.time()
+
+            run_command = "cd /testbed"
+            # pylint hack
+            if "pylint" in test_spec.instance_id:
+                run_command += " && PYTHONPATH="
+            # increase recursion limit for testing
+            run_command += " && python3 -c 'import sys; sys.setrecursionlimit(10000)'"
+            # run eval script
+            run_command += " && /bin/bash /root/eval.sh"
+            test_output, returncode = runner.exec(run_command)
+
+            total_runtime = time.time() - start_time
+
+            test_output_path = log_dir / "test_output.txt"
+            logger.info(f"Test runtime: {total_runtime:_.2f} seconds")
+            with open(test_output_path, "w") as f:
+                f.write(test_output)
+                logger.info(f"Test output for {instance_id} written to {test_output_path}")
+                print(f"Test output for {instance_id} written to {test_output_path}")
+
+            # Get git diff after running eval script
+            git_diff_output_after, returncode = runner.exec("cd /testbed && git diff")
+
+            # Check if git diff changed after running eval script
+            logger.info(f"Git diff after:\n{git_diff_output_after}")
+            if git_diff_output_after != git_diff_output_before:
+                logger.info("Git diff changed after running eval script")
+
+            # Get report from test output
+            logger.info(f"Grading answer for {instance_id}...")
+            report = get_eval_report(
+                test_spec=test_spec,
+                prediction=pred,
+                test_log_path=test_output_path,
+                include_tests_status=True,
+            )
+            logger.info(
+                f"report: {report}\n"
+                f"Result for {instance_id}: resolved: {report[instance_id]['resolved']}"
             )
 
-        # Get git diff before running eval script
-        git_diff_output_before, returncode = runner.exec(
-            "cd /testbed && git diff",
-        )
-        logger.info(f"Git diff before:\n{git_diff_output_before}")
-
-        eval_file = "/root/eval.sh"
-        eval_script = test_spec.eval_script
-        # django hack
-        eval_script = eval_script.replace("locale-gen", "locale-gen en_US.UTF-8")
-        runner.write_file(eval_file, eval_script)
-
-        start_time = time.time()
-
-        run_command = "cd /testbed"
-        # pylint hack
-        if "pylint" in test_spec.instance_id:
-            run_command += " && PYTHONPATH="
-        # increase recursion limit for testing
-        run_command += " && python3 -c 'import sys; sys.setrecursionlimit(10000)'"
-        # run eval script
-        run_command += " && /bin/bash /root/eval.sh"
-        test_output, returncode = runner.exec(run_command)
-
-        total_runtime = time.time() - start_time
-
-        test_output_path = log_dir / "test_output.txt"
-        logger.info(f"Test runtime: {total_runtime:_.2f} seconds")
-        with open(test_output_path, "w") as f:
-            f.write(test_output)
-            logger.info(f"Test output for {instance_id} written to {test_output_path}")
-            print(f"Test output for {instance_id} written to {test_output_path}")
-
-        # Get git diff after running eval script
-        git_diff_output_after, returncode = runner.exec("cd /testbed && git diff")
-
-        # Check if git diff changed after running eval script
-        logger.info(f"Git diff after:\n{git_diff_output_after}")
-        if git_diff_output_after != git_diff_output_before:
-            logger.info("Git diff changed after running eval script")
-
-        # Get report from test output
-        logger.info(f"Grading answer for {instance_id}...")
-        report = get_eval_report(
-            test_spec=test_spec,
-            prediction=pred,
-            test_log_path=test_output_path,
-            include_tests_status=True,
-        )
-        logger.info(
-            f"report: {report}\n"
-            f"Result for {instance_id}: resolved: {report[instance_id]['resolved']}"
-        )
-
-        return TestOutput(
-            instance_id=instance_id,
-            test_output=test_output,
-            report_json_str=json.dumps(report, indent=4),
-            run_instance_log=log_file.read_text(),
-            patch_diff=patch_diff,
-            log_dir=log_dir,
-            errored=False,
-        )
+            return TestOutput(
+                instance_id=instance_id,
+                test_output=test_output,
+                report_json_str=json.dumps(report, indent=4),
+                run_instance_log=log_file.read_text(),
+                patch_diff=patch_diff,
+                log_dir=log_dir,
+                errored=False,
+            )
     except modal.exception.SandboxTimeoutError as e:
         raise EvaluationError(
             instance_id,
