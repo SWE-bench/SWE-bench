@@ -521,6 +521,8 @@ def main(
     full_dataset = load_swebench_dataset(dataset_name, split, instance_ids)
 
     if modal:
+        if max_workers is not None:
+            print(f"Warning: --max_workers is not supported on Modal evaluation; this argument will be ignored.")
         # run instances on Modal
         if not dataset:
             print("No instances to run.")
@@ -530,6 +532,9 @@ def main(
         return
 
     # run instances locally
+    if max_workers is None:
+        max_workers = 4
+
     if platform.system() == "Linux":
         resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
     client = docker.from_env()
@@ -613,7 +618,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--max_workers",
         type=int,
-        default=4,
+        default=None,
         help="Maximum number of workers (should be <= 75%% of CPU cores)",
     )
     parser.add_argument(
