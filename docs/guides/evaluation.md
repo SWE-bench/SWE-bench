@@ -118,6 +118,12 @@ python -m swebench.harness.run_evaluation \
     --max_workers 8
 ```
 
+### Result Caching
+
+The evaluation harness caches results by `run_id` and `instance_id`. This means that if you run the same instance with the same `run_id` multiple times, even with different prediction diffs, the harness will reuse the cached results from the first run and will not re-evaluate the instance. 
+
+**Important**: If you want to re-evaluate an instance with a different prediction diff, you must use a different `run_id` to ensure the new prediction is evaluated.
+
 ### Cleaning Up Resources
 
 To automatically clean up resources after evaluation, use the `--clean` parameter:
