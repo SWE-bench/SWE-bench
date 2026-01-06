@@ -88,13 +88,6 @@ class ModalSandboxRuntime:
             cpu=4,
         )
 
-    @tenacity.retry(
-        stop=tenacity.stop_after_attempt(3),
-        wait=tenacity.wait_exponential(multiplier=1, min=4, max=10),
-    )
-    def write_file(self, file_path: str, content: str):
-        self.sandbox.open(file_path, "w").write(content)
-
     def exec(self, command: str) -> tuple[str, int]:
         """
         Execute a command in the sandbox and retrieve output via a log file.
@@ -182,14 +175,15 @@ def run_instance_modal(
 
     try:
         with ModalSandboxRuntime(test_spec, timeout) as runner:
-            patch_file = "/tmp/patch.diff"
-            runner.write_file(patch_file, patch_diff)
-
+            # Use heredoc to pipe patch content directly via stdin, avoiding Modal file I/O
             applied_patch = False
             for git_apply_cmd in GIT_APPLY_CMDS:
-                apply_patch_output, returncode = runner.exec(
-                    f"cd /testbed && {git_apply_cmd} /tmp/patch.diff",
-                )
+                # Create heredoc command to write patch to file and apply it
+                heredoc_command = f"""cat > /tmp/{instance_id}.diff << 'PATCH_EOF'
+{patch_diff}
+PATCH_EOF
+cd /testbed && {git_apply_cmd} /tmp/{instance_id}.diff"""
+                apply_patch_output, returncode = runner.exec(heredoc_command)
                 if returncode == 0:
                     logger.info(f"{APPLY_PATCH_PASS}:\n{apply_patch_output}")
                     applied_patch = True
@@ -215,18 +209,21 @@ def run_instance_modal(
             eval_script = test_spec.eval_script
             # django hack
             eval_script = eval_script.replace("locale-gen", "locale-gen en_US.UTF-8")
-            runner.write_file(eval_file, eval_script)
-
-            start_time = time.time()
-
-            run_command = "cd /testbed"
+            
+            # Use heredoc to create eval script file and run it
+            run_command = f"""cat << 'EVAL_SCRIPT_EOF' > {eval_file}
+{eval_script}
+EVAL_SCRIPT_EOF
+cd /testbed"""
             # pylint hack
             if "pylint" in test_spec.instance_id:
                 run_command += " && PYTHONPATH="
             # increase recursion limit for testing
             run_command += " && python3 -c 'import sys; sys.setrecursionlimit(10000)'"
             # run eval script
-            run_command += " && /bin/bash /root/eval.sh"
+            run_command += f" && /bin/bash {eval_file}"
+
+            start_time = time.time()
             test_output, returncode = runner.exec(run_command)
 
             total_runtime = time.time() - start_time
