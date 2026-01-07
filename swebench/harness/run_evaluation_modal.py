@@ -18,11 +18,7 @@ from swebench.harness.reporting import make_run_report
 from swebench.harness.utils import EvaluationError
 from typing import cast
 
-SANDBOX_ENTRYPOINT = "run_evaluation_modal_entrypoint"
-LOCAL_SANDBOX_ENTRYPOINT_PATH = (
-    Path(__file__).parent / f"{SANDBOX_ENTRYPOINT}.py"
-).resolve()
-REMOTE_SANDBOX_ENTRYPOINT_PATH = f"/root/{SANDBOX_ENTRYPOINT}.py"
+
 
 app = modal.App("swebench-evaluation")
 
@@ -80,10 +76,7 @@ class ModalSandboxRuntime:
             timeout = 60 * 30
 
         return modal.Sandbox.create(
-            image=self.image.add_local_file(
-                REMOTE_SANDBOX_ENTRYPOINT_PATH,
-                REMOTE_SANDBOX_ENTRYPOINT_PATH,
-            ),
+            image=self.image,
             timeout=timeout,
             cpu=4,
         )
@@ -96,8 +89,12 @@ class ModalSandboxRuntime:
             tuple[str, int]: Sandbox output and return code.
         """
         log_file = "/tmp/modal_exec.log"
-        p = self.sandbox.exec("python", "-m", SANDBOX_ENTRYPOINT, "-", log_file)
-        p.stdin.write(command.encode("utf-8"))
+        # Pass command via stdin to shell to avoid ARG_MAX limits.
+        # Wrap in subshell to capture all output (stdout and stderr) to log file.
+        full_cmd = f"({command}) > {log_file} 2>&1"
+        
+        p = self.sandbox.exec("/bin/bash")
+        p.stdin.write(full_cmd.encode("utf-8"))
         p.stdin.write_eof()
         p.stdin.drain()
         p.wait()
@@ -134,6 +131,20 @@ class ModalSandboxRuntime:
         return modal.Image.from_registry(image_name, add_python="3.11").workdir("/testbed/")
 
 
+
+def validate_modal_credentials():
+    """
+    Validate that Modal credentials exist by checking for ~/.modal.toml file.
+    Raises an exception if credentials are not configured.
+    """
+    modal_config_path = Path.home() / ".modal.toml"
+    if not modal_config_path.exists():
+        raise RuntimeError(
+            "~/.modal.toml not found - it looks like you haven't configured credentials for Modal.\n"
+            "Run 'modal token new' in your terminal to configure credentials."
+        )
+
+
 def get_log_dir(pred: dict, run_id: str, instance_id: str) -> Path:
     model_name_or_path = cast(
         str, pred.get("model_name_or_path", "None").replace("/", "__")
@@ -142,10 +153,7 @@ def get_log_dir(pred: dict, run_id: str, instance_id: str) -> Path:
 
 
 @app.function(
-    image=swebench_image.add_local_file(
-        LOCAL_SANDBOX_ENTRYPOINT_PATH,
-        REMOTE_SANDBOX_ENTRYPOINT_PATH,
-    ),
+    image=swebench_image,
     timeout=120
     * 60,  # Much larger than default timeout to account for image build time
     include_source=True,

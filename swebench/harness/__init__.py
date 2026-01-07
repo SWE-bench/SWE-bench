@@ -6,11 +6,11 @@ from swebench.harness import (
     remove_containers,
     reporting,
     run_evaluation,
+    run_evaluation_modal,
     utils,
     constants,
     dockerfiles,
     log_parsers,
-    modal_eval,
     test_spec,
 )
 
@@ -22,10 +22,10 @@ __all__ = [
     "remove_containers",
     "reporting",
     "run_evaluation",
+    "run_evaluation_modal",
     "utils",
     "constants",
     "dockerfiles",
     "log_parsers",
-    "modal_eval",
     "test_spec",
 ]

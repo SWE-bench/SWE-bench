@@ -47,7 +47,7 @@ from swebench.harness.docker_build import (
 )
 from swebench.harness.grading import get_eval_report
 from swebench.harness.reporting import make_run_report
-from swebench.harness.modal_eval import (
+from swebench.harness.run_evaluation_modal import (
     run_instances_modal,
     validate_modal_credentials,
 )
