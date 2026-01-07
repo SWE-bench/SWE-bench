@@ -80,10 +80,13 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
 
         # Try parsing the content between markers first
         status_map = log_parser(test_content, test_spec)
-        
-        # If no tests were found between markers, fallback to parsing the full log
+
+        # If no test results found between markers (common in Modal environment),
+        # try parsing the entire log content as fallback
         if not status_map:
-            return log_parser(content, test_spec), True
+            # Look for pytest output patterns in the entire log content
+            # This handles cases where pytest output goes to stderr and isn't captured between markers
+            status_map = log_parser(content, test_spec)
 
         return status_map, True
 
