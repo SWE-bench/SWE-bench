@@ -1,6 +1,6 @@
 # Constants - Task Instance Installation Environment
 FASTLANE_RSPEC_JQ_TRANSFORM = (
-    r"""sed -n '/^{/,$p' | jq -r '.examples[] | "\(.description) - \(.id) - \(.status)"'"""
+    r"""tail -n +2 | jq -r '.examples[] | "\(.description) - \(.id) - \(.status)"'"""
 )
 FPM_RSPEC_JQ_TRANSFORM = (
     r"""sed -n '/^{/,$p' | jq -r '.examples[] | "\(.description) - \(.status)"'"""
@@ -146,56 +146,49 @@ SPECS_FASTLANE = {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/lane_manager_base_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/lane_manager_base_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "20958": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/import_from_git_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/import_from_git_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "20642": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./frameit/spec/device_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./frameit/spec/device_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "19765": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/download_dsyms_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/download_dsyms_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "20975": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./match/spec/storage/s3_storage_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./match/spec/storage/s3_storage_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "19304": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
     "19207": {
         "docker_specs": {"ruby_version": "3.3"},
         "install": ["bundle install --jobs=$(nproc)"],
         "test_cmd": [
-            "mkdir -p /testbed/tmp",
-            f"TMPDIR=/testbed/tmp FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
+            f"FASTLANE_SKIP_UPDATE_CHECK=1 bundle exec rspec ./fastlane/spec/actions_specs/zip_spec.rb --no-color --format json | {FASTLANE_RSPEC_JQ_TRANSFORM}",
         ],
     },
 }
