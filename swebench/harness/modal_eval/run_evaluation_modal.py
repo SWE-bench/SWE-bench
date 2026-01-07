@@ -96,7 +96,10 @@ class ModalSandboxRuntime:
             tuple[str, int]: Sandbox output and return code.
         """
         log_file = "/tmp/modal_exec.log"
-        p = self.sandbox.exec("python", "-m", SANDBOX_ENTRYPOINT, command, log_file)
+        p = self.sandbox.exec("python", "-m", SANDBOX_ENTRYPOINT, "-", log_file)
+        p.stdin.write(command.encode("utf-8"))
+        p.stdin.write_eof()
+        p.stdin.drain()
         p.wait()
         
         output = ""
