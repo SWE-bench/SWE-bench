@@ -71,8 +71,6 @@ nav:
       - "Harness": api/harness.md
       - "Inference": api/inference.md
       - "Versioning": api/versioning.md
-  - Blog:
-    - blog/index.md
 plugins:
    - blog
    - glightbox

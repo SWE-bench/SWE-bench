@@ -157,17 +157,17 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testByteSerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testShortSerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testIntSerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testLongSerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testFloatSerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testDoubleSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testByteSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testShortSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testIntSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testLongSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testFloatSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testDoubleSerialization",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testPrimitiveIntegerAutoboxedSerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testPrimitiveIntegerAutoboxedInASingleElementArraySerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testReallyLongValuesSerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testPrimitiveLongAutoboxedSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testPrimitiveIntegerAutoboxedSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testPrimitiveIntegerAutoboxedInASingleElementArraySerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testReallyLongValuesSerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.PrimitiveTest#testPrimitiveLongAutoboxedSerialization",
         ],
     },
     "2024": {
@@ -175,9 +175,9 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.FieldNamingTest#testUpperCaseWithUnderscores",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.NamingPolicyTest#testGsonWithUpperCaseUnderscorePolicySerialization",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.functional.NamingPolicyTest#testGsonWithUpperCaseUnderscorePolicyDeserialiation",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.FieldNamingTest#testUpperCaseWithUnderscores",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.NamingPolicyTest#testGsonWithUpperCaseUnderscorePolicySerialization",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.functional.NamingPolicyTest#testGsonWithUpperCaseUnderscorePolicyDeserialiation",
         ],
     },
     "2479": {
@@ -185,10 +185,10 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.GsonBuilderTest#testRegisterTypeAdapterForObjectAndJsonElements",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.GsonBuilderTest#testRegisterTypeHierarchyAdapterJsonElements",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.GsonBuilderTest#testRegisterTypeAdapterForObjectAndJsonElements",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.GsonBuilderTest#testRegisterTypeHierarchyAdapterJsonElements",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.GsonBuilderTest#testModificationAfterCreate",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.GsonBuilderTest#testModificationAfterCreate",
         ],
     },
     "2134": {
@@ -196,10 +196,10 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.util.ISO8601UtilsTest#testDateParseInvalidDay",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.util.ISO8601UtilsTest#testDateParseInvalidMonth",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.util.ISO8601UtilsTest#testDateParseInvalidDay",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.util.ISO8601UtilsTest#testDateParseInvalidMonth",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.util.ISO8601UtilsTest#testDateParseWithDefaultTimezone",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.util.ISO8601UtilsTest#testDateParseWithDefaultTimezone",
         ],
     },
     "2061": {
@@ -207,13 +207,13 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonReaderTest#testHasNextEndOfDocument",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testHasNext_endOfDocument",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonReaderTest#testHasNextEndOfDocument",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testHasNext_endOfDocument",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonReaderTest#testReadEmptyObject",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonReaderTest#testReadEmptyArray",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_emptyJsonObject",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_filledJsonObject",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonReaderTest#testReadEmptyObject",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonReaderTest#testReadEmptyArray",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_emptyJsonObject",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_filledJsonObject",
         ],
     },
     "2311": {
@@ -221,10 +221,10 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.JsonPrimitiveTest#testEqualsIntegerAndBigInteger",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.JsonPrimitiveTest#testEqualsIntegerAndBigInteger",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.JsonPrimitiveTest#testLongEqualsBigInteger",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.JsonPrimitiveTest#testEqualsAcrossTypes",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.JsonPrimitiveTest#testLongEqualsBigInteger",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.JsonPrimitiveTest#testEqualsAcrossTypes",
         ],
     },
     "1100": {
@@ -232,10 +232,10 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.DefaultDateTypeAdapterTest#testNullValue",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.DefaultDateTypeAdapterTest#testNullValue",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.DefaultDateTypeAdapterTest#testDatePattern",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.DefaultDateTypeAdapterTest#testInvalidDatePattern",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.DefaultDateTypeAdapterTest#testDatePattern",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.DefaultDateTypeAdapterTest#testInvalidDatePattern",
         ],
     },
     "1093": {
@@ -243,12 +243,12 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteDoublesWhenLenient",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteDoublesWhenLenient",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteBoxedDoublesWhenLenient",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteDoubles",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteBoxedDoubles",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testDoubles",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteBoxedDoublesWhenLenient",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteDoubles",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testNonFiniteBoxedDoubles",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.stream.JsonWriterTest#testDoubles",
         ],
     },
     "1014": {
@@ -256,8 +256,8 @@ SPECS_GSON = {
         "install": ["mvn clean install -B -pl gson -DskipTests -am"],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_emptyJsonObject",
-            "mvnd test -B -T 1C -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_filledJsonObject",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_emptyJsonObject",
+            "mvnd test -B -pl gson -Dtest=com.google.gson.internal.bind.JsonTreeReaderTest#testSkipValue_filledJsonObject",
         ],
     },
 }
@@ -270,10 +270,10 @@ SPECS_DRUID = {
         ],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.query.groupby.GroupByQueryQueryToolChestTest#testCacheStrategy",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.query.groupby.GroupByQueryQueryToolChestTest#testCacheStrategy",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.query.groupby.GroupByQueryQueryToolChestTest#testResultLevelCacheKeyWithSubTotalsSpec",
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.query.groupby.GroupByQueryQueryToolChestTest#testMultiColumnCacheStrategy",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.query.groupby.GroupByQueryQueryToolChestTest#testResultLevelCacheKeyWithSubTotalsSpec",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.query.groupby.GroupByQueryQueryToolChestTest#testMultiColumnCacheStrategy",
         ],
     },
     "14092": {
@@ -283,9 +283,9 @@ SPECS_DRUID = {
         ],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl server -Dtest=org.apache.druid.discovery.DruidLeaderClientTest#test503ResponseFromServerAndCacheRefresh",
+            "mvnd test -B -pl server -Dtest=org.apache.druid.discovery.DruidLeaderClientTest#test503ResponseFromServerAndCacheRefresh",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl server -Dtest=org.apache.druid.discovery.DruidLeaderClientTest#testServerFailureAndRedirect",
+            "mvnd test -B -pl server -Dtest=org.apache.druid.discovery.DruidLeaderClientTest#testServerFailureAndRedirect",
         ],
     },
     "14136": {
@@ -295,13 +295,13 @@ SPECS_DRUID = {
         ],
         "test_cmd": [
             # FAIL_TO_PASS
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval",
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval2",
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval3",
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval4",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval2",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval3",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirstZeroLengthInterval4",
             # PASS_TO_PASS
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapFirstContainsSecond",
-            "mvnd test -B -T 1C -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirst",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapFirstContainsSecond",
+            "mvnd test -B -pl processing -Dtest=org.apache.druid.timeline.VersionedIntervalTimelineTest#testOverlapSecondContainsFirst",
         ],
     },
     "13704": {
@@ -448,7 +448,9 @@ SPECS_LUCENE = {
         "docker_specs": {"java_version": "21"},
         "pre_install": make_lucene_pre_install_script(),
         "test_cmd": [
-            "./gradlew test --tests org.apache.lucene.analysis.opennlp.TestOpenNLPSentenceBreakIterator"
+            # -Ptests.useSecurityManager=false disables extra logging that can cause the test output
+            # parser to incorrectly mark a passing test as failed
+            "./gradlew test --tests org.apache.lucene.analysis.opennlp.TestOpenNLPSentenceBreakIterator -Ptests.useSecurityManager=false"
         ],
     },
     "12196": {
