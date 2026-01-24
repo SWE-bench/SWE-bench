@@ -1,0 +1,77 @@
+diff --git a/astropy/io/fits/tests/test_header.py b/astropy/io/fits/tests/test_header.py
+--- a/astropy/io/fits/tests/test_header.py
++++ b/astropy/io/fits/tests/test_header.py
+@@ -85,6 +85,15 @@
+        c = fits.Card()
+
+        assert '' == c.keyword
+
+
+
+    def test_card_from_bytes(self):
+
+        """
+
+        Test loading a Card from a `bytes` object (assuming latin-1 encoding).
+
+        """
+
+
+
+        c = fits.Card.fromstring(b"ABC     = 'abc'")
+
+        assert c.keyword == 'ABC'
+
+        assert c.value == 'abc'
+
+
+
+    def test_string_value_card(self):
+
+        """Test Card constructor with string value"""
+
+
+
+@@ -2329,6 +2338,21 @@
+            else:
+
+                c.verify('exception')
+
+
+
+    def test_header_fromstring_bytes(self):
+
+        """
+
+        Test reading a Header from a `bytes` string.
+
+
+
+        See https://github.com/astropy/astropy/issues/8706
+
+        """
+
+
+
+        with open(self.data('test0.fits'), 'rb') as fobj:
+
+            pri_hdr_from_bytes = fits.Header.fromstring(fobj.read())
+
+
+
+        pri_hdr = fits.getheader(self.data('test0.fits'))
+
+        assert pri_hdr['NAXIS'] == pri_hdr_from_bytes['NAXIS']
+
+        assert pri_hdr == pri_hdr_from_bytes
+
+        assert pri_hdr.tostring() == pri_hdr_from_bytes.tostring()
+
+
+
+
+
+class TestRecordValuedKeywordCards(FitsTestCase):
+
+    """
+

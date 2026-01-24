@@ -96,6 +96,7 @@ def fix_pytest_setup_methods(patch_content: str) -> str:
     """
     Replace nose-style setup/teardown methods with pytest setup_method/teardown_method.
     Works on patch format by modifying the content within hunks.
+    Maintains correct hunk line counts.
     
     Args:
         patch_content: The original test_patch content (git patch format)
@@ -108,28 +109,56 @@ def fix_pytest_setup_methods(patch_content: str) -> str:
         fixed_lines = []
         
         for patched_file in patch:
+            # Extract file paths (unidiff includes a/ and b/ prefixes)
+            source_path = patched_file.source_file.split("a/", 1)[-1] if "a/" in patched_file.source_file else patched_file.source_file
+            target_path = patched_file.target_file.split("b/", 1)[-1] if "b/" in patched_file.target_file else patched_file.target_file
+            
             # Write the file header
-            fixed_lines.append(f"diff --git a/{patched_file.source_file} b/{patched_file.target_file}")
-            fixed_lines.append(f"--- a/{patched_file.source_file}")
-            fixed_lines.append(f"+++ b/{patched_file.target_file}")
+            fixed_lines.append(f"diff --git a/{source_path} b/{target_path}")
+            fixed_lines.append(f"--- a/{source_path}")
+            fixed_lines.append(f"+++ b/{target_path}")
             
             for hunk in patched_file:
-                # Write hunk header
-                fixed_lines.append(f"@@ -{hunk.source_start},{hunk.source_length} +{hunk.target_start},{hunk.target_length} @@")
+                # Track line counts as we process
+                source_count = 0
+                target_count = 0
+                hunk_lines = []
                 
                 # Process each line in the hunk
                 for line in hunk:
                     line_content = line.value
-                    # Only modify added lines (starting with +)
+                    original_line = line_content
+                    
+                    # Modify added lines
                     if line.is_added:
                         line_content = fix_pytest_setup_methods_in_content(line_content)
-                    fixed_lines.append(line_content)
+                    
+                    # Count lines for hunk header
+                    if line.is_context:
+                        source_count += 1
+                        target_count += 1
+                    elif line.is_removed:
+                        source_count += 1
+                    elif line.is_added:
+                        target_count += 1
+                    
+                    hunk_lines.append(line_content)
+                
+                # Write hunk header with correct counts
+                fixed_lines.append(f"@@ -{hunk.source_start},{source_count} +{hunk.target_start},{target_count} @@")
+                fixed_lines.extend(hunk_lines)
         
         return "\n".join(fixed_lines) + "\n"
     except Exception as e:
         # Fallback to regex if unidiff parsing fails
         print(f"Warning: unidiff parsing failed, using regex fallback: {e}")
-        return fix_pytest_setup_methods_in_content(patch_content)
+        # For regex fallback, just do simple replacements on the patch text
+        return re.sub(
+            r'(\+.*?)(\s+)def setup\(self\):',
+            r'\1\2def setup_method(self, method):',
+            patch_content,
+            flags=re.MULTILINE
+        )
 
 
 def fix_distutils_looseversion_in_content(content: str) -> str:
@@ -171,6 +200,7 @@ def fix_distutils_looseversion(patch_content: str) -> str:
     """
     Replace distutils.version.LooseVersion with packaging.version.Version.
     Works on patch format by modifying the content within hunks.
+    Maintains correct hunk line counts.
     
     Args:
         patch_content: The original test_patch content (git patch format)
@@ -183,22 +213,29 @@ def fix_distutils_looseversion(patch_content: str) -> str:
         fixed_lines = []
         
         for patched_file in patch:
+            # Extract file paths (unidiff includes a/ and b/ prefixes)
+            source_path = patched_file.source_file.split("a/", 1)[-1] if "a/" in patched_file.source_file else patched_file.source_file
+            target_path = patched_file.target_file.split("b/", 1)[-1] if "b/" in patched_file.target_file else patched_file.target_file
+            
             # Write the file header
-            fixed_lines.append(f"diff --git a/{patched_file.source_file} b/{patched_file.target_file}")
-            fixed_lines.append(f"--- a/{patched_file.source_file}")
-            fixed_lines.append(f"+++ b/{patched_file.target_file}")
+            fixed_lines.append(f"diff --git a/{source_path} b/{target_path}")
+            fixed_lines.append(f"--- a/{source_path}")
+            fixed_lines.append(f"+++ b/{target_path}")
             
             for hunk in patched_file:
-                # Write hunk header
-                fixed_lines.append(f"@@ -{hunk.source_start},{hunk.source_length} +{hunk.target_start},{hunk.target_length} @@")
+                # Track line counts
+                source_count = 0
+                target_count = 0
+                hunk_lines = []
                 
                 # Process each line in the hunk
                 for line in hunk:
                     line_content = line.value
+                    
                     # Modify both added and context lines
                     if line.is_added or line.is_context:
                         # Special handling for introspection.py - use alias
-                        if 'introspection.py' in patched_file.source_file:
+                        if 'introspection.py' in source_path:
                             line_content = re.sub(
                                 r'from distutils\.version import LooseVersion',
                                 r'from packaging.version import Version as LooseVersion',
@@ -206,7 +243,21 @@ def fix_distutils_looseversion(patch_content: str) -> str:
                             )
                         else:
                             line_content = fix_distutils_looseversion_in_content(line_content)
-                    fixed_lines.append(line_content)
+                    
+                    # Count lines for hunk header
+                    if line.is_context:
+                        source_count += 1
+                        target_count += 1
+                    elif line.is_removed:
+                        source_count += 1
+                    elif line.is_added:
+                        target_count += 1
+                    
+                    hunk_lines.append(line_content)
+                
+                # Write hunk header with correct counts
+                fixed_lines.append(f"@@ -{hunk.source_start},{source_count} +{hunk.target_start},{target_count} @@")
+                fixed_lines.extend(hunk_lines)
         
         return "\n".join(fixed_lines) + "\n"
     except Exception as e:
@@ -215,16 +266,50 @@ def fix_distutils_looseversion(patch_content: str) -> str:
         return fix_distutils_looseversion_in_content(patch_content)
 
 
+def append_compatibility_hunk_to_file(patch_lines: List[str], file_path: str, insert_after_line: int, compatibility_code: str) -> List[str]:
+    """
+    Append a new hunk to a file in the patch for compatibility code.
+    
+    Args:
+        patch_lines: List of patch lines for this file
+        file_path: Path to the file
+        insert_after_line: Line number after which to insert (0-based from file start)
+        compatibility_code: The compatibility code to add
+        
+    Returns:
+        Updated patch lines with new hunk appended
+    """
+    compat_lines = compatibility_code.strip().split("\n")
+    num_compat_lines = len([l for l in compat_lines if l.strip()])
+    
+    # Find where to insert - after the last hunk or at the end
+    # For simplicity, append at the end of existing hunks
+    # Hunk format: @@ -start,count +start,count @@
+    # We'll insert after line insert_after_line in the target file
+    
+    # Add new hunk
+    target_start = insert_after_line + 1
+    patch_lines.append(f"@@ -{target_start},0 +{target_start},{num_compat_lines} @@")
+    for compat_line in compat_lines:
+        if compat_line.strip():
+            patch_lines.append(f"+{compat_line}")
+        else:
+            patch_lines.append("+")
+    
+    return patch_lines
+
+
 def add_numpy_compatibility_to_patch(patch_content: str, target_files: List[str]) -> str:
     """
-    Add NumPy compatibility code to the beginning of specified files in a patch.
+    Add NumPy compatibility code as new hunks to specified files in a patch.
+    This appends new hunks rather than modifying existing ones.
     
     Args:
         patch_content: The patch content
         target_files: List of file paths that need NumPy compatibility
         
     Returns:
-        Modified patch with NumPy compatibility code added
+        Modified patch with NumPy compatibility code added as new hunks
     """
     try:
         patch = PatchSet(patch_content)
@@ -232,38 +317,90 @@ def add_numpy_compatibility_to_patch(patch_content: str, target_files: List[str]
         numpy_compat = add_numpy_compatibility_patch()
         
         for patched_file in patch:
-            source_file = patched_file.source_file.split("a/", 1)[-1] if "a/" in patched_file.source_file else patched_file.source_file
+            # Extract file paths
+            source_path = patched_file.source_file.split("a/", 1)[-1] if "a/" in patched_file.source_file else patched_file.source_file
+            target_path = patched_file.target_file.split("b/", 1)[-1] if "b/" in patched_file.target_file else patched_file.target_file
             
             # Write the file header
-            fixed_lines.append(f"diff --git a/{patched_file.source_file} b/{patched_file.target_file}")
-            fixed_lines.append(f"--- a/{patched_file.source_file}")
-            fixed_lines.append(f"+++ b/{patched_file.target_file}")
+            fixed_lines.append(f"diff --git a/{source_path} b/{target_path}")
+            fixed_lines.append(f"--- a/{source_path}")
+            fixed_lines.append(f"+++ b/{target_path}")
             
-            needs_numpy_fix = any(target in source_file for target in target_files)
-            numpy_added = False
+            needs_numpy_fix = any(target in source_path for target in target_files)
+            file_hunk_lines = []
+            last_target_line = 0
             
+            # Process all existing hunks
             for hunk in patched_file:
-                # Check if we need to add NumPy compatibility at the start of this hunk
-                if needs_numpy_fix and not numpy_added and hunk.target_start <= 20:
-                    # Add NumPy compatibility as a new addition at the beginning
-                    # This is a simplified approach - ideally we'd insert it after imports
-                    fixed_lines.append(f"@@ -{hunk.source_start},{hunk.source_length} +{hunk.target_start},{hunk.target_length + len(numpy_compat.split(chr(10)))} @@")
-                    for compat_line in numpy_compat.split("\n"):
-                        if compat_line.strip():
-                            fixed_lines.append(f"+{compat_line}")
-                    numpy_added = True
-                else:
-                    # Write hunk header
-                    fixed_lines.append(f"@@ -{hunk.source_start},{hunk.source_length} +{hunk.target_start},{hunk.target_length} @@")
+                source_count = 0
+                target_count = 0
+                hunk_lines = []
                 
-                # Process each line in the hunk
                 for line in hunk:
-                    fixed_lines.append(line.value)
+                    line_content = line.value
+                    
+                    if line.is_context:
+                        source_count += 1
+                        target_count += 1
+                    elif line.is_removed:
+                        source_count += 1
+                    elif line.is_added:
+                        target_count += 1
+                    
+                    hunk_lines.append(line_content)
+                    # Track the last target line number
+                    if line.is_added or line.is_context:
+                        last_target_line = max(last_target_line, hunk.target_start + target_count - 1)
+                
+                file_hunk_lines.append(f"@@ -{hunk.source_start},{source_count} +{hunk.target_start},{target_count} @@")
+                file_hunk_lines.extend(hunk_lines)
+            
+            fixed_lines.extend(file_hunk_lines)
+            
+            # Add NumPy compatibility as a new hunk if needed
+            if needs_numpy_fix:
+                compat_lines = numpy_compat.strip().split("\n")
+                num_compat_lines = len([l for l in compat_lines if l.strip()])
+                # Insert after line 20 (after imports typically)
+                insert_line = 20
+                fixed_lines.append(f"@@ -{insert_line},0 +{insert_line},{num_compat_lines} @@")
+                for compat_line in compat_lines:
+                    if compat_line.strip():
+                        fixed_lines.append(f"+{compat_line}")
+                    else:
+                        fixed_lines.append("+")
         
         return "\n".join(fixed_lines) + "\n"
     except Exception as e:
         print(f"Warning: Could not add NumPy compatibility via unidiff: {e}")
         return patch_content
+
+
+def append_setup_method_fixes(patch_content: str, file_path: str, setup_line_numbers: List[int]) -> str:
+    """
+    Append hunks to fix setup() methods in a file.
+    
+    Args:
+        patch_content: Existing patch content
+        file_path: Path to the file to fix
+        setup_line_numbers: List of line numbers where setup() methods exist
+        
+    Returns:
+        Patch with new hunks appended
+    """
+    if not setup_line_numbers:
+        return patch_content
+    
+    # Append new hunks for each setup() method
+    new_hunks = []
+    for line_num in setup_line_numbers:
+        # Hunk to replace setup(self) with setup_method(self, method)
+        # Format: @@ -line,1 +line,1 @@
+        new_hunks.append(f"@@ -{line_num},1 +{line_num},1 @@")
+        new_hunks.append(f"-    def setup(self):")
+        new_hunks.append(f"+    def setup_method(self, method):")
+    
+    return patch_content.rstrip() + "\n" + "\n".join(new_hunks) + "\n"
 
 
 def fix_astropy_8707(test_patch: str) -> str:
@@ -274,15 +411,24 @@ def fix_astropy_8707(test_patch: str) -> str:
     1. pytest compatibility: nose-style setup() → setup_method()
     2. NumPy 1.24+ compatibility: add deprecated alias support
     
+    Note: The test_patch only adds new tests. We need to append new hunks
+    that fix existing setup() methods. However, we don't have the exact line
+    numbers from the base commit, so this is a simplified approach that
+    modifies the patch format correctly.
+    
     Returns:
         Fixed test_patch content
     """
-    # First, fix pytest setup methods
+    # For now, just ensure the patch format is correct
+    # The actual setup() fixes need to be added as new hunks with correct line numbers
+    # which requires access to the base commit files
+    
+    # Try to fix any setup() references if they exist in the patch
     fixed_patch = fix_pytest_setup_methods(test_patch)
     
-    # Add NumPy compatibility to test files
-    target_files = ["test_header.py", "__init__.py"]  # Files that need NumPy fix
-    fixed_patch = add_numpy_compatibility_to_patch(fixed_patch, target_files)
+    # Note: NumPy compatibility and setup() fixes in existing code need to be
+    # added as new hunks, which requires knowing the base commit file structure
+    # This is documented in the implementation plan
     
     return fixed_patch
 
@@ -410,9 +556,9 @@ def main():
     )
     parser.add_argument(
         "--instance-id",
-        required=True,
+        required=False,
         choices=["astropy__astropy-7606", "astropy__astropy-8707", "astropy__astropy-8872"],
-        help="Instance ID to fix"
+        help="Instance ID to fix (not required if --generate-all is used)"
     )
     parser.add_argument(
         "--test-patch-file",
@@ -441,6 +587,11 @@ def main():
     if args.generate_all:
         generate_all_fixes()
         return
+    
+    # Require instance-id if not in generate-all mode
+    if not args.instance_id:
+        print("Error: --instance-id is required unless --generate-all is used")
+        sys.exit(1)
     
     # Load test_patch
     if args.load_from_hf:
