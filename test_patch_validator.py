@@ -14,9 +14,9 @@ try:
         patch_content = f.read()
     
     patch = PatchSet(patch_content)
-    print(f"✓ Patch is valid: {len(patch)} file(s)")
+    print(f"OK Patch is valid: {len(patch)} file(s)")
     for f in patch:
         print(f"  - {f.source_file} ({len(f)} hunks)")
 except Exception as e:
-    print(f"✗ Patch is invalid: {e}")
+    print(f"ERROR Patch is invalid: {e}")
     sys.exit(1)

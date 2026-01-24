@@ -127,22 +127,27 @@ def fix_pytest_setup_methods(patch_content: str) -> str:
                 # Process each line in the hunk
                 for line in hunk:
                     line_content = line.value
-                    original_line = line_content
                     
                     # Modify added lines
                     if line.is_added:
                         line_content = fix_pytest_setup_methods_in_content(line_content)
                     
-                    # Count lines for hunk header
+                    # Add the appropriate prefix for patch format
                     if line.is_context:
+                        prefix = " "
                         source_count += 1
                         target_count += 1
                     elif line.is_removed:
+                        prefix = "-"
                         source_count += 1
                     elif line.is_added:
+                        prefix = "+"
                         target_count += 1
+                    else:
+                        prefix = " "  # Default to context
                     
-                    hunk_lines.append(line_content)
+                    # Write line with prefix
+                    hunk_lines.append(prefix + line_content.rstrip("\n"))
                 
                 # Write hunk header with correct counts
                 fixed_lines.append(f"@@ -{hunk.source_start},{source_count} +{hunk.target_start},{target_count} @@")
@@ -244,16 +249,22 @@ def fix_distutils_looseversion(patch_content: str) -> str:
                         else:
                             line_content = fix_distutils_looseversion_in_content(line_content)
                     
-                    # Count lines for hunk header
+                    # Add the appropriate prefix for patch format
                     if line.is_context:
+                        prefix = " "
                         source_count += 1
                         target_count += 1
                     elif line.is_removed:
+                        prefix = "-"
                         source_count += 1
                     elif line.is_added:
+                        prefix = "+"
                         target_count += 1
+                    else:
+                        prefix = " "  # Default to context
                     
-                    hunk_lines.append(line_content)
+                    # Write line with prefix
+                    hunk_lines.append(prefix + line_content.rstrip("\n"))
                 
                 # Write hunk header with correct counts
                 fixed_lines.append(f"@@ -{hunk.source_start},{source_count} +{hunk.target_start},{target_count} @@")
@@ -330,7 +341,7 @@ def add_numpy_compatibility_to_patch(patch_content: str, target_files: List[str]
             file_hunk_lines = []
             last_target_line = 0
             
-            # Process all existing hunks
+                # Process all existing hunks
             for hunk in patched_file:
                 source_count = 0
                 target_count = 0
@@ -339,15 +350,22 @@ def add_numpy_compatibility_to_patch(patch_content: str, target_files: List[str]
                 for line in hunk:
                     line_content = line.value
                     
+                    # Add the appropriate prefix for patch format
                     if line.is_context:
+                        prefix = " "
                         source_count += 1
                         target_count += 1
                     elif line.is_removed:
+                        prefix = "-"
                         source_count += 1
                     elif line.is_added:
+                        prefix = "+"
                         target_count += 1
+                    else:
+                        prefix = " "
                     
-                    hunk_lines.append(line_content)
+                    # Write line with prefix
+                    hunk_lines.append(prefix + line_content.rstrip("\n"))
                     # Track the last target line number
                     if line.is_added or line.is_context:
                         last_target_line = max(last_target_line, hunk.target_start + target_count - 1)
