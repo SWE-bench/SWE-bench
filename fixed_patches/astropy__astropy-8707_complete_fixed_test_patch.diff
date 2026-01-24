@@ -1,0 +1,106 @@
+diff --git a/astropy/io/fits/tests/test_header.py b/astropy/io/fits/tests/test_header.py
+index 7c1725aedb..a87bc19dab 100644
+--- a/astropy/io/fits/tests/test_header.py
++++ b/astropy/io/fits/tests/test_header.py
+@@ -9,7 +9,15 @@ from io import StringIO, BytesIO
+ 
+ import pytest
+ import numpy as np
+-
++# Compatibility fix for NumPy 1.24+ (removed deprecated aliases)
++if not hasattr(np, "int"):
++    np.int = int
++    np.float = float
++    np.bool = bool
++    np.str = str
++    np.unicode = str
++    np.object = object
++    np.long = int
+ from astropy.io import fits
+ from astropy.io.fits.verify import VerifyWarning
+ from astropy.tests.helper import catch_warnings, ignore_warnings
+@@ -85,6 +93,15 @@ class TestHeaderFunctions(FitsTestCase):
+         c = fits.Card()
+         assert '' == c.keyword
+ 
++    def test_card_from_bytes(self):
++        """
++        Test loading a Card from a `bytes` object (assuming latin-1 encoding).
++        """
++
++        c = fits.Card.fromstring(b"ABC     = 'abc'")
++        assert c.keyword == 'ABC'
++        assert c.value == 'abc'
++
+     def test_string_value_card(self):
+         """Test Card constructor with string value"""
+ 
+@@ -149,11 +166,10 @@ class TestHeaderFunctions(FitsTestCase):
+ 
+     def test_keyword_too_long(self):
+         """Test that long Card keywords are allowed, but with a warning"""
+-
+         with catch_warnings():
+             warnings.simplefilter('error')
+             pytest.raises(UserWarning, fits.Card, 'abcdefghi', 'long')
+-
++        
+     def test_illegal_characters_in_key(self):
+         """
+         Test that Card constructor allows illegal characters in the keyword,
+@@ -2329,6 +2345,21 @@ class TestHeaderFunctions(FitsTestCase):
+             else:
+                 c.verify('exception')
+ 
++    def test_header_fromstring_bytes(self):
++        """
++        Test reading a Header from a `bytes` string.
++
++        See https://github.com/astropy/astropy/issues/8706
++        """
++
++        with open(self.data('test0.fits'), 'rb') as fobj:
++            pri_hdr_from_bytes = fits.Header.fromstring(fobj.read())
++
++        pri_hdr = fits.getheader(self.data('test0.fits'))
++        assert pri_hdr['NAXIS'] == pri_hdr_from_bytes['NAXIS']
++        assert pri_hdr == pri_hdr_from_bytes
++        assert pri_hdr.tostring() == pri_hdr_from_bytes.tostring()
++
+ 
+ class TestRecordValuedKeywordCards(FitsTestCase):
+     """
+@@ -2340,8 +2371,9 @@ class TestRecordValuedKeywordCards(FitsTestCase):
+     which this feature was first introduced.
+     """
+ 
+-    def setup(self):
+-        super().setup()
++    def setup_method(self, method):
++        # Call legacy setup() from parent, if present
++        super().setup_method(method)
+         self._test_header = fits.Header()
+         self._test_header.set('DP1', 'NAXIS: 2')
+         self._test_header.set('DP1', 'AXIS.1: 1')
+diff --git a/astropy/io/fits/tests/__init__.py b/astropy/io/fits/tests/__init__.py
+index 8d62aa35d3..058738a01c 100644
+--- a/astropy/io/fits/tests/__init__.py
++++ b/astropy/io/fits/tests/__init__.py
+@@ -10,7 +10,7 @@ from astropy.io import fits
+ 
+ 
+ class FitsTestCase:
+-    def setup(self):
++    def setup_method(self, method):
+         self.data_dir = os.path.join(os.path.dirname(__file__), 'data')
+         self.temp_dir = tempfile.mkdtemp(prefix='fits-test-')
+ 
+@@ -22,7 +22,7 @@ class FitsTestCase:
+         fits.conf.strip_header_whitespace = True
+         fits.conf.use_memmap = True
+ 
+-    def teardown(self):
++    def teardown_method(self, method):
+         if hasattr(self, 'temp_dir') and os.path.exists(self.temp_dir):
+             tries = 3
+             while tries:
