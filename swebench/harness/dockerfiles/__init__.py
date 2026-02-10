@@ -108,10 +108,15 @@ def get_dockerfile_env(platform, arch, language, base_image_key, **kwargs):
     # base Dockerfile is used as the environment Dockerfile.
     dockerfile = _DOCKERFILE_ENV.get(language, _DOCKERFILE_BASE[language])
 
-    # Special handling for JavaScript pnpm architecture and chrome install
+    # Special handling for JavaScript pnpm architecture, chrome install, and Python
     if language == "js":
         if arch == "arm64":
             kwargs["pnpm_arch"] = "arm64"
+            # deadsnakes PPA has no ARM64 packages; use system python3
+            kwargs.setdefault("python_install",
+                "RUN apt-get update && apt-get install -y python3 python3-dev "
+                "&& ln -sf /usr/bin/python3 /usr/bin/python"
+            )
             # Use Chromium on ARM64 (Chrome not available)
             chrome_install = """# Install Chromium for browser testing (ARM64 - Chrome not available)
 RUN apt-get update \\
@@ -122,6 +127,13 @@ RUN apt-get update \\
     && ln -sf /usr/bin/chromium-browser /usr/bin/google-chrome"""
         else:
             kwargs["pnpm_arch"] = "x64"
+            # Use deadsnakes PPA for specific Python version on x86_64
+            python_version = kwargs.get("python_version", "3.10")
+            kwargs.setdefault("python_install",
+                f"RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update "
+                f"&& apt-get install -y python{python_version}\n"
+                f"RUN ln -s /usr/bin/python{python_version} /usr/bin/python"
+            )
             # Use Chrome on x86_64
             chrome_install = """# Install Chrome for browser testing
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \\

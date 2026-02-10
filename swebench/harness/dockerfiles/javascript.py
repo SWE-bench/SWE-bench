@@ -81,11 +81,10 @@ RUN source $NVM_DIR/nvm.sh \
     && nvm use default
 
 # Install Python
-RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update && apt-get install -y python{python_version}
-RUN ln -s /usr/bin/python{python_version} /usr/bin/python
+{python_install}
 
 # Install Python2
-RUN apt-get install -y python2
+RUN apt-get install -y python2 || true
 
 # Set up environment variables for Node
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
