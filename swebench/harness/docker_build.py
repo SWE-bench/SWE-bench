@@ -166,6 +166,7 @@ def build_base_images(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
+    arch: str = "x86_64",
 ):
     """
     Builds the base images required for the dataset if they do not already exist.
@@ -181,6 +182,7 @@ def build_base_images(
         namespace=namespace,
         instance_image_tag=instance_image_tag,
         env_image_tag=env_image_tag,
+        arch=arch,
     )
     base_images = {
         x.base_image_key: (x.base_dockerfile, x.platform) for x in test_specs
@@ -218,6 +220,7 @@ def get_env_configs_to_build(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
+    arch: str = "x86_64",
 ):
     """
     Returns a dictionary of image names to build scripts and dockerfiles for environment images.
@@ -234,6 +237,7 @@ def get_env_configs_to_build(
         namespace=namespace,
         instance_image_tag=instance_image_tag,
         env_image_tag=env_image_tag,
+        arch=arch,
     )
 
     for test_spec in test_specs:
@@ -275,6 +279,7 @@ def build_env_images(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
+    arch: str = "x86_64",
 ):
     """
     Builds the environment images required for the dataset if they do not already exist.
@@ -294,15 +299,16 @@ def build_env_images(
                 namespace=namespace,
                 instance_image_tag=instance_image_tag,
                 env_image_tag=env_image_tag,
+                arch=arch,
             )
         }
         for key in env_image_keys:
             remove_image(client, key, "quiet")
     build_base_images(
-        client, dataset, force_rebuild, namespace, instance_image_tag, env_image_tag
+        client, dataset, force_rebuild, namespace, instance_image_tag, env_image_tag, arch=arch
     )
     configs_to_build = get_env_configs_to_build(
-        client, dataset, namespace, instance_image_tag, env_image_tag
+        client, dataset, namespace, instance_image_tag, env_image_tag, arch=arch
     )
     if len(configs_to_build) == 0:
         print("No environment images need to be built.")
@@ -341,6 +347,7 @@ def build_instance_images(
     namespace: str = None,
     tag: str = None,
     env_image_tag: str = None,
+    arch: str = "x86_64",
 ):
     """
     Builds the instance images required for the dataset if they do not already exist.
@@ -359,6 +366,7 @@ def build_instance_images(
                 namespace=namespace,
                 instance_image_tag=tag,
                 env_image_tag=env_image_tag,
+                arch=arch,
             ),
             dataset,
         )
@@ -366,7 +374,7 @@ def build_instance_images(
     if force_rebuild:
         for spec in test_specs:
             remove_image(client, spec.instance_image_key, "quiet")
-    _, env_failed = build_env_images(client, test_specs, force_rebuild, max_workers)
+    _, env_failed = build_env_images(client, test_specs, force_rebuild, max_workers, arch=arch)
 
     if len(env_failed) > 0:
         # Don't build images for instances that depend on failed-to-build env images

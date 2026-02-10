@@ -18,6 +18,7 @@ def filter_dataset_to_build(
     namespace: str = None,
     tag: str = None,
     env_image_tag: str = None,
+    arch: str = "x86_64",
 ):
     """
     Filter the dataset to only include instances that need to be built.
@@ -53,6 +54,7 @@ def filter_dataset_to_build(
             namespace=namespace,
             instance_image_tag=tag,
             env_image_tag=env_image_tag,
+            arch=arch,
         )
         if force_rebuild:
             data_to_build.append(instance)
@@ -72,6 +74,7 @@ def main(
     namespace,
     tag,
     env_image_tag,
+    arch="x86_64",
 ):
     """
     Build Docker images for the specified instances.
@@ -89,7 +92,7 @@ def main(
     # Filter out instances that were not specified
     dataset = load_swebench_dataset(dataset_name, split)
     dataset = filter_dataset_to_build(
-        dataset, instance_ids, client, force_rebuild, namespace, tag, env_image_tag
+        dataset, instance_ids, client, force_rebuild, namespace, tag, env_image_tag, arch=arch
     )
 
     if len(dataset) == 0:
@@ -105,6 +108,7 @@ def main(
         namespace=namespace,
         tag=tag,
         env_image_tag=env_image_tag,
+        arch=arch,
     )
     print(f"Successfully built {len(successful)} images")
     print(f"Failed to build {len(failed)} images")
@@ -145,6 +149,13 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--env_image_tag", type=str, default=None, help="Environment image tag to use"
+    )
+    parser.add_argument(
+        "--arch",
+        type=str,
+        default="x86_64",
+        choices=["x86_64", "arm64"],
+        help="Target architecture for Docker images (default: x86_64)",
     )
     args = parser.parse_args()
     main(**vars(args))
