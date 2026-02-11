@@ -27,6 +27,33 @@ BUILD SUCCESSFUL
 
         assert result == {"com.example.Test > testMethod": TestStatus.PASSED.value}
 
+    def test_jvm_warning_concatenated_after_status(self):
+        """Test parsing when JVM WARNING is concatenated directly after PASSED/FAILED.
+
+        Reproduces the false negative from apache__lucene-12196 where JVM prints
+        'WARNING: A command line option has enabled the Security Manager' directly
+        after 'PASSED' with no whitespace separator.
+        """
+        log = """org.apache.lucene.queryparser.classic.TestMultiFieldQueryParser > testStaticMethod3Old PASSED
+org.apache.lucene.queryparser.classic.TestMultiFieldQueryParser > testBoostsSimple PASSEDWARNING: A command line option has enabled the Security Manager
+org.apache.lucene.queryparser.classic.TestMultiFieldQueryParser > testSimpleRegex PASSED
+"""
+        result = parse_log_gradle_custom(log, test_spec=None)
+
+        assert len(result) == 3
+        assert result["org.apache.lucene.queryparser.classic.TestMultiFieldQueryParser > testStaticMethod3Old"] == TestStatus.PASSED.value
+        assert result["org.apache.lucene.queryparser.classic.TestMultiFieldQueryParser > testBoostsSimple"] == TestStatus.PASSED.value
+        assert result["org.apache.lucene.queryparser.classic.TestMultiFieldQueryParser > testSimpleRegex"] == TestStatus.PASSED.value
+
+    def test_jvm_warning_concatenated_after_failed(self):
+        """Test that FAILED is also recognized when JVM WARNING is concatenated."""
+        log = """com.example.Test > testMethod FAILEDWARNING: Some JVM warning
+"""
+        result = parse_log_gradle_custom(log, test_spec=None)
+
+        assert len(result) == 1
+        assert result["com.example.Test > testMethod"] == TestStatus.FAILED.value
+
     def test_interleaved_logs_race_condition(self):
         """Test parsing when warnings split test name from status."""
         log = """com.example.Test > testOne PASSED
