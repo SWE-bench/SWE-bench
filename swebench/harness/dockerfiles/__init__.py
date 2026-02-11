@@ -9,6 +9,8 @@ from swebench.harness.dockerfiles.go import (
 from swebench.harness.dockerfiles.java import (
     _DOCKERFILE_BASE_JAVA,
     _DOCKERFILE_INSTANCE_JAVA,
+    _MVND_INSTALL_AMD64,
+    _MVND_INSTALL_ARM64,
 )
 from swebench.harness.dockerfiles.javascript import (
     _DOCKERFILE_BASE_JS,
@@ -91,6 +93,13 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     && rm -rf /var/lib/apt/lists/*"""
         kwargs["chrome_install"] = chrome_install
 
+    # Special handling for Java mvnd (Maven Daemon) installation
+    if language == "java":
+        if arch == "arm64":
+            kwargs["mvnd_install"] = _MVND_INSTALL_ARM64
+        else:
+            kwargs["mvnd_install"] = _MVND_INSTALL_AMD64
+
     # Special handling for some js repos that require a different base image.
     # If other languages also start using variants, this logic should be moved
     # to a helper function
@@ -144,6 +153,13 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
         --no-install-recommends \\
     && rm -rf /var/lib/apt/lists/*"""
         kwargs["chrome_install"] = chrome_install
+
+    # Special handling for Java mvnd (Maven Daemon) installation
+    if language == "java":
+        if arch == "arm64":
+            kwargs["mvnd_install"] = _MVND_INSTALL_ARM64
+        else:
+            kwargs["mvnd_install"] = _MVND_INSTALL_AMD64
 
     if "_variant" in kwargs and kwargs["_variant"] == "js_2":
         del kwargs["_variant"]
