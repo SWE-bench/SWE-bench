@@ -139,10 +139,13 @@ RUN apt update && apt install -y \
     curl \
     git \
     build-essential \
+    python3 \
+    python3-dev \
     jq \
     gnupg \
     ca-certificates \
-    apt-transport-https
+    apt-transport-https \
+    && ln -sf /usr/bin/python3 /usr/bin/python
 
 # Install node
 RUN bash -c "set -eo pipefail && curl -fsSL https://deb.nodesource.com/setup_{node_version}.x | bash -"
