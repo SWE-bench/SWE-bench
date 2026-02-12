@@ -421,6 +421,11 @@ SPECS_LUCENE = {
     "13704": {
         "docker_specs": {"java_version": "21"},
         "pre_install": make_lucene_pre_install_script(),
+        "install": [
+            # Fix Maven resource bundle SNAPSHOT reference that fails on fresh ARM64 images
+            # without cached artifacts. See https://github.com/apache/druid/pull/14054
+            r"sed -i 's/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT<\/resourceBundle>/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5<\/resourceBundle>/' pom.xml",
+        ],
         "test_cmd": [
             "./gradlew test --tests org.apache.lucene.search.TestLatLonDocValuesQueries",
         ],
@@ -447,6 +452,11 @@ SPECS_LUCENE = {
     "13170": {
         "docker_specs": {"java_version": "21"},
         "pre_install": make_lucene_pre_install_script(),
+        "install": [
+            # Fix Maven resource bundle SNAPSHOT reference that fails on fresh ARM64 images
+            # without cached artifacts. See https://github.com/apache/druid/pull/14054
+            r"sed -i 's/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT<\/resourceBundle>/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5<\/resourceBundle>/' pom.xml",
+        ],
         "test_cmd": [
             # -Ptests.useSecurityManager=false disables extra logging that can cause the test output
             # parser to incorrectly mark a passing test as failed
