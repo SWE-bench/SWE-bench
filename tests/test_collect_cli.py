@@ -1,9 +1,10 @@
 import json
 import subprocess
+import sys
 
 
 def test_collect_smoke_test():
-    cmd = ["python", "-m", "swebench.collect.print_pulls", "--help"]
+    cmd = [sys.executable, "-m", "swebench.collect.print_pulls", "--help"]
     result = subprocess.run(cmd, capture_output=True)
     print(result.stdout)
     print(result.stderr)
@@ -12,7 +13,7 @@ def test_collect_smoke_test():
 
 def test_collect_one(tmp_path):
     cmd = [
-        "python",
+        sys.executable,
         "-m",
         "swebench.collect.print_pulls",
         "pvlib/pvlib-python",
@@ -29,7 +30,7 @@ def test_collect_one(tmp_path):
 
 def test_collect_ds(tmp_path):
     cmd = [
-        "python",
+        sys.executable,
         "-m",
         "swebench.collect.build_dataset",
         "tests/test_data/pvlib.jsonl",
@@ -45,7 +46,7 @@ def test_collect_ds(tmp_path):
 def test_collect_get_issues(tmp_path):
     # python print_pulls.py lowRISC/opentitan output_pr_26371.json --pull_number 26371
     cmd = [
-        "python",
+        sys.executable,
         "-m",
         "swebench.collect.print_pulls",
         "lowRISC/opentitan",

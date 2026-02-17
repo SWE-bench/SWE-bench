@@ -1,6 +1,7 @@
 """Tests for the --arch parameter that enables ARM64 Docker image builds."""
 
 import collections
+import inspect
 
 from swebench.harness.constants import (
     FAIL_TO_PASS,
@@ -10,6 +11,7 @@ from swebench.harness.constants import (
 from swebench.harness.test_spec.test_spec import (
     make_test_spec,
     get_test_specs_from_dataset,
+    detect_arch,
     TestSpec,
 )
 
@@ -28,9 +30,12 @@ def _make_instance(**overrides):
 class TestMakeTestSpecArch:
     """Test that make_test_spec correctly handles the arch parameter."""
 
-    def test_default_arch_is_x86_64(self):
+    def test_default_arch_parameter_is_none(self):
+        assert inspect.signature(make_test_spec).parameters["arch"].default is None
+
+    def test_arch_none_triggers_auto_detection(self):
         spec = make_test_spec(_make_instance())
-        assert spec.arch == "x86_64"
+        assert spec.arch == detect_arch()
 
     def test_x86_64_platform(self):
         spec = make_test_spec(_make_instance(), arch="x86_64")
@@ -89,10 +94,16 @@ class TestImageKeysArch:
 class TestGetTestSpecsFromDatasetArch:
     """Test that get_test_specs_from_dataset forwards arch correctly."""
 
+    def test_default_arch_parameter_is_none(self):
+        assert (
+            inspect.signature(get_test_specs_from_dataset).parameters["arch"].default
+            is None
+        )
+
     def test_default_arch(self):
         dataset = [_make_instance()]
         specs = get_test_specs_from_dataset(dataset)
-        assert specs[0].arch == "x86_64"
+        assert specs[0].arch == detect_arch()
 
     def test_arm64_forwarded(self):
         dataset = [_make_instance()]
