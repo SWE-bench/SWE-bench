@@ -166,7 +166,7 @@ def build_base_images(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
-    arch: str = "x86_64",
+    arch: str = None,
 ):
     """
     Builds the base images required for the dataset if they do not already exist.
@@ -220,7 +220,7 @@ def get_env_configs_to_build(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
-    arch: str = "x86_64",
+    arch: str = None,
 ):
     """
     Returns a dictionary of image names to build scripts and dockerfiles for environment images.
@@ -279,7 +279,7 @@ def build_env_images(
     namespace: str = None,
     instance_image_tag: str = None,
     env_image_tag: str = None,
-    arch: str = "x86_64",
+    arch: str = None,
 ):
     """
     Builds the environment images required for the dataset if they do not already exist.
@@ -347,7 +347,7 @@ def build_instance_images(
     namespace: str = None,
     tag: str = None,
     env_image_tag: str = None,
-    arch: str = "x86_64",
+    arch: str = None,
 ):
     """
     Builds the instance images required for the dataset if they do not already exist.

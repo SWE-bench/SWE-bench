@@ -286,7 +286,7 @@ def run_instances(
     instance_image_tag: str = "latest",
     env_image_tag: str = "latest",
     rewrite_reports: bool = False,
-    arch: str = "x86_64",
+    arch: str = None,
 ):
     """
     Run all instances for the given predictions in parallel.
@@ -491,7 +491,7 @@ def main(
     instance_image_tag: str = "latest",
     env_image_tag: str = "latest",
     report_dir: str = ".",
-    arch: str = "x86_64",
+    arch: str = None,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -679,9 +679,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--arch",
         type=str,
-        default="x86_64",
+        default=None,
         choices=["x86_64", "arm64"],
-        help="Target architecture for Docker images (default: x86_64)",
+        help="Target architecture for Docker images (default: auto-detect)",
     )
 
     # Modal execution args

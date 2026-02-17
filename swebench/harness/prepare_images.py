@@ -18,7 +18,7 @@ def filter_dataset_to_build(
     namespace: str = None,
     tag: str = None,
     env_image_tag: str = None,
-    arch: str = "x86_64",
+    arch: str = None,
 ):
     """
     Filter the dataset to only include instances that need to be built.
@@ -74,7 +74,7 @@ def main(
     namespace,
     tag,
     env_image_tag,
-    arch="x86_64",
+    arch=None,
 ):
     """
     Build Docker images for the specified instances.
@@ -153,9 +153,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--arch",
         type=str,
-        default="x86_64",
+        default=None,
         choices=["x86_64", "arm64"],
-        help="Target architecture for Docker images (default: x86_64)",
+        help="Target architecture for Docker images (default: auto-detect)",
     )
     args = parser.parse_args()
     main(**vars(args))

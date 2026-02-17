@@ -1,5 +1,6 @@
 import hashlib
 import json
+import platform as _platform
 
 from dataclasses import dataclass
 from typing import Any, Optional, Union, cast
@@ -11,6 +12,7 @@ from swebench.harness.constants import (
     MAP_REPO_TO_EXT,
     MAP_REPO_VERSION_TO_SPECS,
     SWEbenchInstance,
+    USE_X86,
 )
 from swebench.harness.dockerfiles import (
     get_dockerfile_base,
@@ -152,18 +154,32 @@ class TestSpec:
             raise ValueError(f"Invalid architecture: {self.arch}")
 
 
+def detect_arch() -> str:
+    """Auto-detect the host machine architecture.
+
+    Returns ``"x86_64"`` on Intel/AMD hosts and ``"arm64"`` on Apple
+    Silicon / AWS Graviton / other AArch64 hosts.
+    """
+    machine = _platform.machine().lower()
+    if machine in ("arm64", "aarch64"):
+        return "arm64"
+    return "x86_64"
+
+
 def get_test_specs_from_dataset(
     dataset: Union[list[SWEbenchInstance], list[TestSpec]],
     namespace: Optional[str] = None,
     instance_image_tag: str = LATEST,
     env_image_tag: str = LATEST,
-    arch: str = "x86_64",
+    arch: Optional[str] = None,
 ) -> list[TestSpec]:
     """
     Idempotent function that converts a list of SWEbenchInstance objects to a list of TestSpec objects.
     """
     if isinstance(dataset[0], TestSpec):
         return cast(list[TestSpec], dataset)
+    if arch is None:
+        arch = detect_arch()
     return list(
         map(
             lambda x: make_test_spec(x, namespace, instance_image_tag, env_image_tag, arch=arch),
@@ -178,7 +194,7 @@ def make_test_spec(
     base_image_tag: str = LATEST,
     env_image_tag: str = LATEST,
     instance_image_tag: str = LATEST,
-    arch: str = "x86_64",
+    arch: Optional[str] = None,
 ) -> TestSpec:
     if isinstance(instance, TestSpec):
         return instance
@@ -186,6 +202,14 @@ def make_test_spec(
     assert env_image_tag is not None, "env_image_tag cannot be None"
     assert instance_image_tag is not None, "instance_image_tag cannot be None"
     instance_id = instance[KEY_INSTANCE_ID]
+
+    # Auto-detect host arch if not specified.
+    if arch is None:
+        arch = detect_arch()
+
+    # Instances in USE_X86 require x86_64 regardless of host arch.
+    if instance_id in USE_X86:
+        arch = "x86_64"
     repo = instance["repo"]
     version = instance.get("version")
     base_commit = instance["base_commit"]
