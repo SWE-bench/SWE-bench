@@ -350,4 +350,8 @@ MAP_REPO_TO_PARSER_JS = {
     "mrdoob/three.js": parse_log_tap,
     "preactjs/preact": parse_log_karma,
     "axios/axios": parse_log_tap,
+    "NodeBB/NodeBB": parse_log_jest,
+    "element-hq/element-web": parse_log_jest,
+    "protonmail/webclients": parse_log_jest,
+    "tutao/tutanota": parse_log_jest,
 }

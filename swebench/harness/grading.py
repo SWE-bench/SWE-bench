@@ -8,7 +8,6 @@ from swebench.harness.constants import (
     FAIL_TO_PASS,
     KEY_INSTANCE_ID,
     KEY_PREDICTION,
-    MAP_REPO_VERSION_TO_SPECS,
     PASS_TO_FAIL,
     PASS_TO_PASS,
     RESET_FAILED,
@@ -21,6 +20,7 @@ from swebench.harness.constants import (
 )
 from swebench.harness.test_spec.test_spec import TestSpec
 from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
+from swebench.harness.test_spec.utils import resolve_repo_version_spec
 
 
 # MARK: Utility functions
@@ -51,7 +51,8 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
     repo = test_spec.repo
     version = test_spec.version
     log_parser = MAP_REPO_TO_PARSER[repo]
-    test_cmd = MAP_REPO_VERSION_TO_SPECS[repo][version]["test_cmd"]
+    _, specs = resolve_repo_version_spec(repo, version)
+    test_cmd = specs["test_cmd"]
     if isinstance(test_cmd, list):
         test_cmd = test_cmd[-1]
 

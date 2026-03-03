@@ -1,15 +1,13 @@
 import hashlib
-import json
 
 from dataclasses import dataclass
-from typing import Any, Optional, Union, cast
+from typing import Optional, Union, cast
 
 from swebench.harness.constants import (
     DEFAULT_DOCKER_SPECS,
     KEY_INSTANCE_ID,
     LATEST,
     MAP_REPO_TO_EXT,
-    MAP_REPO_VERSION_TO_SPECS,
     SWEbenchInstance,
 )
 from swebench.harness.dockerfiles import (
@@ -21,6 +19,10 @@ from swebench.harness.test_spec.create_scripts import (
     make_repo_script_list,
     make_env_script_list,
     make_eval_script_list,
+)
+from swebench.harness.test_spec.utils import (
+    parse_instance_list_field,
+    resolve_instance_spec,
 )
 
 
@@ -192,21 +194,23 @@ def make_test_spec(
     hints_text = instance.get("hints_text")  # Unused
     test_patch = instance["test_patch"]
 
-    def _from_json_or_obj(key: str) -> Any:
-        """If key points to string, load with json"""
-        if key not in instance:
-            # If P2P, F2P keys not found, it's a validation instance
-            return []
-        if isinstance(instance[key], str):
-            return json.loads(instance[key])
-        return instance[key]
-
-    pass_to_pass = _from_json_or_obj("PASS_TO_PASS")
-    fail_to_pass = _from_json_or_obj("FAIL_TO_PASS")
+    pass_to_pass = parse_instance_list_field(
+        instance, "PASS_TO_PASS", alt_keys=("pass_to_pass",)
+    )
+    fail_to_pass = parse_instance_list_field(
+        instance, "FAIL_TO_PASS", alt_keys=("fail_to_pass",)
+    )
 
     env_name = "testbed"
     repo_directory = f"/{env_name}"
-    specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
+    try:
+        resolved_version, specs = resolve_instance_spec(instance)
+    except KeyError as exc:
+        raise KeyError(
+            f"Unable to resolve harness specs for repo '{repo}' with version "
+            f"'{version}'. Add repo specs or a default version fallback."
+        ) from exc
+    version = "default" if resolved_version is None else str(resolved_version)
     docker_specs = specs.get("docker_specs", {})
 
     repo_script_list = make_repo_script_list(

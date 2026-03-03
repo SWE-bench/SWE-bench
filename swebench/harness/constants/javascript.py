@@ -556,6 +556,56 @@ SPECS_AXIOS = {
     },
 }
 
+SPECS_NODEBB_PRO = {
+    "default": {
+        "install": [
+            "if [ -f package-lock.json ]; then npm ci; else npm install; fi",
+        ],
+        "test_cmd": "npx mocha --exit",
+        "docker_specs": {
+            "node_version": "20.16.0",
+        },
+    }
+}
+
+SPECS_ELEMENT_WEB_PRO = {
+    "default": {
+        "install": [
+            "npm install -g yarn",
+            "yarn install --frozen-lockfile || yarn install",
+        ],
+        "test_cmd": "npx jest --runInBand --verbose",
+        "docker_specs": {
+            "node_version": "20.16.0",
+        },
+    }
+}
+
+SPECS_PROTONMAIL_WEBCLIENTS_PRO = {
+    "default": {
+        "install": [
+            "npm install -g yarn",
+            "yarn install --frozen-lockfile || yarn install",
+        ],
+        "test_cmd": "npx jest --runInBand --verbose",
+        "docker_specs": {
+            "node_version": "20.16.0",
+        },
+    }
+}
+
+SPECS_TUTANOTA_PRO = {
+    "default": {
+        "install": [
+            "if [ -f package-lock.json ]; then npm ci; else npm install; fi",
+        ],
+        "test_cmd": "npx jest --runInBand --verbose",
+        "docker_specs": {
+            "node_version": "20.16.0",
+        },
+    }
+}
+
 
 MAP_REPO_VERSION_TO_SPECS_JS = {
     "Automattic/wp-calypso": SPECS_CALYPSO,
@@ -570,6 +620,10 @@ MAP_REPO_VERSION_TO_SPECS_JS = {
     "mrdoob/three.js": SPECS_THREEJS,
     "preactjs/preact": SPECS_PREACT,
     "axios/axios": SPECS_AXIOS,
+    "NodeBB/NodeBB": SPECS_NODEBB_PRO,
+    "element-hq/element-web": SPECS_ELEMENT_WEB_PRO,
+    "protonmail/webclients": SPECS_PROTONMAIL_WEBCLIENTS_PRO,
+    "tutao/tutanota": SPECS_TUTANOTA_PRO,
 }
 
 # Constants - Repository Specific Installation Instructions

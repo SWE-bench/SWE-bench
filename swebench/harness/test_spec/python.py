@@ -8,7 +8,6 @@ from swebench.harness.constants import (
     MAP_REPO_TO_ENV_YML_PATHS,
     MAP_REPO_TO_INSTALL,
     MAP_REPO_TO_REQS_PATHS,
-    MAP_REPO_VERSION_TO_SPECS,
     NON_TEST_EXTS,
     SWE_BENCH_URL_RAW,
     START_TEST_OUTPUT,
@@ -415,14 +414,13 @@ def make_eval_script_list_py(
     apply_test_patch_command = (
         f"git apply -v - <<'{HEREDOC_DELIMITER}'\n{test_patch}\n{HEREDOC_DELIMITER}"
     )
-    test_command = " ".join(
-        [
-            MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]][
-                "test_cmd"
-            ],
-            *get_test_directives(instance),
-        ]
-    )
+    test_cmd = specs["test_cmd"]
+    base_test_commands = [test_cmd] if isinstance(test_cmd, str) else test_cmd
+    test_directives = get_test_directives(instance)
+    if len(base_test_commands) == 1 and test_directives:
+        test_commands = [" ".join([base_test_commands[0], *test_directives])]
+    else:
+        test_commands = base_test_commands
     eval_commands = [
         "source /opt/miniconda3/bin/activate",
         f"conda activate {env_name}",
@@ -446,7 +444,7 @@ def make_eval_script_list_py(
         reset_tests_command,
         apply_test_patch_command,
         f": '{START_TEST_OUTPUT}'",
-        test_command,
+        *test_commands,
         f": '{END_TEST_OUTPUT}'",
         reset_tests_command,  # Revert tests after done, leave the repo in the same state as before
     ]

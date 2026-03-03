@@ -286,4 +286,7 @@ MAP_REPO_TO_PARSER_PY = {
     "sqlfluff/sqlfluff": parse_log_sqlfluff,
     "sphinx-doc/sphinx": parse_log_sphinx,
     "sympy/sympy": parse_log_sympy,
+    "ansible/ansible": parse_log_pytest,
+    "internetarchive/openlibrary": parse_log_pytest,
+    "qutebrowser/qutebrowser": parse_log_pytest,
 }

@@ -233,6 +233,38 @@ SPECS_GIN = {
     },
 }
 
+SPECS_FLIPT_PRO = {
+    "default": {
+        "docker_specs": {"go_version": "1.23.8"},
+        "install": ["go mod download"],
+        "test_cmd": "go test -v ./...",
+    }
+}
+
+SPECS_VULS_PRO = {
+    "default": {
+        "docker_specs": {"go_version": "1.23.8"},
+        "install": ["go mod download"],
+        "test_cmd": "go test -v ./...",
+    }
+}
+
+SPECS_TELEPORT_PRO = {
+    "default": {
+        "docker_specs": {"go_version": "1.23.8"},
+        "install": ["go mod download"],
+        "test_cmd": "go test -v ./...",
+    }
+}
+
+SPECS_NAVIDROME_PRO = {
+    "default": {
+        "docker_specs": {"go_version": "1.23.8"},
+        "install": ["go mod download"],
+        "test_cmd": "go test -v ./...",
+    }
+}
+
 
 MAP_REPO_VERSION_TO_SPECS_GO = {
     "caddyserver/caddy": SPECS_CADDY,
@@ -240,6 +272,10 @@ MAP_REPO_VERSION_TO_SPECS_GO = {
     "prometheus/prometheus": SPECS_PROMETHEUS,
     "gohugoio/hugo": SPECS_HUGO,
     "gin-gonic/gin": SPECS_GIN,
+    "flipt-io/flipt": SPECS_FLIPT_PRO,
+    "future-architect/vuls": SPECS_VULS_PRO,
+    "gravitational/teleport": SPECS_TELEPORT_PRO,
+    "navidrome/navidrome": SPECS_NAVIDROME_PRO,
 }
 
 # Constants - Repository Specific Installation Instructions

@@ -1,12 +1,16 @@
 import json
 import re
+import shlex
 
 from pathlib import Path
 from swebench.harness.constants import (
     END_TEST_OUTPUT,
     START_TEST_OUTPUT,
 )
-from swebench.harness.test_spec.utils import make_eval_script_list_common
+from swebench.harness.test_spec.utils import (
+    make_eval_script_list_common,
+    parse_instance_list_field,
+)
 from unidiff import PatchSet
 
 
@@ -62,8 +66,50 @@ def get_test_cmds_calypso(instance) -> list:
     return test_cmds
 
 
+def _extract_jest_targets(instance, max_targets: int = 12) -> list[str]:
+    selected = parse_instance_list_field(instance, "selected_test_files_to_run")
+    targets = []
+    for entry in selected:
+        # Some datasets include "path | test name"; extract path side only.
+        path_part = entry.split(" | ", 1)[0].strip()
+        if "/" in path_part and re.search(r"\.(js|jsx|ts|tsx)$", path_part):
+            targets.append(path_part)
+    deduped = []
+    seen = set()
+    for target in targets:
+        if target in seen:
+            continue
+        seen.add(target)
+        deduped.append(target)
+    return deduped[:max_targets]
+
+
+def _quote_targets(targets: list[str]) -> str:
+    return " ".join(shlex.quote(x) for x in targets)
+
+
+def get_test_cmds_nodebb(instance) -> list:
+    targets = _extract_jest_targets(instance)
+    quoted_targets = _quote_targets(targets)
+    if quoted_targets:
+        return [f"npx mocha --exit {quoted_targets}"]
+    return ["npx mocha --exit"]
+
+
+def get_test_cmds_jest_selected(instance) -> list:
+    targets = _extract_jest_targets(instance)
+    quoted_targets = _quote_targets(targets)
+    if quoted_targets:
+        return [f"npx jest --runInBand --verbose {quoted_targets}"]
+    return ["npx jest --runInBand --verbose"]
+
+
 MAP_REPO_TO_TEST_CMDS = {
     "Automattic/wp-calypso": get_test_cmds_calypso,
+    "NodeBB/NodeBB": get_test_cmds_nodebb,
+    "element-hq/element-web": get_test_cmds_jest_selected,
+    "protonmail/webclients": get_test_cmds_jest_selected,
+    "tutao/tutanota": get_test_cmds_jest_selected,
 }
 
 

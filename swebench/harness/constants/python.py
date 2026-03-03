@@ -902,6 +902,33 @@ SPECS_PYDICOM.update(
 
 SPECS_HUMANEVAL = {k: {"python": "3.9", "test_cmd": "python"} for k in ["1.0"]}
 
+SPECS_ANSIBLE_PRO = {
+    "default": {
+        "python": "3.11",
+        "install": "python -m pip install -e .",
+        "pip_packages": ["pytest"],
+        "test_cmd": TEST_PYTEST,
+    }
+}
+
+SPECS_OPENLIBRARY_PRO = {
+    "default": {
+        "python": "3.11",
+        "install": "python -m pip install -e .",
+        "pip_packages": ["pytest"],
+        "test_cmd": TEST_PYTEST,
+    }
+}
+
+SPECS_QUTEBROWSER_PRO = {
+    "default": {
+        "python": "3.11",
+        "install": "python -m pip install -e .",
+        "pip_packages": ["pytest"],
+        "test_cmd": TEST_PYTEST,
+    }
+}
+
 # Constants - Task Instance Instllation Environment
 MAP_REPO_VERSION_TO_SPECS_PY = {
     "astropy/astropy": SPECS_ASTROPY,
@@ -924,6 +951,9 @@ MAP_REPO_VERSION_TO_SPECS_PY = {
     "sqlfluff/sqlfluff": SPECS_SQLFLUFF,
     "swe-bench/humaneval": SPECS_HUMANEVAL,
     "sympy/sympy": SPECS_SYMPY,
+    "ansible/ansible": SPECS_ANSIBLE_PRO,
+    "internetarchive/openlibrary": SPECS_OPENLIBRARY_PRO,
+    "qutebrowser/qutebrowser": SPECS_QUTEBROWSER_PRO,
 }
 
 # Constants - Repository Specific Installation Instructions
