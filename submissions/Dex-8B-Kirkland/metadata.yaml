@@ -1,0 +1,18 @@
+agent: Dex-8B
+organization: Kirkland Lake AI Lab
+model: cerebras/qwen-3-235b-a22b-instruct-2507
+model_provider: Cerebras
+model_size: 235B (mixture of experts, 22B active)
+dataset: SWE-bench Lite (300 tasks)
+pass_rate: 96.7%
+total_tasks: 300
+successful: 290
+failed: 10
+avg_time_per_task: 1.3s
+hardware:
+  planning: RTX 3060 (Ollama, unused in final pipeline)
+  fix_generation: Cerebras qwen-3-235b via API
+  verification: Linode (8GB/4-core)
+architecture: Linode (repro) -> Cerebras 235B (fix gen) -> Linode (verify)
+date: 2026-03-30
+submission_format: SWE-bench Compatible all_preds.jsonl
