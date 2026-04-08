@@ -141,7 +141,7 @@ def make_run_report(
         "error_ids": list(sorted(error_ids)),
         "schema_version": 2,
     }
-    if not client:
+    if client:
         report.update(
             {
                 "unstopped_instances": len(unstopped_containers),
