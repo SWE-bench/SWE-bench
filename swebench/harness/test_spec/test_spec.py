@@ -42,6 +42,7 @@ class TestSpec:
     language: str
     docker_specs: dict
     namespace: Optional[str]
+    instance_image_name: Optional[str]
     base_image_tag: str = LATEST
     env_image_tag: str = LATEST
     instance_image_tag: str = LATEST
@@ -105,9 +106,12 @@ class TestSpec:
 
     @property
     def instance_image_key(self):
-        key = f"sweb.eval.{self.arch}.{self.instance_id.lower()}:{self.instance_image_tag}"
-        if self.is_remote_image:
-            key = f"{self.namespace}/{key}".replace("__", "_1776_")
+        """Get the image name for a given SWEBench instance """
+        key = self.instance_image_name
+        if self.instance_image_name is None:
+            key = f"sweb.eval.{self.arch}.{self.instance_id.lower()}:{self.instance_image_tag}"
+            if self.is_remote_image:
+                key = f"{self.namespace}/{key}".replace("__", "_1776_")
         return key
 
     @property
@@ -191,6 +195,7 @@ def make_test_spec(
     problem_statement = instance.get("problem_statement")
     hints_text = instance.get("hints_text")  # Unused
     test_patch = instance["test_patch"]
+    instance_image_name = instance.get("image_name", None) or instance.get("docker_image", None)
 
     def _from_json_or_obj(key: str) -> Any:
         """If key points to string, load with json"""
@@ -229,6 +234,7 @@ def make_test_spec(
         language=MAP_REPO_TO_EXT[repo],
         docker_specs=docker_specs,
         namespace=namespace,
+        instance_image_name=instance_image_name,
         base_image_tag=base_image_tag,
         env_image_tag=env_image_tag,
         instance_image_tag=instance_image_tag,

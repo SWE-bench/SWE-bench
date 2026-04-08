@@ -521,6 +521,7 @@ def build_container(
             command="tail -f /dev/null",
             platform=test_spec.platform,
             cap_add=cap_add,
+            security_opt=["label=disable"],
         )
         logger.info(f"Container for {test_spec.instance_id} created: {container.id}")
         return container
