@@ -205,7 +205,7 @@ def get_last_idx(charlist):
     """Get index of last occurrence of "-" or "+" in charlist"""
     char_idx = get_first_idx(charlist[::-1])
     last_idx = len(charlist) - char_idx
-    return last_idx + 1
+    return last_idx
 
 
 def strip_content(hunk):
