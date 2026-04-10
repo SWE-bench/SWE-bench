@@ -172,7 +172,7 @@ class ContextManager:
 
     def get_readme_files(self):
         files = os.listdir(self.repo_path)
-        files = list(filter(lambda x: os.path.isfile(x), files))
+        files = list(filter(lambda x: os.path.isfile(os.path.join(self.repo_path, x)), files))
         files = list(filter(lambda x: x.lower().startswith("readme"), files))
         return files
 
