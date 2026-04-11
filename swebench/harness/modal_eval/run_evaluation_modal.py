@@ -7,6 +7,8 @@ import json
 import modal
 import modal.container_process
 import modal.io_streams
+import shlex
+import tempfile
 import tenacity
 import time
 import traceback
@@ -35,6 +37,88 @@ from swebench.harness.constants import (
 )
 from swebench.harness.grading import get_eval_report
 from swebench.harness.test_spec.test_spec import make_test_spec, TestSpec
+
+
+def _split_dockerfile_from_lines(dockerfile: str) -> tuple[str, list[str]]:
+    lines = dockerfile.strip().splitlines()
+    for idx, line in enumerate(lines):
+        if line.strip().startswith("FROM "):
+            return line.strip(), [line.rstrip() for line in lines[idx + 1 :]]
+    raise ValueError("Dockerfile is missing a FROM instruction")
+
+
+def _extract_from_image_ref(from_instruction: str) -> str:
+    tokens = shlex.split(from_instruction)
+    if len(tokens) < 2 or tokens[0].upper() != "FROM":
+        raise ValueError(f"Invalid FROM instruction: {from_instruction}")
+
+    idx = 1
+    while idx < len(tokens) and tokens[idx].startswith("--"):
+        idx += 1
+    if idx >= len(tokens):
+        raise ValueError(f"Missing image reference in FROM instruction: {from_instruction}")
+
+    return tokens[idx]
+
+
+def _get_modal_sandbox_lifecycle_commands() -> list[str]:
+    # Sandboxes are created without an explicit startup command. Override any
+    # inherited image entrypoint/CMD so long-lived base images like Maven do not
+    # exit immediately or run unrelated startup behavior.
+    return [
+        "ENTRYPOINT []",
+        'CMD ["/bin/sh", "-lc", "while true; do sleep 3600; done"]',
+    ]
+
+
+def _build_modal_image_definition(test_spec: TestSpec) -> tuple[str, list[str]]:
+    # Modal's registry image path only supports single-stage builds. Start from
+    # the public base image, then replay the rendered Docker instructions from
+    # the existing harness Dockerfiles in order.
+    base_from, base_lines = _split_dockerfile_from_lines(test_spec.base_dockerfile)
+    base_image_ref = _extract_from_image_ref(base_from)
+
+    dockerfile_commands = []
+    dockerfile_commands.extend(line for line in base_lines if line.strip())
+
+    if test_spec.env_dockerfile != test_spec.base_dockerfile:
+        _, env_lines = _split_dockerfile_from_lines(test_spec.env_dockerfile)
+        dockerfile_commands.extend(line for line in env_lines if line.strip())
+
+    _, instance_lines = _split_dockerfile_from_lines(test_spec.instance_dockerfile)
+    dockerfile_commands.extend(line for line in instance_lines if line.strip())
+    dockerfile_commands.extend(_get_modal_sandbox_lifecycle_commands())
+
+    return base_image_ref, dockerfile_commands
+
+
+def _get_modal_add_python_version(test_spec: TestSpec) -> str | None:
+    if test_spec.language in {"java", "go", "rs", "rb", "php"}:
+        return "3.11"
+    if (
+        test_spec.language == "js"
+        and test_spec.docker_specs.get("_variant") == "js_2"
+    ):
+        return "3.11"
+    return None
+
+
+def _build_eval_run_command(test_spec: TestSpec, eval_file: str) -> str:
+    run_command = "cd /testbed"
+    # pylint hack
+    if "pylint" in test_spec.instance_id:
+        run_command += " && PYTHONPATH="
+    if test_spec.language == "py":
+        run_command += " && python3 -c 'import sys; sys.setrecursionlimit(10000)'"
+    run_command += f" && /bin/bash {eval_file}"
+    return run_command
+
+
+def _add_sandbox_entrypoint(image: modal.Image) -> modal.Image:
+    return image.add_local_file(
+        LOCAL_SANDBOX_ENTRYPOINT_PATH,
+        REMOTE_SANDBOX_ENTRYPOINT_PATH,
+    )
 
 
 @dataclass
@@ -77,10 +161,7 @@ class ModalSandboxRuntime:
             timeout = 60 * 30
 
         return modal.Sandbox.create(
-            image=self.image.add_local_file(
-                REMOTE_SANDBOX_ENTRYPOINT_PATH,
-                REMOTE_SANDBOX_ENTRYPOINT_PATH,
-            ),
+            image=_add_sandbox_entrypoint(self.image),
             timeout=timeout,
             cpu=4,
         )
@@ -159,59 +240,35 @@ class ModalSandboxRuntime:
     @staticmethod
     def get_instance_image(test_spec: TestSpec) -> modal.Image:
         env_script = test_spec.setup_env_script
-        # add trusted host flag for Modal's PyPI mirror
-        env_script = env_script.replace(
-            "conda activate testbed && python -m pip install -r $HOME/requirements.txt",
-            "conda activate testbed && python -m pip install --trusted-host pypi-mirror.modal.local -r $HOME/requirements.txt",
-        )
+        if test_spec.language == "py":
+            # add trusted host flag for Modal's PyPI mirror
+            env_script = env_script.replace(
+                "conda activate testbed && python -m pip install -r $HOME/requirements.txt",
+                "conda activate testbed && python -m pip install --trusted-host pypi-mirror.modal.local -r $HOME/requirements.txt",
+            )
         repo_script = test_spec.install_repo_script
 
-        remote_env_script_path = "/root/setup_env.sh"
-        remote_repo_script_path = "/root/setup_repo.sh"
+        build_dir = Path(tempfile.mkdtemp(prefix="swebench-modal-image-"))
+        env_script_path = build_dir / "setup_env.sh"
+        repo_script_path = build_dir / "setup_repo.sh"
 
-        Path(remote_env_script_path).write_text(env_script)
-        Path(remote_repo_script_path).write_text(repo_script)
+        env_script_path.write_text(env_script, encoding="utf-8")
+        repo_script_path.write_text(repo_script, encoding="utf-8")
 
-        # Modal automatically caches images
-        # https://modal.com/docs/guide/custom-container#image-caching-and-rebuilds
-        return (
-            modal.Image.from_registry("ubuntu:22.04", add_python="3.11")
-            .run_commands("apt update")
-            .env({"DEBIAN_FRONTEND": "noninteractive", "TZ": "Etc/UTC"})
-            .apt_install(
-                "wget",
-                "git",
-                "build-essential",
-                "libffi-dev",
-                "libtiff-dev",
-                "jq",
-                "curl",
-                "locales",
-                "locales-all",
-                "tzdata",
+        base_image_ref, dockerfile_commands = _build_modal_image_definition(test_spec)
+
+        image_kwargs = {}
+        add_python = _get_modal_add_python_version(test_spec)
+        if add_python is not None:
+            image_kwargs["add_python"] = add_python
+
+        image = modal.Image.from_registry(base_image_ref, **image_kwargs)
+        if dockerfile_commands:
+            image = image.dockerfile_commands(
+                *dockerfile_commands,
+                context_dir=build_dir,
             )
-            .run_commands(
-                "wget 'https://repo.anaconda.com/miniconda/Miniconda3-py311_23.11.0-2-Linux-x86_64.sh' -O miniconda.sh",
-                "bash miniconda.sh -b -p /opt/miniconda3",
-                "echo 'export PATH=/opt/miniconda3/bin:$PATH' >> ~/.bashrc",
-                "/opt/miniconda3/bin/conda init --all",
-                "/opt/miniconda3/bin/conda config --append channels conda-forge",
-                "adduser --disabled-password --gecos 'dog' nonroot",
-            )
-            .add_local_file(
-                Path(remote_env_script_path), remote_env_script_path, copy=True
-            )
-            .add_local_file(
-                Path(remote_repo_script_path), remote_repo_script_path, copy=True
-            )
-            .run_commands(
-                f"chmod +x {remote_env_script_path}",
-                f"/bin/bash -c 'source ~/.bashrc && {remote_env_script_path}'",
-                "echo 'source /opt/miniconda3/etc/profile.d/conda.sh && conda activate testbed' >> /root/.bashrc",
-                f"/bin/bash {remote_repo_script_path}",
-            )
-            .workdir("/testbed/")
-        )
+        return image
 
 
 def get_log_dir(pred: dict, run_id: str, instance_id: str) -> Path:
@@ -222,10 +279,7 @@ def get_log_dir(pred: dict, run_id: str, instance_id: str) -> Path:
 
 
 @app.function(
-    image=swebench_image.add_local_file(
-        LOCAL_SANDBOX_ENTRYPOINT_PATH,
-        REMOTE_SANDBOX_ENTRYPOINT_PATH,
-    ),
+    image=_add_sandbox_entrypoint(swebench_image),
     timeout=120
     * 60,  # Much larger than default timeout to account for image build time
     include_source=True,
@@ -306,14 +360,7 @@ def run_instance_modal(
 
         start_time = time.time()
 
-        run_command = "cd /testbed"
-        # pylint hack
-        if "pylint" in test_spec.instance_id:
-            run_command += " && PYTHONPATH="
-        # increase recursion limit for testing
-        run_command += " && python3 -c 'import sys; sys.setrecursionlimit(10000)'"
-        # run eval script
-        run_command += " && /bin/bash /root/eval.sh"
+        run_command = _build_eval_run_command(test_spec, eval_file)
         test_output, returncode = runner.exec(run_command)
 
         total_runtime = time.time() - start_time
