@@ -143,7 +143,10 @@ def make_code_text_edits_only(files_dict, patch, add_line_numbers=True):
         source_file = patched_file.source_file.split("a/", 1)[-1]
         files[source_file] = list()
         for hunk in patched_file:
-            start = hunk.source_start - 15
+            # Clamp to 0 so hunks near the top of the file still get
+            # a non-empty slice (Python's negative indexing would
+            # otherwise turn [-n:end] into an empty window for large files).
+            start = max(0, hunk.source_start - 15)
             end = start + hunk.source_length + 15
             files[source_file].append((start, end))
     all_text = ""
