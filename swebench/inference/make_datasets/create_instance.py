@@ -144,7 +144,7 @@ def make_code_text_edits_only(files_dict, patch, add_line_numbers=True):
         files[source_file] = list()
         for hunk in patched_file:
             start = hunk.source_start - 15
-            end = start + hunk.source_length + 15
+            end = hunk.source_start - 1 + hunk.source_length + 15
             files[source_file].append((start, end))
     all_text = ""
     for filename, content in files_dict.items():
