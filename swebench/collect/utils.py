@@ -402,6 +402,6 @@ def extract_problem_statement_and_hints_django(
 
             # Append the comment and timestamp as a tuple to the comments list
             if timestamp < commit_time:
-                all_hints_text.append((comment_text, timestamp))
+                all_hints_text.append(comment_text)
 
-    return text, all_hints_text
+    return text, "\n".join(all_hints_text) if all_hints_text else ""
