@@ -1,5 +1,6 @@
 import hashlib
 import json
+import platform
 
 from dataclasses import dataclass
 from typing import Any, Optional, Union, cast
@@ -177,10 +178,12 @@ def make_test_spec(
     base_image_tag: str = LATEST,
     env_image_tag: str = LATEST,
     instance_image_tag: str = LATEST,
-    arch: str = "x86_64",
+    arch: Optional[str] = None,
 ) -> TestSpec:
     if isinstance(instance, TestSpec):
         return instance
+    if arch is None:
+        arch = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "x86_64"
     assert base_image_tag is not None, "base_image_tag cannot be None"
     assert env_image_tag is not None, "env_image_tag cannot be None"
     assert instance_image_tag is not None, "instance_image_tag cannot be None"
