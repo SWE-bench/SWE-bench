@@ -82,7 +82,7 @@ def get_version(instance, is_build=False, path_repo=None):
             version_path_abs = os.path.join(path_repo, path_to_version)
             if os.path.exists(version_path_abs):
                 logger.info(f"Found version file at {path_to_version}")
-                with open(path_to_version) as f:
+                with open(version_path_abs) as f:
                     init_text = f.read()
         else:
             url = os.path.join(
