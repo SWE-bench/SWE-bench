@@ -51,7 +51,7 @@ def get_problem_statement(owner, repo, issue_num, ghapi, include_comments=False)
     if include_comments:
         all_comments = list(ghapi.issues.list_comments(owner, repo, issue_num))
         comments = [comment.body for comment in all_comments]
-        comment_text = "Comment: " if comments else "" + "\nComment:".join(comments)
+        comment_text = ("Comment: " if comments else "") + "\nComment:".join(comments)
         issue_text += "\n" + comment_text
     return issue_text
 
