@@ -64,7 +64,7 @@ map_v_to_t = {}
 for task in data_tasks:
     if task["version"] not in map_v_to_t:
         map_v_to_t[task["version"]] = []
-    map_v_to_t[task["version"]].append(t)
+    map_v_to_t[task["version"]].append(task)
 
 # Save matplotlib versioned data to repository
 with open(PATH_TASKS_PVLIB_V, "w") as f:
