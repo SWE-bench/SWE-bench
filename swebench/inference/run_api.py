@@ -155,7 +155,7 @@ def call_chat(model_name_or_path, inputs, use_azure, temperature, top_p, **model
     except openai.BadRequestError as e:
         if e.code == "context_length_exceeded":
             print("Context length exceeded")
-            return None
+            return None, 0
         raise e
 
 
@@ -231,6 +231,8 @@ def openai_inference(
                 temperature,
                 top_p,
             )
+            if response is None:
+                continue
             completion = response.choices[0].message.content
             total_cost += cost
             print(f"Total Cost: {total_cost:.2f}")
