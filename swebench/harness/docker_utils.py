@@ -82,7 +82,7 @@ def remove_image(client, image_id, logger=None):
         raise_error = True
     else:
         # if logger is a logger object, use it
-        log_error = logger.info
+        log_error = logger.error
         log_info = logger.info
         raise_error = False
     try:
@@ -124,7 +124,7 @@ def cleanup_container(client, container, logger):
         raise_error = True
     else:
         # if logger is a logger object, use it
-        log_error = logger.info
+        log_error = logger.error
         log_info = logger.info
         raise_error = False
 
