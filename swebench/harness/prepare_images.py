@@ -1,5 +1,8 @@
 import docker
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None  # type: ignore[assignment]
 
 from argparse import ArgumentParser
 
@@ -82,8 +85,9 @@ def main(
         force_rebuild (bool): Whether to force rebuild all images.
         open_file_limit (int): Open file limit.
     """
-    # Set open file limit
-    resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
+    # Set open file limit (resource module is Unix-only)
+    if resource is not None:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
     client = docker.from_env()
 
     # Filter out instances that were not specified
@@ -148,3 +152,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(**vars(args))
+
