@@ -8,7 +8,7 @@ TEST_SEABORN = "pytest --no-header -rA"
 TEST_SEABORN_VERBOSE = "pytest -rA --tb=long"
 TEST_PYTEST = "pytest -rA"
 TEST_PYTEST_VERBOSE = "pytest -rA --tb=long"
-TEST_SPHINX = "tox --current-env -epy39 -v --"
+TEST_SPHINX = "tox --current-env -epy39 -v -- -rA"
 TEST_SYMPY = (
     "PYTHONWARNINGS='ignore::UserWarning,ignore::SyntaxWarning' bin/test -C --verbose"
 )
