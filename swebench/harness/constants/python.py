@@ -930,6 +930,23 @@ MAP_REPO_VERSION_TO_SPECS_PY = {
 MAP_REPO_TO_INSTALL_PY = {}
 
 
+# Constants - Per-Instance Spec Overrides
+# Keyed by instance_id; merged on top of the repo/version spec in make_test_spec().
+# Use this for fixes that apply to a single instance, not a whole repo version.
+MAP_INSTANCE_TO_SPECS_PY = {
+    # Instance astropy__astropy-8872 requires setuptools<60 due to legacy build system
+    # incompatibility. Newer setuptools versions break the build, so we pin this
+    # specific version for this instance only rather than applying it to all astropy
+    # 3.1 specs.
+    "astropy__astropy-8872": {
+        "install": (
+            "python -m pip install 'setuptools<60' --force-reinstall "
+            "&& python -m pip install -e .[test]"
+        ),
+    },
+}
+
+
 # Constants - Task Instance Requirements File Paths
 MAP_REPO_TO_REQS_PATHS = {
     "dbt-labs/dbt-core": ["dev-requirements.txt", "dev_requirements.txt"],
