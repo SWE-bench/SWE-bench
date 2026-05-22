@@ -8,7 +8,6 @@ from swebench.harness.constants import (
     MAP_REPO_TO_ENV_YML_PATHS,
     MAP_REPO_TO_INSTALL,
     MAP_REPO_TO_REQS_PATHS,
-    MAP_REPO_VERSION_TO_SPECS,
     NON_TEST_EXTS,
     SWE_BENCH_URL_RAW,
     START_TEST_OUTPUT,
@@ -424,11 +423,11 @@ def make_eval_script_list_py(
     apply_test_patch_command = (
         f"git apply -v - <<'{HEREDOC_DELIMITER}'\n{test_patch}\n{HEREDOC_DELIMITER}"
     )
+    # Read test_cmd from the (already instance-override-merged) specs, not from
+    # MAP_REPO_VERSION_TO_SPECS directly, so per-instance test_cmd overrides apply.
     test_command = " ".join(
         [
-            MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]][
-                "test_cmd"
-            ],
+            specs["test_cmd"],
             *get_test_directives(instance),
         ]
     )

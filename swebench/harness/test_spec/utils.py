@@ -1,6 +1,5 @@
 from swebench.harness.constants import (
     END_TEST_OUTPUT,
-    MAP_REPO_VERSION_TO_SPECS,
     START_TEST_OUTPUT,
 )
 from swebench.harness.utils import get_modified_files
@@ -9,10 +8,10 @@ from swebench.harness.utils import get_modified_files
 # MARK: Test Command Creation Functions
 
 
-def get_test_cmds(instance) -> list:
-    test_cmd = MAP_REPO_VERSION_TO_SPECS[instance["repo"]][instance["version"]][
-        "test_cmd"
-    ]
+def get_test_cmds(instance, specs) -> list:
+    # Read test_cmd from the (already instance-override-merged) specs, not from
+    # MAP_REPO_VERSION_TO_SPECS directly, so per-instance test_cmd overrides apply.
+    test_cmd = specs["test_cmd"]
     return [test_cmd] if isinstance(test_cmd, str) else test_cmd
 
 
@@ -75,7 +74,7 @@ def make_eval_script_list_common(
         build_commands.extend(specs["build"])
 
     apply_test_patch_command = f"git apply --verbose --reject - <<'{HEREDOC_DELIMITER}'\n{test_patch}\n{HEREDOC_DELIMITER}"
-    test_commands = get_test_cmds(instance)
+    test_commands = get_test_cmds(instance, specs)
     eval_commands = [
         f"cd {repo_directory}",
         f"git config --global --add safe.directory {repo_directory}",  # for nonroot user
