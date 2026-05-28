@@ -32,6 +32,15 @@ def make_repo_script_list_common(
         f"cd {repo_directory}",
         f"git reset --hard {base_commit}",
         "git remote remove origin",  # Remove the remote so the agent won't see newer commits
+        # Remove only tags pointing to commits after target timestamp
+        f"TARGET_TIMESTAMP=$(git show -s --format=%ci {base_commit})",
+        'git tag -l | while read tag; do TAG_COMMIT=$(git rev-list -n 1 "$tag"); TAG_TIME=$(git show -s --format=%ci "$TAG_COMMIT"); if [[ "$TAG_TIME" > "$TARGET_TIMESTAMP" ]]; then git tag -d "$tag"; fi; done',
+        "git reflog expire --expire=now --all",
+        "git gc --prune=now --aggressive",
+        # Verify future logs aren't available
+        "AFTER_TIMESTAMP=$(date -d \"$TARGET_TIMESTAMP + 1 second\" '+%Y-%m-%d %H:%M:%S')",
+        'COMMIT_COUNT=$(git log --oneline --all --since="$AFTER_TIMESTAMP" | wc -l)',
+        '[ "$COMMIT_COUNT" -eq 0 ] || exit 1',
     ]
     if "pre_install" in specs:
         setup_commands.extend(specs["pre_install"])
