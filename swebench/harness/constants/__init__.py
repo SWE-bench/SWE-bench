@@ -144,6 +144,22 @@ MAP_REPO_VERSION_TO_SPECS = {
     **MAP_REPO_VERSION_TO_SPECS_RUST,
 }
 
+# Per-instance spec overrides. These are shallow-merged on top of the
+# repo-version-level spec in make_test_spec(), allowing individual instances
+# to override specific keys (e.g. pip_packages, pre_install) without affecting
+# other instances of the same repo/version.
+MAP_INSTANCE_TO_SPECS = {
+    # astropy__astropy-8872: setuptools >= 60 ships a vendored distutils whose
+    # LooseVersion emits a DeprecationWarning. astropy 3.1's pytest config
+    # escalates warnings to errors, causing test collection to abort before any
+    # test runs. Pin setuptools < 60 to use the stdlib distutils instead.
+    "astropy__astropy-8872": {
+        "pre_install": [
+            "python -m pip install 'setuptools<60'",
+        ],
+    },
+}
+
 MAP_REPO_TO_INSTALL = {
     **MAP_REPO_TO_INSTALL_C,
     **MAP_REPO_TO_INSTALL_GO,

@@ -8,6 +8,7 @@ from swebench.harness.constants import (
     DEFAULT_DOCKER_SPECS,
     KEY_INSTANCE_ID,
     LATEST,
+    MAP_INSTANCE_TO_SPECS,
     MAP_REPO_TO_EXT,
     MAP_REPO_VERSION_TO_SPECS,
     SWEbenchInstance,
@@ -207,6 +208,12 @@ def make_test_spec(
     env_name = "testbed"
     repo_directory = f"/{env_name}"
     specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
+
+    # Apply per-instance spec overrides if present
+    instance_overrides = MAP_INSTANCE_TO_SPECS.get(instance_id, {})
+    if instance_overrides:
+        specs = {**specs, **instance_overrides}
+
     docker_specs = specs.get("docker_specs", {})
 
     repo_script_list = make_repo_script_list(
