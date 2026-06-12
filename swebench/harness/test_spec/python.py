@@ -271,7 +271,12 @@ def make_repo_script_list_py(
     branch = REPO_BASE_COMMIT_BRANCH.get(repo, {}).get(base_commit, "")
     branch = f"--branch {branch}" if branch else ""
     setup_commands = [
-        f"git clone -o origin {branch} --single-branch https://github.com/{repo} {repo_directory}",
+        # Local benchmark stabilization: GitHub clones inside linux/amd64 Docker
+        # builds can intermittently fail with RPC/GnuTLS early EOF. Retry only the
+        # repository fetch step; this does not change the checked-out commit,
+        # tests, or model patch semantics.
+        "git config --global http.version HTTP/1.1 || true",
+        f"cd / && for attempt in 1 2 3 4 5; do rm -rf {repo_directory}; git clone -o origin {branch} --single-branch https://github.com/{repo} {repo_directory} && break; status=$?; echo \"git clone failed with status $status on attempt $attempt/5\"; if [ \"$attempt\" -eq 5 ]; then exit \"$status\"; fi; sleep $((attempt * 5)); done",
         f"chmod -R 777 {repo_directory}",  # So nonroot user can run tests
         f"cd {repo_directory}",
         f"git reset --hard {base_commit}",

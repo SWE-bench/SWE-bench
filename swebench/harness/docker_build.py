@@ -3,6 +3,7 @@ from __future__ import annotations
 import docker
 import docker.errors
 import logging
+import os
 import sys
 import traceback
 
@@ -513,7 +514,7 @@ def build_container(
         run_args = test_spec.docker_specs.get("run_args", {})
         cap_add = run_args.get("cap_add", [])
 
-        container = client.containers.create(
+        create_kwargs = dict(
             image=test_spec.instance_image_key,
             name=test_spec.get_instance_container_name(run_id),
             user=DOCKER_USER,
@@ -522,6 +523,30 @@ def build_container(
             platform=test_spec.platform,
             cap_add=cap_add,
         )
+
+        # Local benchmark stabilization hooks. If set by the caller, join the
+        # evaluation container to a user-defined Docker network and inject an
+        # HTTPBIN_URL so old Requests tests do not depend on live httpbin.org.
+        docker_network = os.environ.get("SWEBENCH_DOCKER_NETWORK")
+        if docker_network:
+            create_kwargs["network"] = docker_network
+            logger.info(f"Using Docker network from SWEBENCH_DOCKER_NETWORK={docker_network}")
+
+        container_env = {}
+        httpbin_url = os.environ.get("SWEBENCH_HTTPBIN_URL")
+        if httpbin_url:
+            container_env["HTTPBIN_URL"] = httpbin_url
+            logger.info(f"Injecting HTTPBIN_URL={httpbin_url}")
+
+        if os.environ.get("SWEBENCH_HTTPBIN_CA_CERT"):
+            container_env["REQUESTS_CA_BUNDLE"] = "/tmp/swebench-httpbin-ca.pem"
+            container_env["CURL_CA_BUNDLE"] = "/tmp/swebench-httpbin-ca.pem"
+            logger.info("Injecting REQUESTS_CA_BUNDLE/CURL_CA_BUNDLE for local HTTPBIN CA")
+
+        if container_env:
+            create_kwargs["environment"] = container_env
+
+        container = client.containers.create(**create_kwargs)
         logger.info(f"Container for {test_spec.instance_id} created: {container.id}")
         return container
     except Exception as e:

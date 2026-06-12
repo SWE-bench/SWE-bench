@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import docker
 import json
+import os
 import platform
 import threading
 import traceback
@@ -154,6 +155,28 @@ def run_instance(
         )
         container.start()
         logger.info(f"Container for {instance_id} started: {container.id}")
+
+        httpbin_ca = os.environ.get("SWEBENCH_HTTPBIN_CA_CERT")
+        if httpbin_ca:
+            ca_src = Path(httpbin_ca)
+            ca_dst = PurePosixPath("/tmp/swebench-httpbin-ca.pem")
+            ca_local_copy = Path(log_dir / "httpbin-ca.pem")
+            ca_local_copy.write_bytes(ca_src.read_bytes())
+            copy_to_container(container, ca_local_copy, ca_dst)
+            logger.info(f"Copied local HTTPBIN CA certificate to {ca_dst}")
+            append_cmd = (
+                "if [ -f /testbed/requests/cacert.pem ]; then "
+                "cat /tmp/swebench-httpbin-ca.pem >> /testbed/requests/cacert.pem; "
+                "echo appended_local_httpbin_ca_to_requests_bundle; "
+                "fi"
+            )
+            ca_append_result = container.exec_run(
+                ["/bin/bash", "-lc", append_cmd], workdir=DOCKER_WORKDIR, user=DOCKER_USER
+            )
+            logger.info(
+                "Local HTTPBIN CA install result "
+                f"exit={ca_append_result.exit_code}: {ca_append_result.output.decode(UTF8)}"
+            )
 
         # Copy model prediction as patch file to container
         patch_file = Path(log_dir / "patch.diff")
