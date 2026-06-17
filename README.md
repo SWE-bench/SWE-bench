@@ -57,7 +57,7 @@ If you're setting up on Linux, we recommend seeing the [post-installation steps]
 
 Finally, to build SWE-bench from source, follow these steps:
 ```bash
-git clone git@github.com:princeton-nlp/SWE-bench.git
+git clone git@github.com:SWE-bench/SWE-bench.git
 cd SWE-bench
 pip install -e .
 ```
