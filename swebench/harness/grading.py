@@ -28,10 +28,17 @@ def test_passed(case: str, sm: dict[str, str]) -> bool:
     return case in sm and sm[case] in [TestStatus.PASSED.value, TestStatus.XFAIL.value]
 
 
+def test_maintained(case: str, sm: dict[str, str]) -> bool:
+    return test_passed(case, sm) or (
+        case in sm and sm[case] == TestStatus.SKIPPED.value
+    )
+
+
 def test_failed(case: str, sm: dict[str, str]) -> bool:
     return case not in sm or sm[case] in [
         TestStatus.FAILED.value,
         TestStatus.ERROR.value,
+        TestStatus.SKIPPED.value,
     ]
 
 
@@ -150,7 +157,13 @@ def get_eval_tests_report(
     p2p_success = []
     p2p_failure = []
     for test_case in gold_results[PASS_TO_PASS]:
-        check_test_case(test_case, eval_status_map, p2p_success, p2p_failure)
+        if eval_type == EvalType.PASS_AND_FAIL:
+            if test_maintained(test_case, eval_status_map):
+                p2p_success.append(test_case)
+            elif test_failed(test_case, eval_status_map):
+                p2p_failure.append(test_case)
+        else:
+            check_test_case(test_case, eval_status_map, p2p_success, p2p_failure)
 
     results = {
         FAIL_TO_PASS: {
