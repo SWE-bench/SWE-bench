@@ -1,0 +1,10 @@
+{
+    "model_name_or_path": "MEA-v5.8.1-AGIR-BRUNO-LOUREIRO",
+    "author": "Bruno Loureiro (Ahavahdev1)",
+    "contact": "LinkedIn: https://www.linkedin.com/in/bruno-loureiro-69747728/ / WhatsApp: +55 15 99688-5952",
+    "github": "https://github.com/Ahavahdev1",
+    "credentials": "Harvard CS50 Certified (c50dface-93d3-4b70-82d3-e349ab43fb99)",
+    "description": "MEA QUANTUM v5.8.1 'AGIR' - Independent multi-agent framework SRE. Achieved 63.2% success rate on SWE-bench Verified at a world-record cost of $0.0014/task. A pioneer project in Green AI and autonomous infrastructure repair.",
+    "total_cost_usd": 0.45,
+    "success_count": 316
+}
