@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from swebench.harness.docker_build import setup_logger
 from swebench.harness.reporting import make_run_report
-from swebench.harness.utils import EvaluationError
+from swebench.harness.utils import EvaluationError, validate_model_patch_paths
 from typing import cast
 
 SANDBOX_ENTRYPOINT = "run_evaluation_modal_entrypoint"
@@ -264,6 +264,9 @@ def run_instance_modal(
         ) from e
 
     patch_diff = pred.get("model_patch", "")
+    patch_error = validate_model_patch_paths(patch_diff)
+    if patch_error:
+        raise EvaluationError(instance_id, patch_error, logger)
 
     try:
         patch_file = "/tmp/patch.diff"
