@@ -13,6 +13,7 @@ from swebench.harness.constants import (
     SWE_BENCH_URL_RAW,
     START_TEST_OUTPUT,
     END_TEST_OUTPUT,
+    TEST_EXIT_CODE_PREFIX,
     REPO_BASE_COMMIT_BRANCH,
 )
 from swebench.harness.utils import get_modified_files, get_new_files, load_cached_environment_yml
@@ -456,7 +457,9 @@ def make_eval_script_list_py(
         apply_test_patch_command,
         f": '{START_TEST_OUTPUT}'",
         test_command,
+        "SWEBENCH_TEST_EXIT_CODE=$?",
         f": '{END_TEST_OUTPUT}'",
+        f'echo "{TEST_EXIT_CODE_PREFIX}${{SWEBENCH_TEST_EXIT_CODE}}"',
     ]
     eval_commands += reset_commands  # Revert tests after done
     return eval_commands

@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from swebench.harness.constants import (
@@ -13,6 +14,7 @@ from swebench.harness.constants import (
     PASS_TO_PASS,
     RESET_FAILED,
     START_TEST_OUTPUT,
+    TEST_EXIT_CODE_PREFIX,
     TESTS_ERROR,
     TESTS_TIMEOUT,
     EvalType,
@@ -33,6 +35,28 @@ def test_failed(case: str, sm: dict[str, str]) -> bool:
         TestStatus.FAILED.value,
         TestStatus.ERROR.value,
     ]
+
+
+_STDOUT_TAMPERING_PATTERNS = (
+    re.compile(r"sys\.stdout\s*="),
+    re.compile(r"SpoofedStdout"),
+)
+
+
+def _parse_test_exit_code(content: str) -> int | None:
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(TEST_EXIT_CODE_PREFIX):
+            code = stripped[len(TEST_EXIT_CODE_PREFIX) :].strip()
+            try:
+                return int(code)
+            except ValueError:
+                return None
+    return None
+
+
+def _detect_stdout_tampering(test_content: str) -> bool:
+    return any(pattern.search(test_content) for pattern in _STDOUT_TAMPERING_PATTERNS)
 
 
 # MARK: Evaluation report functions
@@ -77,6 +101,13 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
 
         # Get status map of evaluation results
         test_content = content.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0]
+
+        test_exit_code = _parse_test_exit_code(content)
+        if test_exit_code is not None and test_exit_code != 0:
+            return {}, False
+
+        if _detect_stdout_tampering(test_content):
+            return {}, False
 
         # Try parsing the content between markers first
         status_map = log_parser(test_content, test_spec)

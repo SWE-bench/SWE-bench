@@ -2,6 +2,7 @@ from swebench.harness.constants import (
     END_TEST_OUTPUT,
     MAP_REPO_VERSION_TO_SPECS,
     START_TEST_OUTPUT,
+    TEST_EXIT_CODE_PREFIX,
 )
 from swebench.harness.utils import get_modified_files
 
@@ -89,7 +90,9 @@ def make_eval_script_list_common(
         *build_commands,
         f": '{START_TEST_OUTPUT}'",
         *test_commands,
+        "SWEBENCH_TEST_EXIT_CODE=$?",
         f": '{END_TEST_OUTPUT}'",
+        f'echo "{TEST_EXIT_CODE_PREFIX}${{SWEBENCH_TEST_EXIT_CODE}}"',
         reset_tests_command,
     ]
     return eval_commands
