@@ -71,6 +71,12 @@ KEY_PREDICTION = "model_patch"
 DOCKER_PATCH = "/tmp/patch.diff"
 DOCKER_USER = "root"
 DOCKER_WORKDIR = "/testbed"
+# Normalize runtime environment for evaluation containers to improve determinism.
+DOCKER_CONTAINER_ENV = {
+    "TZ": "UTC",
+    "PYTHONHASHSEED": "0",
+    "LANG": "C.UTF-8",
+}
 LOG_REPORT = "report.json"
 LOG_INSTANCE = "run_instance.log"
 LOG_TEST_OUTPUT = "test_output.txt"

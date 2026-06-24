@@ -10,6 +10,7 @@ from pathlib import Path
 
 from swebench.harness.constants import (
     BASE_IMAGE_BUILD_DIR,
+    DOCKER_CONTAINER_ENV,
     DOCKER_USER,
     ENV_IMAGE_BUILD_DIR,
     INSTANCE_IMAGE_BUILD_DIR,
@@ -521,6 +522,7 @@ def build_container(
             command="tail -f /dev/null",
             platform=test_spec.platform,
             cap_add=cap_add,
+            environment=DOCKER_CONTAINER_ENV,
         )
         logger.info(f"Container for {test_spec.instance_id} created: {container.id}")
         return container
