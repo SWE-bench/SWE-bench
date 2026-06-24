@@ -59,6 +59,7 @@ from swebench.harness.utils import (
     run_threadpool,
     str2bool,
     optional_str,
+    validate_model_patch_paths,
 )
 
 GIT_APPLY_CMDS = [
@@ -157,7 +158,11 @@ def run_instance(
 
         # Copy model prediction as patch file to container
         patch_file = Path(log_dir / "patch.diff")
-        patch_file.write_text(pred[KEY_PREDICTION] or "")
+        patch_text = pred[KEY_PREDICTION] or ""
+        patch_error = validate_model_patch_paths(patch_text)
+        if patch_error:
+            raise EvaluationError(instance_id, patch_error, logger)
+        patch_file.write_text(patch_text)
         logger.info(
             f"Intermediate patch for {instance_id} written to {patch_file}, now applying to container..."
         )

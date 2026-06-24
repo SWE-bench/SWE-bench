@@ -1,5 +1,8 @@
 import unittest
-from swebench.harness.utils import run_threadpool
+from swebench.harness.utils import (
+    run_threadpool,
+    validate_model_patch_paths,
+)
 from swebench.harness.test_spec.python import clean_environment_yml, clean_requirements
 
 
@@ -195,3 +198,25 @@ class UtilTests(unittest.TestCase):
         )
         cleaned = clean_requirements(requirements)
         self.assertEqual(cleaned, expected_requirements)
+
+    def test_validate_model_patch_paths_rejects_test_files(self):
+        patch = (
+            "--- a/tests/test_core.py\n"
+            "+++ b/tests/test_core.py\n"
+            "@@ -1,2 +1,2 @@\n"
+            "-assert process_data() == expected\n"
+            "+assert True\n"
+        )
+        error = validate_model_patch_paths(patch)
+        self.assertIsNotNone(error)
+        self.assertIn("tests/test_core.py", error)
+
+    def test_validate_model_patch_paths_allows_source_files(self):
+        patch = (
+            "--- a/src/core.py\n"
+            "+++ b/src/core.py\n"
+            "@@ -1,2 +1,2 @@\n"
+            "-return 0\n"
+            "+return 1\n"
+        )
+        self.assertIsNone(validate_model_patch_paths(patch))

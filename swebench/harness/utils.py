@@ -348,6 +348,60 @@ def get_modified_files(patch: str) -> list[str]:
     return source_files
 
 
+def get_all_patch_paths(patch: str) -> list[str]:
+    """
+    Get all file paths touched by a patch (modified and newly added files).
+    """
+    return get_modified_files(patch) + get_new_files(patch)
+
+
+def _is_forbidden_model_patch_path(path: str) -> bool:
+    """
+    Return True if a model-generated patch must not modify the given path.
+    """
+    norm = path.lstrip("./")
+    parts = norm.split("/")
+    basename = parts[-1]
+
+    if any(part in {"tests", "test", "testing"} for part in parts):
+        return True
+    if parts and parts[0] in {".github", ".circleci", ".travis", ".gitlab-ci"}:
+        return True
+    if basename == "conftest.py":
+        return True
+    if basename.startswith("test_") and "." in basename:
+        return True
+    if basename.endswith("_test.py"):
+        return True
+    if basename in {"pytest.ini", "tox.ini", "setup.cfg"}:
+        return True
+    return False
+
+
+def validate_model_patch_paths(patch: str) -> str | None:
+    """
+    Reject model patches that modify test or CI configuration files.
+
+    Returns an error message if the patch is invalid, otherwise None.
+    """
+    if not patch.strip():
+        return None
+
+    try:
+        forbidden_paths = [
+            path
+            for path in get_all_patch_paths(patch)
+            if _is_forbidden_model_patch_path(path)
+        ]
+    except Exception:
+        return "Unable to parse model patch"
+
+    if forbidden_paths:
+        joined = ", ".join(sorted(set(forbidden_paths)))
+        return f"Model patch modifies forbidden paths: {joined}"
+    return None
+
+
 def get_new_files(patch: str) -> list[str]:
     """
     Get the list of new files in a patch (source is /dev/null).
