@@ -565,6 +565,9 @@ SPECS_ASTROPY = {
     }
     for k in ["3.0", "3.1", "3.2", "4.1", "4.2", "4.3", "5.0", "5.1", "5.2", "v5.3"]
 }
+SPECS_ASTROPY["3.1"]["pip_packages"] = [
+    p.replace("setuptools==68.0.0", "setuptools==59.8.0") for p in SPECS_ASTROPY["3.1"]["pip_packages"]
+]
 SPECS_ASTROPY.update(
     {
         k: {
