@@ -1,7 +1,7 @@
-from swebench.harness.constants.kotlin_base import (
+from swebench.harness.constants.jvm_base import (
     GRADLE_PROPERTIES_SCRIPT,
     KOTLIN_LOGS_COLLECTOR_SCRIPT,
-    SPECS_KOTLIN_LIBRARY,
+    SPECS_JVM_LIBRARY_17,
     WARM_TEST_DEPENDENCIES_CMD,
     WARM_TEST_DEPENDENCIES_SCRIPT,
 )
@@ -23,7 +23,7 @@ STATIC_VERIFICATION_KOIN_EOF
 
 SPECS = {
     "1.0.0": {
-        **SPECS_KOTLIN_LIBRARY["1.0.0"],
+        **SPECS_JVM_LIBRARY_17["1.0.0"],
         "pre_install": [
             GRADLE_PROPERTIES_SCRIPT,
             KOTLIN_LOGS_COLLECTOR_SCRIPT,

@@ -1,4 +1,4 @@
-from swebench.harness.constants.kotlin_base import SPECS_KOTLIN_ANDROID
+from swebench.harness.constants.jvm_base import SPECS_ANDROID_17
 
 REPO = "nextcloud/talk-android"
 
@@ -7,7 +7,7 @@ REPO = "nextcloud/talk-android"
 # Disable verification for both the install step and tests.
 SPECS = {
     "1.0.0": {
-        **SPECS_KOTLIN_ANDROID["1.0.0"],
+        **SPECS_ANDROID_17["1.0.0"],
         "install": [
             "chmod +x gradlew",
             "echo '=== GRADLE_USER_HOME ===' && echo \"GRADLE_USER_HOME=${GRADLE_USER_HOME:-not set}\" && echo '=== gradle.properties ===' && cat ${GRADLE_USER_HOME:-/root/.gradle}/gradle.properties && echo '=== END gradle.properties ==='",

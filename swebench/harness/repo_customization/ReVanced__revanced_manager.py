@@ -1,5 +1,5 @@
-from swebench.harness.constants.kotlin_base import (
-    SPECS_KOTLIN_ANDROID,
+from swebench.harness.constants.jvm_base import (
+    SPECS_ANDROID_17,
     _KAPT_MODULE_FLAGS,
 )
 
@@ -29,10 +29,10 @@ _GRADLE_PROPERTIES_SCRIPT = (
 
 SPECS = {
     "1.0.0": {
-        **SPECS_KOTLIN_ANDROID["1.0.0"],
+        **SPECS_ANDROID_17["1.0.0"],
         "pre_install": [
             _GRADLE_PROPERTIES_SCRIPT,
-            *SPECS_KOTLIN_ANDROID["1.0.0"]["pre_install"][1:],
+            *SPECS_ANDROID_17["1.0.0"]["pre_install"][1:],
         ],
     }
 }

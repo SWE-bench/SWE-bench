@@ -1,6 +1,6 @@
-from swebench.harness.constants.kotlin_base import (
+from swebench.harness.constants.jvm_base import (
     GRADLE_PROPERTIES_SCRIPT_LOW_MEM,
-    SPECS_KOTLIN_LIBRARY,
+    SPECS_JVM_LIBRARY_17,
     WARM_TEST_DEPENDENCIES_CMD,
 )
 
@@ -11,10 +11,10 @@ REPO = "arrow-kt/arrow"
 # `assemble` skips all check-phase tasks.  Low-mem to avoid OOM.
 SPECS = {
     "1.0.0": {
-        **SPECS_KOTLIN_LIBRARY["1.0.0"],
+        **SPECS_JVM_LIBRARY_17["1.0.0"],
         "pre_install": [
             GRADLE_PROPERTIES_SCRIPT_LOW_MEM,
-            *SPECS_KOTLIN_LIBRARY["1.0.0"]["pre_install"][1:],
+            *SPECS_JVM_LIBRARY_17["1.0.0"]["pre_install"][1:],
         ],
         "install": [
             "chmod +x gradlew",

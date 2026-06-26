@@ -1,6 +1,6 @@
-from swebench.harness.constants.kotlin_base import (
+from swebench.harness.constants.jvm_base import (
     KOTLIN_LOGS_COLLECTOR_SCRIPT,
-    SPECS_KOTLIN_LIBRARY,
+    SPECS_JVM_LIBRARY_17,
     WARM_TEST_DEPENDENCIES_CMD,
     WARM_TEST_DEPENDENCIES_SCRIPT,
     _GRADLE_JAVA24_HOME,
@@ -47,7 +47,7 @@ STATIC_VERIFICATION_KTLINT_EOF
 
 SPECS = {
     "1.0.0": {
-        **SPECS_KOTLIN_LIBRARY["1.0.0"],
+        **SPECS_JVM_LIBRARY_17["1.0.0"],
         "pre_install": [
             f'export JAVA_HOME={_GRADLE_JAVA24_HOME} && export PATH="$JAVA_HOME/bin:$PATH"',
             _GRADLE_PROPERTIES_SCRIPT,

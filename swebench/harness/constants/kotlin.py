@@ -1,10 +1,10 @@
-from swebench.harness.constants.kotlin_base import (
-    SPECS_KOTLIN_ANDROID,
-    SPECS_KOTLIN_ANDROID_21,
-    SPECS_KOTLIN_ANDROID_X86,
-    SPECS_KOTLIN_LIBRARY,
-    SPECS_KOTLIN_LIBRARY_KMP_BROWSER,
-    SPECS_KOTLIN_LIBRARY_LOW_MEM,
+from swebench.harness.constants.jvm_base import (
+    SPECS_ANDROID_17,
+    SPECS_ANDROID_21,
+    SPECS_ANDROID_17_X86,
+    SPECS_JVM_LIBRARY_17,
+    SPECS_JVM_LIBRARY_17_KMP_BROWSER,
+    SPECS_JVM_LIBRARY_17_LOW_MEM,
 )
 from swebench.harness.repo_customization.InsertKoinIO__koin import (
     SPECS as _SPECS_KOIN,
@@ -36,7 +36,7 @@ from swebench.harness.repo_customization.wireapp__wire_android import (
 
 MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
     **{
-        repo: SPECS_KOTLIN_ANDROID_21
+        repo: SPECS_ANDROID_21
         for repo in [
             "DroidKaigi/conference-app-2024",
             "MMRLApp/MMRL",
@@ -51,7 +51,7 @@ MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
         ]
     },
     **{
-        repo: SPECS_KOTLIN_ANDROID
+        repo: SPECS_ANDROID_17
         for repo in [
             "Aliucord/Aliucord",
             "AllanWang/Frost-for-Facebook",
@@ -105,7 +105,7 @@ MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
     # with Kotlin versions < 1.8 that lack linux-aarch64 prebuilt binaries.
     # These must build under x86_64 (QEMU emulation on ARM hosts).
     **{
-        repo: SPECS_KOTLIN_ANDROID_X86
+        repo: SPECS_ANDROID_17_X86
         for repo in [
             "DroidKaigi/conference-app-2021",
             "DroidKaigi/conference-app-2022",
@@ -117,7 +117,7 @@ MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
     # Pure Kotlin/JVM/multiplatform libraries — no Android app module,
     # install compiles sources without running tests.
     **{
-        repo: SPECS_KOTLIN_LIBRARY_LOW_MEM
+        repo: SPECS_JVM_LIBRARY_17_LOW_MEM
         for repo in [
             "Kotlin/dokka",
             "Kotlin/kotlinx.coroutines",
@@ -130,7 +130,7 @@ MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
     **{"slackhq/circuit": _SPECS_CIRCUIT},
     **{"ReVanced/revanced-manager": _SPECS_REVANCED},
     **{
-        repo: SPECS_KOTLIN_LIBRARY_KMP_BROWSER
+        repo: SPECS_JVM_LIBRARY_17_KMP_BROWSER
         for repo in [
             "kotest/kotest",
             "ktorio/ktor",
@@ -141,7 +141,7 @@ MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
     **{"nextcloud/talk-android": _SPECS_TALK},
     **{"wireapp/wire-android": _SPECS_WIRE},
     **{
-        repo: SPECS_KOTLIN_LIBRARY
+        repo: SPECS_JVM_LIBRARY_17
         for repo in [
             "JetBrains/compose-multiplatform",
             "ReactiveX/RxKotlin",

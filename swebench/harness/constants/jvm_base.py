@@ -233,10 +233,22 @@ WARM_TEST_DEPENDENCIES_CMD = (
 
 # ---------- Generic spec categories ----------
 
-# Pinned to x86_64: Kotlin/Native's linux-aarch64 prebuilt is absent from Maven Central,
-# so KMP builds fail on arm64 with "Could not find kotlin-native-prebuilt-*-linux-aarch64".
-# Pinning forces QEMU emulation on arm64 and downloads the linux-x86_64 prebuilt instead.
-SPECS_KOTLIN_LIBRARY = {
+# All Kotlin library / multiplatform builds are pinned to x86_64.
+#
+# Why: Kotlin/Native ships prebuilt toolchain binaries
+# (kotlin-native-prebuilt-<version>-<host>.tar.gz) that the Kotlin Gradle
+# plugin downloads during :commonizeNativeDistribution and similar tasks.
+# JetBrains publishes the linux-x86_64 prebuilt to Maven Central, but the
+# linux-aarch64 prebuilt is NOT on Maven Central — so the build fails on
+# arm64 hosts (Apple Silicon, ARM Linux runners) with:
+#   "Could not find kotlin-native-prebuilt-<v>-linux-aarch64.tar.gz"
+# This affects every Kotlin Multiplatform project we've tested in the
+# benchmark, regardless of Kotlin version (we've reproduced it on 2.1.0).
+#
+# Pinning to x86_64 here means Docker uses QEMU emulation transparently
+# on arm64 hosts; the Gradle plugin then downloads the linux-x86_64
+# prebuilt (which Maven Central does have) and the build proceeds.
+SPECS_JVM_LIBRARY_17 = {
     "1.0.0": {
         "docker_specs": {"java_version": "17", "arch": "x86_64"},
         "pre_install": [
@@ -260,7 +272,7 @@ SPECS_KOTLIN_LIBRARY = {
     }
 }
 
-SPECS_KOTLIN_ANDROID = {
+SPECS_ANDROID_17 = {
     "1.0.0": {
         "docker_specs": {"java_version": "17"},
         "pre_install": [
@@ -286,7 +298,7 @@ SPECS_KOTLIN_ANDROID = {
     }
 }
 
-SPECS_KOTLIN_ANDROID_21 = {
+SPECS_ANDROID_21 = {
     "1.0.0": {
         "docker_specs": {"java_version": "21"},
         "pre_install": [
@@ -312,13 +324,16 @@ SPECS_KOTLIN_ANDROID_21 = {
     }
 }
 
-# Android repos with KMP iOS/Native targets hit the same linux-aarch64 prebuilt gap
-# as SPECS_KOTLIN_LIBRARY. Use this variant for the few that need x86_64 + QEMU.
-SPECS_KOTLIN_ANDROID_X86 = {
+# Android repos that bring in Kotlin/Native via Kotlin Multiplatform with
+# iOS or Native targets, hitting the same missing linux-aarch64 prebuilt
+# issue documented above SPECS_JVM_LIBRARY_17. SPECS_ANDROID_17 itself
+# stays host-arch (most pure-Android builds work fine on arm64); use this
+# variant for the few Android repos that need x86_64 + QEMU emulation.
+SPECS_ANDROID_17_X86 = {
     "1.0.0": {
-        **SPECS_KOTLIN_ANDROID["1.0.0"],
+        **SPECS_ANDROID_17["1.0.0"],
         "docker_specs": {
-            **SPECS_KOTLIN_ANDROID["1.0.0"]["docker_specs"],
+            **SPECS_ANDROID_17["1.0.0"]["docker_specs"],
             "arch": "x86_64",
         },
     }
@@ -327,9 +342,9 @@ SPECS_KOTLIN_ANDROID_X86 = {
 # kotest, sqldelight, ktor — Kotlin Multiplatform projects whose `build` triggers
 # JS/Wasm browser tests that fail without a headless Chrome.  Use `assemble` in the
 # install step to avoid running tests, and skip browser test tasks in test_cmd.
-SPECS_KOTLIN_LIBRARY_KMP_BROWSER = {
+SPECS_JVM_LIBRARY_17_KMP_BROWSER = {
     "1.0.0": {
-        **SPECS_KOTLIN_LIBRARY["1.0.0"],
+        **SPECS_JVM_LIBRARY_17["1.0.0"],
         "install": [
             "chmod +x gradlew",
             "echo '=== GRADLE_USER_HOME ===' && echo \"GRADLE_USER_HOME=${GRADLE_USER_HOME:-not set}\" && echo '=== gradle.properties ===' && cat ${GRADLE_USER_HOME:-/root/.gradle}/gradle.properties && echo '=== END gradle.properties ==='",
@@ -340,12 +355,12 @@ SPECS_KOTLIN_LIBRARY_KMP_BROWSER = {
 }
 
 # Smaller heaps for a few very large Kotlin/JVM builds that were OOM-killed.
-SPECS_KOTLIN_LIBRARY_LOW_MEM = {
+SPECS_JVM_LIBRARY_17_LOW_MEM = {
     "1.0.0": {
-        **SPECS_KOTLIN_LIBRARY["1.0.0"],
+        **SPECS_JVM_LIBRARY_17["1.0.0"],
         "pre_install": [
             GRADLE_PROPERTIES_SCRIPT_LOW_MEM,
-            *SPECS_KOTLIN_LIBRARY["1.0.0"]["pre_install"][1:],
+            *SPECS_JVM_LIBRARY_17["1.0.0"]["pre_install"][1:],
         ],
     }
 }
