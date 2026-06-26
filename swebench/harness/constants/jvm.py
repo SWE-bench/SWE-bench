@@ -34,7 +34,7 @@ from swebench.harness.repo_customization.wireapp__wire_android import (
     SPECS as _SPECS_WIRE,
 )
 
-MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
+MAP_REPO_VERSION_TO_SPECS_JVM = {
     **{
         repo: SPECS_ANDROID_21
         for repo in [
@@ -151,7 +151,7 @@ MAP_REPO_VERSION_TO_SPECS_KOTLIN = {
     },
 }
 
-MAP_REPO_TO_INSTALL_KOTLIN = {
+MAP_REPO_TO_INSTALL_JVM = {
     repo: f"git clone https://github.com/{repo}.git"
-    for repo in MAP_REPO_VERSION_TO_SPECS_KOTLIN.keys()
+    for repo in MAP_REPO_VERSION_TO_SPECS_JVM.keys()
 }
