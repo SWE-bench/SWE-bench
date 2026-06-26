@@ -6,10 +6,13 @@ take precedence over YAML bucket entries.
 """
 from __future__ import annotations
 
+import importlib
+import pkgutil
 from pathlib import Path
 
 import yaml
 
+from swebench.harness import repo_customization as _customization_pkg
 from swebench.harness.constants.jvm_base import (
     SPECS_ANDROID_17,
     SPECS_ANDROID_17_X86,
@@ -17,33 +20,6 @@ from swebench.harness.constants.jvm_base import (
     SPECS_JVM_LIBRARY_17,
     SPECS_JVM_LIBRARY_17_KMP_BROWSER,
     SPECS_JVM_LIBRARY_17_LOW_MEM,
-)
-from swebench.harness.repo_customization.InsertKoinIO__koin import (
-    SPECS as _SPECS_KOIN,
-)
-from swebench.harness.repo_customization.JetBrains__Exposed import (
-    SPECS as _SPECS_EXPOSED,
-)
-from swebench.harness.repo_customization.Kotlin__kotlinx_serialization import (
-    SPECS as _SPECS_SERIALIZATION,
-)
-from swebench.harness.repo_customization.ReVanced__revanced_manager import (
-    SPECS as _SPECS_REVANCED,
-)
-from swebench.harness.repo_customization.arrow_kt__arrow import (
-    SPECS as _SPECS_ARROW,
-)
-from swebench.harness.repo_customization.nextcloud__talk_android import (
-    SPECS as _SPECS_TALK,
-)
-from swebench.harness.repo_customization.pinterest__ktlint import (
-    SPECS as _SPECS_KTLINT,
-)
-from swebench.harness.repo_customization.slackhq__circuit import (
-    SPECS as _SPECS_CIRCUIT,
-)
-from swebench.harness.repo_customization.wireapp__wire_android import (
-    SPECS as _SPECS_WIRE,
 )
 
 _BUCKET_NAME_TO_SPECS = {
@@ -80,18 +56,25 @@ def _load_yaml_buckets() -> dict[str, dict]:
     return out
 
 
+def _discover_customizations() -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for info in pkgutil.iter_modules(_customization_pkg.__path__):
+        if info.name in {"common"}:
+            continue
+        module = importlib.import_module(
+            f"swebench.harness.repo_customization.{info.name}"
+        )
+        repo = getattr(module, "REPO", None)
+        specs = getattr(module, "SPECS", None)
+        if repo is None or specs is None:
+            continue
+        out[repo] = specs
+    return out
+
+
 MAP_REPO_VERSION_TO_SPECS_JVM = {
     **_load_yaml_buckets(),
-    # Bespoke customizations (last wins — override YAML bucket assignment).
-    "InsertKoinIO/koin": _SPECS_KOIN,
-    "pinterest/ktlint": _SPECS_KTLINT,
-    "Kotlin/kotlinx.serialization": _SPECS_SERIALIZATION,
-    "JetBrains/Exposed": _SPECS_EXPOSED,
-    "slackhq/circuit": _SPECS_CIRCUIT,
-    "ReVanced/revanced-manager": _SPECS_REVANCED,
-    "arrow-kt/arrow": _SPECS_ARROW,
-    "nextcloud/talk-android": _SPECS_TALK,
-    "wireapp/wire-android": _SPECS_WIRE,
+    **_discover_customizations(),  # customization beats YAML
 }
 
 MAP_REPO_TO_INSTALL_JVM = {

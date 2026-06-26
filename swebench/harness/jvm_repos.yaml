@@ -72,6 +72,7 @@ android_21:
 - stripe/stripe-android
 - thunderbird/thunderbird-android
 jvm_library_17:
+- InsertKoinIO/koin
 - JetBrains/compose-multiplatform
 - ReactiveX/RxKotlin
 - detekt/detekt
