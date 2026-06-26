@@ -1,7 +1,19 @@
+"""JVM (Kotlin + Java Gradle) repo registry.
+
+Reads `jvm_repos.yaml` and merges its bucket assignments with bespoke
+customization modules under `repo_customization/`. Customization entries
+take precedence over YAML bucket entries.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import yaml
+
 from swebench.harness.constants.jvm_base import (
     SPECS_ANDROID_17,
-    SPECS_ANDROID_21,
     SPECS_ANDROID_17_X86,
+    SPECS_ANDROID_21,
     SPECS_JVM_LIBRARY_17,
     SPECS_JVM_LIBRARY_17_KMP_BROWSER,
     SPECS_JVM_LIBRARY_17_LOW_MEM,
@@ -34,121 +46,52 @@ from swebench.harness.repo_customization.wireapp__wire_android import (
     SPECS as _SPECS_WIRE,
 )
 
+_BUCKET_NAME_TO_SPECS = {
+    "android_17": SPECS_ANDROID_17,
+    "android_17_x86": SPECS_ANDROID_17_X86,
+    "android_21": SPECS_ANDROID_21,
+    "jvm_library_17": SPECS_JVM_LIBRARY_17,
+    "jvm_library_17_kmp_browser": SPECS_JVM_LIBRARY_17_KMP_BROWSER,
+    "jvm_library_17_low_mem": SPECS_JVM_LIBRARY_17_LOW_MEM,
+}
+
+# YAML lives next to constants/, one level above.
+_YAML_PATH = Path(__file__).resolve().parents[1] / "jvm_repos.yaml"
+
+
+def _load_yaml_buckets() -> dict[str, dict]:
+    data = yaml.safe_load(_YAML_PATH.read_text()) or {}
+    if not isinstance(data, dict):
+        raise ValueError(f"{_YAML_PATH}: top-level must be a mapping")
+    out: dict[str, dict] = {}
+    for bucket_name, repos in data.items():
+        if bucket_name not in _BUCKET_NAME_TO_SPECS:
+            raise ValueError(
+                f"{_YAML_PATH}: unknown bucket {bucket_name!r}; "
+                f"expected one of {sorted(_BUCKET_NAME_TO_SPECS)}"
+            )
+        if not isinstance(repos, list):
+            raise ValueError(
+                f"{_YAML_PATH}: bucket {bucket_name!r} must map to a list of repos"
+            )
+        specs = _BUCKET_NAME_TO_SPECS[bucket_name]
+        for repo in repos:
+            out[repo] = specs
+    return out
+
+
 MAP_REPO_VERSION_TO_SPECS_JVM = {
-    **{
-        repo: SPECS_ANDROID_21
-        for repo in [
-            "DroidKaigi/conference-app-2024",
-            "MMRLApp/MMRL",
-            "NordicSemiconductor/Android-DFU-Library",
-            "Stypox/dicio-android",
-            "T8RIN/ImageToolbox",
-            "jarnedemeulemeester/findroid",
-            "nextcloud/android",
-            "thunderbird/thunderbird-android",
-            "accrescent/accrescent",
-            "stripe/stripe-android",
-        ]
-    },
-    **{
-        repo: SPECS_ANDROID_17
-        for repo in [
-            "Aliucord/Aliucord",
-            "AllanWang/Frost-for-Facebook",
-            "AppIntro/AppIntro",
-            "Automattic/pocket-casts-android",
-            "GetStream/whatsApp-clone-compose",
-            "GrapheneOS/Camera",
-            "HabitRPG/habitica-android",
-            "IacobIonut01/Gallery",
-            "LemmyNet/jerboa",
-            "LibChecker/LibChecker",
-            "Mahmud0808/ColorBlendr",
-            "MohamedRejeb/Compose-Rich-Editor",
-            "NordicSemiconductor/Android-nRF-Toolbox",
-            "Pool-Of-Tears/GreenStash",
-            "Pool-Of-Tears/Myne",
-            "RikkaApps/Shizuku",
-            "Tapadoo/Alerter",
-            "TrianguloY/URLCheck",
-            "android/nowinandroid",
-            "android/socialite",
-            "android/sunflower",
-            "android/uamp",
-            "aniyomiorg/aniyomi",
-            "avluis/Hentoid",
-            "beemdevelopment/Aegis",
-            "d4rken-org/capod",
-            "element-hq/element-android",
-            "flipperdevices/Flipper-Android-App",
-            "getodk/collect",
-            "gradle/gradle",
-            "iSoron/uhabits",
-            "jaredsburrows/android-gradle-java-app-template",
-            "keymapperorg/KeyMapper",
-            "kylecorry31/Trail-Sense",
-            "leonlatsch/Photok",
-            "mihonapp/mihon",
-            "nextcloud/notes-android",
-            "owncloud/android",
-            "oxygen-updater/oxygen-updater",
-            "patzly/grocy-android",
-            "recloudstream/cloudstream",
-            "spacecowboy/Feeder",
-            "tasks/tasks",
-            "wikimedia/apps-android-wikipedia",
-            "you-apps/ClockYou",
-            "you-apps/RecordYou",
-        ]
-    },
-    # Repos that use Kotlin/Native (e.g. Kotlin Multiplatform with iOS targets)
-    # with Kotlin versions < 1.8 that lack linux-aarch64 prebuilt binaries.
-    # These must build under x86_64 (QEMU emulation on ARM hosts).
-    **{
-        repo: SPECS_ANDROID_17_X86
-        for repo in [
-            "DroidKaigi/conference-app-2021",
-            "DroidKaigi/conference-app-2022",
-            "DroidKaigi/conference-app-2023",
-            "Shabinder/SpotiFlyer",
-            "kasem-sm/SlimeKT",
-        ]
-    },
-    # Pure Kotlin/JVM/multiplatform libraries — no Android app module,
-    # install compiles sources without running tests.
-    **{
-        repo: SPECS_JVM_LIBRARY_17_LOW_MEM
-        for repo in [
-            "Kotlin/dokka",
-            "Kotlin/kotlinx.coroutines",
-        ]
-    },
-    **{"InsertKoinIO/koin": _SPECS_KOIN},
-    **{"pinterest/ktlint": _SPECS_KTLINT},
-    **{"Kotlin/kotlinx.serialization": _SPECS_SERIALIZATION},
-    **{"JetBrains/Exposed": _SPECS_EXPOSED},
-    **{"slackhq/circuit": _SPECS_CIRCUIT},
-    **{"ReVanced/revanced-manager": _SPECS_REVANCED},
-    **{
-        repo: SPECS_JVM_LIBRARY_17_KMP_BROWSER
-        for repo in [
-            "kotest/kotest",
-            "ktorio/ktor",
-            "sqldelight/sqldelight",
-        ]
-    },
-    **{"arrow-kt/arrow": _SPECS_ARROW},
-    **{"nextcloud/talk-android": _SPECS_TALK},
-    **{"wireapp/wire-android": _SPECS_WIRE},
-    **{
-        repo: SPECS_JVM_LIBRARY_17
-        for repo in [
-            "JetBrains/compose-multiplatform",
-            "ReactiveX/RxKotlin",
-            "detekt/detekt",
-            "google/ksp",
-        ]
-    },
+    **_load_yaml_buckets(),
+    # Bespoke customizations (last wins — override YAML bucket assignment).
+    "InsertKoinIO/koin": _SPECS_KOIN,
+    "pinterest/ktlint": _SPECS_KTLINT,
+    "Kotlin/kotlinx.serialization": _SPECS_SERIALIZATION,
+    "JetBrains/Exposed": _SPECS_EXPOSED,
+    "slackhq/circuit": _SPECS_CIRCUIT,
+    "ReVanced/revanced-manager": _SPECS_REVANCED,
+    "arrow-kt/arrow": _SPECS_ARROW,
+    "nextcloud/talk-android": _SPECS_TALK,
+    "wireapp/wire-android": _SPECS_WIRE,
 }
 
 MAP_REPO_TO_INSTALL_JVM = {
