@@ -16,3 +16,19 @@ def test_no_gradle_files_returns_error():
         signals={},
         error="no Gradle files found",
     )
+
+
+@pytest.mark.parametrize(
+    "fixture_name,expected_bucket",
+    [
+        ("android_17", "android_17"),
+        ("android_21", "android_21"),
+        ("android_17_x86", "android_17_x86"),
+        ("jvm_library_17", "jvm_library_17"),
+        ("jvm_library_17_kmp_browser", "jvm_library_17_kmp_browser"),
+    ],
+)
+def test_decision_tree_buckets(fixture_name, expected_bucket):
+    result = classify_dir(FIXTURES / fixture_name)
+    assert result.error is None, result.error
+    assert result.bucket == expected_bucket

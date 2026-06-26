@@ -51,7 +51,39 @@ def classify_dir(root: Path) -> ClassifyResult:
     text = _gather_gradle_text(root)
     if not text.strip():
         return ClassifyResult(bucket=None, signals={}, error="no Gradle files found")
-    return ClassifyResult(bucket=None, signals={}, error="not implemented")
+
+    signals = {
+        "android_application_plugin": "com.android.application" in text,
+        "jvm_toolchain_21": "jvmToolchain(21)" in text or "JavaVersion.VERSION_21" in text,
+        "target_sdk_35_plus": any(
+            f"targetSdk = {n}" in text or f"targetSdk={n}" in text or f"targetSdk {n}" in text
+            for n in range(35, 50)
+        ),
+        "kmp": 'kotlin("multiplatform")' in text or 'id("org.jetbrains.kotlin.multiplatform")' in text,
+        "kmp_native_target": any(
+            target in text
+            for target in ["iosArm64(", "iosX64(", "linuxArm64(", "linuxX64("]
+        ),
+        "browser_targets": "js(" in text or "wasmJs(" in text,
+    }
+
+    if signals["android_application_plugin"]:
+        if signals["target_sdk_35_plus"] or signals["jvm_toolchain_21"]:
+            bucket = "android_21"
+        elif signals["kmp_native_target"]:
+            bucket = "android_17_x86"
+        else:
+            bucket = "android_17"
+    elif signals["kmp"]:
+        bucket = (
+            "jvm_library_17_kmp_browser"
+            if signals["browser_targets"]
+            else "jvm_library_17"
+        )
+    else:
+        bucket = "jvm_library_17"
+
+    return ClassifyResult(bucket=bucket, signals=signals, error=None)
 
 
 def main(argv: list[str]) -> int:
