@@ -7,6 +7,8 @@ from swebench.harness.constants.kotlin_base import (
     _KAPT_MODULE_FLAGS,
 )
 
+REPO = "slackhq/circuit"
+
 # Tell Gradle where to find JDK 23 (Temurin) and JDK 24 (openjdk-24 from apt)
 # so it can auto-detect them.  Disable auto-download since both are pre-installed.
 _GRADLE_PROPERTIES_SCRIPT = (

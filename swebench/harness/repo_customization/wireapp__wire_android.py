@@ -1,5 +1,7 @@
 from swebench.harness.constants.kotlin_base import SPECS_KOTLIN_ANDROID
 
+REPO = "wireapp/wire-android"
+
 # The repo uses a `kalium` git submodule that must be initialized after clone.
 SPECS = {
     "1.0.0": {

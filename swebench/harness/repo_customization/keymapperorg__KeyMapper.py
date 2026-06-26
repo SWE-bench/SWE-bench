@@ -1,3 +1,5 @@
+REPO = "keymapperorg/KeyMapper"
+
 # The evdev module requires the Android NDK to generate event name headers
 # from input.h and to build native Rust code via mozilla/rust-android-gradle.
 # The base env image only installs platform-tools, platforms, and build-tools.

@@ -3,6 +3,8 @@ from swebench.harness.constants.kotlin_base import (
     WARM_TEST_DEPENDENCIES_CMD,
 )
 
+REPO = "JetBrains/Exposed"
+
 # Exposed starts Docker containers (MariaDB, MySQL, Postgres) for integration
 # tests inside the Gradle build.  Docker-in-Docker is unavailable in our images.
 SPECS = {

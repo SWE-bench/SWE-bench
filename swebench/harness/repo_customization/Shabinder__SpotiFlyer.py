@@ -1,3 +1,5 @@
+REPO = "Shabinder/SpotiFlyer"
+
 # This project uses Gradle 7.3.3 and an old AGP whose manifest merger
 # reflectively accesses java.io.File.path, which is blocked on JDK 17+.
 # The base image ships JDK 17 but also has openjdk-11 installed via apt.

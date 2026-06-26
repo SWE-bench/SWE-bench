@@ -3,6 +3,8 @@ from swebench.harness.constants.kotlin_base import (
     _KAPT_MODULE_FLAGS,
 )
 
+REPO = "ReVanced/revanced-manager"
+
 # Needs gpr.user and gpr.key properties set (GitHub Packages auth).
 # Inject dummy values so settings.gradle.kts doesn't crash on missing extra properties.
 _GRADLE_PROPERTIES_SCRIPT = (

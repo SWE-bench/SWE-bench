@@ -1,5 +1,7 @@
 from swebench.harness.constants.kotlin_base import SPECS_KOTLIN_ANDROID
 
+REPO = "nextcloud/talk-android"
+
 # Dependency verification fails for several JitPack/GitHub artifacts whose checksums
 # drifted from the committed verification-metadata.xml.
 # Disable verification for both the install step and tests.

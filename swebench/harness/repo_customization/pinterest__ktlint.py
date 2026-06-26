@@ -7,6 +7,8 @@ from swebench.harness.constants.kotlin_base import (
     _KAPT_MODULE_FLAGS,
 )
 
+REPO = "pinterest/ktlint"
+
 _GRADLE_PROPERTIES_SCRIPT = (
     "mkdir -p /root/.gradle && "
     'printf "%s\\n"'

@@ -4,6 +4,8 @@ from swebench.harness.constants.kotlin_base import (
     WARM_TEST_DEPENDENCIES_CMD,
 )
 
+REPO = "arrow-kt/arrow"
+
 # `build` triggers animalsnifferAndroidMain (missing androidMainClasses task),
 # kotlinStoreYarnLock (stale lock), and OOM on large multiplatform builds.
 # `assemble` skips all check-phase tasks.  Low-mem to avoid OOM.

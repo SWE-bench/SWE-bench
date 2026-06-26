@@ -6,6 +6,8 @@ from swebench.harness.constants.kotlin_base import (
     WARM_TEST_DEPENDENCIES_SCRIPT,
 )
 
+REPO = "InsertKoinIO/koin"
+
 # Koin keeps the Gradle wrapper under projects/ (no root gradlew).
 _STATIC_VERIFICATION_SCRIPT = r"""cat > /root/static_verification.sh << 'STATIC_VERIFICATION_KOIN_EOF'
 #!/usr/bin/env bash

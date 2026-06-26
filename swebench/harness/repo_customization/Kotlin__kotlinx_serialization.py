@@ -3,6 +3,8 @@ from swebench.harness.constants.kotlin_base import (
     WARM_TEST_DEPENDENCIES_CMD,
 )
 
+REPO = "Kotlin/kotlinx.serialization"
+
 # kover verification tasks must be excluded from both build and test.
 SPECS = {
     "1.0.0": {
