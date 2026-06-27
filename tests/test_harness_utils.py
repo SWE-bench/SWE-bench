@@ -1,9 +1,59 @@
 import unittest
 from swebench.harness.utils import run_threadpool
-from swebench.harness.test_spec.python import clean_environment_yml, clean_requirements
+from swebench.harness.test_spec.python import (
+    clean_environment_yml,
+    clean_requirements,
+    get_test_directives,
+)
 
 
 class UtilTests(unittest.TestCase):
+    def test_django_test_directives_ignore_non_test_modules(self):
+        test_patch = (
+            "diff --git a/tests/file_storage/models.py "
+            "b/tests/file_storage/models.py\n"
+            "--- a/tests/file_storage/models.py\n"
+            "+++ b/tests/file_storage/models.py\n"
+            "@@ -1,3 +1,6 @@\n"
+            " from django.db import models\n"
+            "+def callable_default_storage():\n"
+            "+    return default_storage\n"
+            "diff --git a/tests/file_storage/tests.py "
+            "b/tests/file_storage/tests.py\n"
+            "--- a/tests/file_storage/tests.py\n"
+            "+++ b/tests/file_storage/tests.py\n"
+            "@@ -10,6 +10,9 @@\n"
+            " class FileFieldDeconstructionTests(SimpleTestCase):\n"
+            "+    def test_callable_default_storage_deconstruction(self):\n"
+            "+        pass\n"
+        )
+        instance = {"repo": "django/django", "test_patch": test_patch}
+
+        directives = get_test_directives(instance)
+
+        self.assertEqual(directives, ["file_storage.tests"])
+
+    def test_python_test_directives_keep_changed_python_files(self):
+        test_patch = (
+            "diff --git a/src/package/models.py b/src/package/models.py\n"
+            "--- a/src/package/models.py\n"
+            "+++ b/src/package/models.py\n"
+            "@@ -1 +1 @@\n"
+            "-VALUE = 1\n"
+            "+VALUE = 2\n"
+            "diff --git a/tests/test_models.py b/tests/test_models.py\n"
+            "--- a/tests/test_models.py\n"
+            "+++ b/tests/test_models.py\n"
+            "@@ -1 +1 @@\n"
+            "-def test_value(): pass\n"
+            "+def test_value(): pass\n"
+        )
+        instance = {"repo": "example/project", "test_patch": test_patch}
+
+        directives = get_test_directives(instance)
+
+        self.assertEqual(directives, ["src/package/models.py", "tests/test_models.py"])
+
     def test_run_threadpool_all_failures(self):
         def failing_func(_):
             raise ValueError("Test error")

@@ -252,6 +252,8 @@ def get_test_directives(instance: SWEbenchInstance) -> list:
     if instance["repo"] == "django/django":
         directives_transformed = []
         for d in directives:
+            if not is_django_test_file(d):
+                continue
             d = d[: -len(".py")] if d.endswith(".py") else d
             d = d[len("tests/") :] if d.startswith("tests/") else d
             d = d.replace("/", ".")
@@ -259,6 +261,16 @@ def get_test_directives(instance: SWEbenchInstance) -> list:
         directives = directives_transformed
 
     return directives
+
+
+def is_django_test_file(path: str) -> bool:
+    file_name = posixpath.basename(path)
+    return (
+        file_name == "tests.py"
+        or file_name.startswith("test_")
+        or "/tests/" in path
+        or "/test_" in path
+    )
 
 
 def make_repo_script_list_py(
