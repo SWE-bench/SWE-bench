@@ -6,11 +6,41 @@ import threading
 
 from argparse import ArgumentParser
 
-from swebench.harness.constants import KEY_INSTANCE_ID, LATEST
+from swebench.harness.constants import KEY_INSTANCE_ID, LATEST, MAP_REPO_VERSION_TO_SPECS
 from swebench.harness.docker_build import build_instance_images
 from swebench.harness.docker_utils import list_images
 from swebench.harness.test_spec.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset, str2bool, optional_str
+
+
+def _check_repos_registered(dataset: list) -> None:
+    """Fail fast if any repo lacks a registered SPECS bucket.
+
+    Without this guard, make_test_spec crashes deep inside filter_dataset_to_build
+    with a bare KeyError, which is unhelpful for someone running prepare_images
+    from the CLI. This check belongs at the load boundary so both the
+    controlpanel UI and direct CLI invocations get the same clear error.
+    """
+    unknown = sorted({
+        inst["repo"] for inst in dataset
+        if not inst.get("excluded") and inst["repo"] not in MAP_REPO_VERSION_TO_SPECS
+    })
+    if not unknown:
+        return
+    lines = [
+        "The following repos are not registered for JVM image builds:",
+        *(f"  - {r}" for r in unknown),
+        "",
+        "Resolve by either:",
+        "  1. Open the Stage 2 page in the controlpanel UI — it now shows a",
+        "     classification table with auto-classify, manual override, and",
+        "     'Needs customization' actions.",
+        "  2. Hand-edit SWE-bench/swebench/harness/jvm_repos.yaml: add each",
+        "     repo to the appropriate bucket (alphabetized), or drop a",
+        "     <owner>__<name>.py under swebench/harness/repo_customization/",
+        "     for a bespoke build configuration.",
+    ]
+    raise SystemExit("\n".join(lines))
 
 
 def filter_dataset_to_build(
@@ -116,6 +146,11 @@ def main(
         dataset = []
     else:
         dataset = load_swebench_dataset(dataset_name, split, instance_ids=instance_ids)
+
+    # Pre-flight: every repo in the dataset must be classified into a JVM bucket
+    # (or have a bespoke customization file). Surfacing this before any Docker
+    # work avoids the cryptic KeyError that used to crash filter_dataset_to_build.
+    _check_repos_registered(dataset)
 
     # Filter based on cache:
     # - 'success' entries are skipped only when the corresponding image is
