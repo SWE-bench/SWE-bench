@@ -1,4 +1,4 @@
-from swebench.harness.constants.kotlin_base import (
+from swebench.harness.constants.jvm_base import (
     SPECS_JVM_LIBRARY_17,
     WARM_TEST_DEPENDENCIES_CMD,
 )
