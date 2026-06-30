@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
+import sys
 from pathlib import Path
 
 import yaml
@@ -57,6 +58,18 @@ def _load_yaml_buckets() -> dict[str, dict]:
 
 
 def _discover_customizations() -> dict[str, dict]:
+    """Walk repo_customization/ and register each <owner>__<name>.py that
+    declares both REPO and SPECS constants.
+
+    Many customization files legitimately omit SPECS — they exist only to
+    provide COMMANDS or VERIFICATION_COMMAND overrides (consumed separately
+    by repo_customization/__init__.py). Those are silently skipped here.
+
+    A module that has SPECS but no REPO is broken (can't register without a
+    slug); warn loudly. A module with neither is almost certainly a stub
+    file someone forgot to fill in; warn. ImportErrors already propagate as
+    hard failures — no special handling needed.
+    """
     out: dict[str, dict] = {}
     for info in pkgutil.iter_modules(_customization_pkg.__path__):
         if info.name in {"common"}:
@@ -66,7 +79,22 @@ def _discover_customizations() -> dict[str, dict]:
         )
         repo = getattr(module, "REPO", None)
         specs = getattr(module, "SPECS", None)
-        if repo is None or specs is None:
+        if specs is not None and repo is None:
+            print(
+                f"jvm.py: repo_customization/{info.name}.py has SPECS but no "
+                f"REPO constant — cannot register; fix the file or remove it",
+                file=sys.stderr,
+            )
+            continue
+        if specs is None and repo is None:
+            print(
+                f"jvm.py: repo_customization/{info.name}.py declares neither "
+                f"REPO nor SPECS — looks like a stub; fix it or delete it",
+                file=sys.stderr,
+            )
+            continue
+        if specs is None:
+            # REPO present, SPECS absent — legitimate "extras only" file.
             continue
         out[repo] = specs
     return out
