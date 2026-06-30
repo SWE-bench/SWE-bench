@@ -181,16 +181,17 @@ def parse_log_seaborn(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     test_status_map = {}
     for line in log.split("\n"):
+        parts = line.split()
+        if len(parts) < 2:
+            continue
         if line.startswith(TestStatus.FAILED.value):
-            test_case = line.split()[1]
+            test_case = parts[1]
             test_status_map[test_case] = TestStatus.FAILED.value
         elif f" {TestStatus.PASSED.value} " in line:
-            parts = line.split()
             if parts[1] == TestStatus.PASSED.value:
                 test_case = parts[0]
                 test_status_map[test_case] = TestStatus.PASSED.value
         elif line.startswith(TestStatus.PASSED.value):
-            parts = line.split()
             test_case = parts[1]
             test_status_map[test_case] = TestStatus.PASSED.value
     return test_status_map
