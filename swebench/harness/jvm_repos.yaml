@@ -66,6 +66,7 @@ android_21:
 - NordicSemiconductor/Android-DFU-Library
 - Stypox/dicio-android
 - T8RIN/ImageToolbox
+- TheLord163/CamraX
 - accrescent/accrescent
 - jarnedemeulemeester/findroid
 - nextcloud/android
@@ -75,8 +76,10 @@ jvm_library_17:
 - InsertKoinIO/koin
 - JetBrains/compose-multiplatform
 - ReactiveX/RxKotlin
+- TheParthMaru/agile-cloud-automation-mini-project
 - detekt/detekt
 - google/ksp
+- ihub-pub/plugins
 jvm_library_17_kmp_browser:
 - kotest/kotest
 - ktorio/ktor
