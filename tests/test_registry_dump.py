@@ -14,11 +14,14 @@ def test_dump_runs_and_prints_known_repos():
     payload = json.loads(result.stdout)
     assert isinstance(payload, dict)
 
-    assert payload["android/nowinandroid"] == {
-        "kind": "bucket",
-        "bucket": "android_17",
-    }
+    # YAML-only entry: bucket field only.
+    assert payload["android/nowinandroid"] == {"bucket": "android_17"}
 
+    # Customization-backed override (Koin's customization declares SPECS).
     koin = payload["InsertKoinIO/koin"]
-    assert koin["kind"] == "customization"
-    assert koin["path"].endswith("InsertKoinIO__koin.py")
+    assert koin["customization_path"].endswith("InsertKoinIO__koin.py")
+
+    # LibChecker: YAML bucket + extras-only customization file — both fields present.
+    lib = payload["LibChecker/LibChecker"]
+    assert lib["bucket"] == "android_17"
+    assert lib["customization_path"].endswith("LibChecker__LibChecker.py")

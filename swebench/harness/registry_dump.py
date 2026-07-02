@@ -16,6 +16,15 @@ from swebench.harness.constants.jvm import MAP_REPO_VERSION_TO_SPECS_JVM
 
 
 def _build_payload() -> dict:
+    """Build the registry payload.
+
+    Bucket and customization aren't mutually exclusive — a repo can have
+    a YAML bucket assignment AND an "extras-only" customization file that
+    layers COMMANDS/VERIFICATION_COMMAND overrides on top. LibChecker is
+    the canonical example: android_17 bucket + a customization that
+    fabricates a google-services.json to unblock Firebase-gated builds.
+    So the payload carries both fields when both apply.
+    """
     from swebench.harness.constants.jvm import _YAML_PATH  # noqa: PLC0415
 
     yaml_buckets = yaml.safe_load(_YAML_PATH.read_text()) or {}
@@ -23,7 +32,7 @@ def _build_payload() -> dict:
     payload: dict[str, dict] = {}
     for bucket_name, repos in yaml_buckets.items():
         for repo in repos:
-            payload[repo] = {"kind": "bucket", "bucket": bucket_name}
+            payload[repo] = {"bucket": bucket_name}
 
     for info in pkgutil.iter_modules(_customization_pkg.__path__):
         if info.name in {"common"}:
@@ -34,7 +43,7 @@ def _build_payload() -> dict:
         repo = getattr(module, "REPO", None)
         if repo is None:
             continue
-        payload[repo] = {"kind": "customization", "path": module.__file__}
+        payload.setdefault(repo, {})["customization_path"] = module.__file__
 
     for repo in payload:
         assert repo in MAP_REPO_VERSION_TO_SPECS_JVM, (
