@@ -5,8 +5,15 @@ import json
 import platform
 import threading
 import traceback
+import os
+
+try:
+    from dakera import DakeraClient
+except ImportError:
+    DakeraClient = None
 
 if platform.system() == "Linux":
+    
     import resource
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -566,7 +573,7 @@ def main(
 
     # clean images + make final report
     clean_images(client, existing_images, cache_level, clean)
-    return make_run_report(
+    report = make_run_report(
         predictions,
         full_dataset,
         run_id,
@@ -576,8 +583,35 @@ def main(
         env_image_tag,
     )
 
+    # Dakera Integration (SWE-bench #613 feature request)
+    dakera_api_key = os.getenv("DAKERA_API_KEY")
+    dakera_base_url = os.getenv("DAKERA_BASE_URL", "http://localhost:3300")
+    if DakeraClient is not None and dakera_api_key:
+        try:
+            dakera_client = DakeraClient(base_url=dakera_base_url, api_key=dakera_api_key)
+            for instance_id, pred in predictions.items():
+                resolved = False
+                if isinstance(report, dict):
+                    resolved = instance_id in report.get("resolved", []) or instance_id in report.get("resolved_ids", [])
+                
+                dakera_client.store_memory(
+                    agent_id=f"swebench-{run_id}",
+                    content=f"Instance {instance_id}: {'resolved' if resolved else 'failed'}. Patch: {pred.get('model_patch', '')[:200]}",
+                    metadata={
+                        "instance_id": instance_id,
+                        "resolved": resolved,
+                        "model": run_id
+                    }
+                )
+            print("[+] [DAKERA-INTEGRATION] successfully stored evaluation results in semantic memory.")
+        except Exception as e:
+            print(f"[-] [DAKERA-INTEGRATION] Failed to store results: {e}")
+
+    return report
+
 
 if __name__ == "__main__":
+    
     parser = ArgumentParser(
         description="Run evaluation harness for the given dataset and predictions.",
         formatter_class=ArgumentDefaultsHelpFormatter,
