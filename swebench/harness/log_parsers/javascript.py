@@ -196,6 +196,7 @@ def parse_log_jest(log: str, test_spec: TestSpec) -> dict[str, str]:
         match = re.match(pattern, line.strip())
         if match:
             status_symbol, test_name, _duration = match.groups()
+            test_name = test_name.strip()
             if status_symbol == "✓":
                 test_status_map[test_name] = TestStatus.PASSED.value
             elif status_symbol == "✕":
