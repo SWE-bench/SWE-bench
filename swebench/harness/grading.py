@@ -24,12 +24,39 @@ from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
 
 
 # MARK: Utility functions
+def _resolve_case(case: str, sm: dict[str, str]) -> str | None:
+    """Return the status-map key for ``case``, tolerating truncated parametrized ids.
+
+    662 parametrized test ids in SWE-bench_Verified are truncated mid-parameter
+    (issue #290), e.g. ``test_ogip_grammar_fail[log(photon`` — recognizable by
+    unbalanced square brackets. Such an id can never match the full id pytest
+    reports, so grading counted these cases as missing (i.e. failed) even when
+    they passed. For truncated ids only, fall back to prefix matching: accept a
+    unique prefix match, or multiple matches that all carry the same status
+    (grading is unambiguous either way). Exact ids keep exact-match semantics.
+    """
+    if case in sm:
+        return case
+    if case.count("[") != case.count("]"):
+        matches = [k for k in sm if k.startswith(case)]
+        if matches and (
+            len(matches) == 1 or len({sm[k] for k in matches}) == 1
+        ):
+            return matches[0]
+    return None
+
+
 def test_passed(case: str, sm: dict[str, str]) -> bool:
-    return case in sm and sm[case] in [TestStatus.PASSED.value, TestStatus.XFAIL.value]
+    key = _resolve_case(case, sm)
+    return key is not None and sm[key] in [
+        TestStatus.PASSED.value,
+        TestStatus.XFAIL.value,
+    ]
 
 
 def test_failed(case: str, sm: dict[str, str]) -> bool:
-    return case not in sm or sm[case] in [
+    key = _resolve_case(case, sm)
+    return key is None or sm[key] in [
         TestStatus.FAILED.value,
         TestStatus.ERROR.value,
     ]
