@@ -259,8 +259,20 @@ def list_images(client: docker.DockerClient):
     """
     List all images from the Docker client.
     """
-    # don't use this in multi-threaded context
-    return {tag for i in client.images.list(all=True) for tag in i.tags}
+    # Use the low-level API instead of client.images.list(all=True). The latter
+    # is implemented as [self.get(r["Id"]) for r in resp], i.e. it issues a
+    # separate GET /images/{id}/json for every image on the host. With many
+    # images that is one round-trip per image and floods the daemon when several
+    # evaluations run concurrently (hence the original "don't use in
+    # multi-threaded context" note). GET /images/json already returns RepoTags,
+    # so a single request yields the identical tag set. Image.tags drops the
+    # "<none>:<none>" placeholder, so match that here.
+    return {
+        tag
+        for img in client.api.images(all=True)
+        for tag in (img.get("RepoTags") or [])
+        if tag != "<none>:<none>"
+    }
 
 
 def clean_images(
