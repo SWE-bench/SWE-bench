@@ -3,7 +3,7 @@ from swebench.harness.constants import (
     MAP_REPO_VERSION_TO_SPECS,
     START_TEST_OUTPUT,
 )
-from swebench.harness.utils import get_modified_files
+from swebench.harness.utils import get_modified_files, get_new_files
 
 
 # MARK: Test Command Creation Functions
@@ -63,12 +63,22 @@ def make_eval_script_list_common(
     Applies the test patch and runs the tests.
     """
     HEREDOC_DELIMITER = "EOF_114329324912"
-    test_files = get_modified_files(test_patch)
-    # Reset test files to the state they should be in before the patch.
-    if test_files:
-        reset_tests_command = f"git checkout {base_commit} {' '.join(test_files)}"
-    else:
-        reset_tests_command = 'echo "No test files to reset"'
+    # Reset test files to the state they should be in before the patch. Modified
+    # files (present at base_commit) are restored with `git checkout`; new files
+    # (source /dev/null) are not at base_commit, so they must be removed with
+    # `rm -f` instead. This mirrors the fix applied to the Python builder in #539:
+    # get_modified_files() skips /dev/null-source files, so a new-file-only test
+    # patch would otherwise produce no reset command here and let a submitted
+    # patch's file at a gold-added test path survive grading (#538).
+    modified_files = get_modified_files(test_patch)
+    new_files = get_new_files(test_patch)
+    reset_commands = []
+    if modified_files:
+        reset_commands.append(f"git checkout {base_commit} {' '.join(modified_files)}")
+    if new_files:
+        reset_commands.append(f"rm -f {' '.join(new_files)}")
+    if not reset_commands:
+        reset_commands = ['echo "No test files to reset"']
 
     build_commands = []
     if "build" in specs:
@@ -84,12 +94,12 @@ def make_eval_script_list_common(
         # f"git status",
         # f"git show",
         # f"git -c core.fileMode=false diff {base_commit}",
-        reset_tests_command,
+        *reset_commands,
         apply_test_patch_command,
         *build_commands,
         f": '{START_TEST_OUTPUT}'",
         *test_commands,
         f": '{END_TEST_OUTPUT}'",
-        reset_tests_command,
+        *reset_commands,  # Revert tests after done, leave the repo as before.
     ]
     return eval_commands

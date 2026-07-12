@@ -94,8 +94,15 @@ def make_eval_script_list_js(
     eval_commands = make_eval_script_list_common(
         instance, specs, env_name, repo_directory, base_commit, test_patch
     )
-    # Insert downloading right after reset command
-    eval_commands[4:4] = get_download_img_commands(instance)
+    # Insert image downloads right before the official test patch is applied, i.e.
+    # after all pre-test reset commands. Anchor on the apply command rather than a
+    # fixed index: the common builder can now emit more than one reset command
+    # (git checkout for modified files + rm -f for new files), so a hard-coded
+    # eval_commands[4:4] would land between the two resets.
+    apply_idx = next(
+        i for i, cmd in enumerate(eval_commands) if cmd.startswith("git apply")
+    )
+    eval_commands[apply_idx:apply_idx] = get_download_img_commands(instance)
     if instance["repo"] in MAP_REPO_TO_TEST_CMDS:
         # Update test commands if they are custom commands
         test_commands = MAP_REPO_TO_TEST_CMDS[instance["repo"]](instance)
