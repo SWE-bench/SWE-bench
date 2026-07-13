@@ -180,21 +180,31 @@ def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
         container (docker.Container): Container to run the command in.
         cmd (str): Command to run.
         timeout (int): Timeout in seconds.
+
+    Returns:
+        tuple: (output, timed_out, runtime, exit_code). ``exit_code`` is the
+        process exit code (0 = success), or ``None`` if it could not be
+        determined (e.g. timeout). Captured so callers can distinguish a
+        genuine test failure (pytest exits non-zero) from forged stdout that
+        merely *prints* ``PASSED`` lines — a grading-spoofing defense.
     """
     # Local variables to store the result of executing the command
     exec_result = b""
     exec_id = None
     exception = None
     timed_out = False
+    exit_code = None
 
     # Wrapper function to run the command
     def run_command():
-        nonlocal exec_result, exec_id, exception
+        nonlocal exec_result, exec_id, exception, exit_code
         try:
             exec_id = container.client.api.exec_create(container.id, cmd)["Id"]
             exec_stream = container.client.api.exec_start(exec_id, stream=True)
             for chunk in exec_stream:
                 exec_result += chunk
+            # Capture the exit code after the stream completes.
+            exit_code = container.client.api.exec_inspect(exec_id).get("ExitCode")
         except Exception as e:
             exception = e
 
@@ -214,7 +224,7 @@ def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
             container.exec_run(f"kill -TERM {exec_pid}", detach=True)
         timed_out = True
     end_time = time.time()
-    return exec_result.decode(), timed_out, end_time - start_time
+    return exec_result.decode(), timed_out, end_time - start_time, exit_code
 
 
 def find_dependent_images(client: docker.DockerClient, image_name: str):

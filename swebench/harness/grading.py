@@ -15,6 +15,7 @@ from swebench.harness.constants import (
     START_TEST_OUTPUT,
     TESTS_ERROR,
     TESTS_TIMEOUT,
+    TEST_EXIT_CODE,
     EvalType,
     ResolvedStatus,
     TestStatus,
@@ -87,6 +88,28 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
             # Look for pytest output patterns in the entire log content
             # This handles cases where pytest output goes to stderr and isn't captured between markers
             status_map = log_parser(content, test_spec)
+
+        # Grading-spoofing defense: if the test command's exit code was captured
+        # (run_evaluation.py appends a TEST_EXIT_CODE marker) and is non-zero,
+        # the tests genuinely failed at the process level. If the parsed status
+        # map nonetheless shows NO failures (all PASSED/XFAIL), the stdout was
+        # almost certainly forged — e.g. a model patch that writes a conftest.py
+        # printing fake "PASSED <testname>" lines. Refuse to grade a spoofed run
+        # as resolved. (A genuine all-pass run has exit code 0.)
+        import re as _re
+        exit_code_match = _re.search(
+            rf"{_re.escape(TEST_EXIT_CODE)}:\s*(-?\d+)", content
+        )
+        if exit_code_match:
+            exit_code = int(exit_code_match.group(1))
+            if exit_code != 0 and status_map:
+                has_real_failure = any(
+                    s in (TestStatus.FAILED.value, TestStatus.ERROR.value)
+                    for s in status_map.values()
+                )
+                if not has_real_failure:
+                    # Exit code says failure but stdout says all-pass: spoofed.
+                    return {}, False
 
         return status_map, True
 

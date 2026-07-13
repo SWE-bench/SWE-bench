@@ -89,6 +89,7 @@ TESTS_PASSED = ">>>>> All Tests Passed"
 TESTS_TIMEOUT = ">>>>> Tests Timed Out"
 START_TEST_OUTPUT = ">>>>> Start Test Output"
 END_TEST_OUTPUT = ">>>>> End Test Output"
+TEST_EXIT_CODE = ">>>>> Test Exit Code"
 
 
 # Constants - Patch Types

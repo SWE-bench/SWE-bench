@@ -27,6 +27,7 @@ from swebench.harness.constants import (
     LOG_INSTANCE,
     LOG_TEST_OUTPUT,
     RUN_EVALUATION_LOG_DIR,
+    TEST_EXIT_CODE,
     UTF8,
 )
 from swebench.harness.docker_utils import (
@@ -203,13 +204,19 @@ def run_instance(
         copy_to_container(container, eval_file, PurePosixPath("/eval.sh"))
 
         # Run eval script, write output to logs
-        test_output, timed_out, total_runtime = exec_run_with_timeout(
+        test_output, timed_out, total_runtime, test_exit_code = exec_run_with_timeout(
             container, "/bin/bash /eval.sh", timeout
         )
         test_output_path = log_dir / LOG_TEST_OUTPUT
         logger.info(f"Test runtime: {total_runtime:_.2f} seconds")
         with open(test_output_path, "w") as f:
             f.write(test_output)
+            # Record the test command's exit code so the grader can detect
+            # grading spoofing: a model patch that prints forged "PASSED" lines
+            # via a conftest.py will still leave pytest exiting non-zero (the
+            # tests genuinely failed), so a non-zero exit code contradicts an
+            # all-PASSED log. Without this, the grader trusts stdout alone.
+            f.write(f"\n\n{TEST_EXIT_CODE}: {test_exit_code}")
             logger.info(f"Test output for {instance_id} written to {test_output_path}")
             if timed_out:
                 f.write(f"\n\nTimeout error: {timeout} seconds exceeded.")
