@@ -1,12 +1,16 @@
-from swebench.harness.constants import FAIL_TO_PASS, PASS_TO_PASS, TestStatus
+from swebench.harness.constants import (
+    FAIL_TO_PASS,
+    PASS_TO_PASS,
+    TestStatus as _TestStatus,
+)
 from swebench.harness.grading import get_eval_tests_report
 
 
 def test_skipped_pass_to_pass_tests_are_maintained() -> None:
     report = get_eval_tests_report(
         {
-            "test_fix": TestStatus.SKIPPED.value,
-            "test_maintenance": TestStatus.SKIPPED.value,
+            "test_fix": _TestStatus.SKIPPED.value,
+            "test_maintenance": _TestStatus.SKIPPED.value,
         },
         {
             FAIL_TO_PASS: ["test_fix"],
