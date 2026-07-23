@@ -4,20 +4,24 @@ from swebench.harness.constants import TestStatus
 from swebench.harness.test_spec.test_spec import TestSpec
 
 
+_PYTEST_STATUS_PATTERN = "|".join(re.escape(status.value) for status in TestStatus)
+_PYTEST_STATUS_FIRST = re.compile(rf"^({_PYTEST_STATUS_PATTERN})\s+(\S+)")
+_PYTEST_TEST_FIRST = re.compile(rf"^(\S+)\s+({_PYTEST_STATUS_PATTERN})(?:\s|$)")
+_PYTEST_SKIP_COUNT = re.compile(r"\[\d+\]")
+
+
 def _parse_pytest_result_line(line: str) -> tuple[str, str] | None:
     """Parse pytest result lines without treating skip summaries as tests."""
-    statuses = "|".join(status.value for status in TestStatus)
-
-    status_first = re.match(rf"^({statuses})\s+(\S+)", line)
+    status_first = _PYTEST_STATUS_FIRST.match(line)
     if status_first:
         status, test_name = status_first.groups()
         if status == TestStatus.FAILED.value:
             test_name = line.replace(" - ", " ").split()[1]
-        if status == TestStatus.SKIPPED.value and re.match(r"\[\d+\]", test_name):
+        if status == TestStatus.SKIPPED.value and _PYTEST_SKIP_COUNT.match(test_name):
             return None
         return test_name, status
 
-    test_first = re.match(rf"^(\S+)\s+({statuses})(?:\s|$)", line)
+    test_first = _PYTEST_TEST_FIRST.match(line)
     if test_first:
         test_name, status = test_first.groups()
         return test_name, status
