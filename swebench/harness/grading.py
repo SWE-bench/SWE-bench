@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from swebench.harness.constants import (
@@ -13,6 +14,7 @@ from swebench.harness.constants import (
     PASS_TO_PASS,
     RESET_FAILED,
     START_TEST_OUTPUT,
+    TEST_EXIT_CODE_PREFIX,
     TESTS_ERROR,
     TESTS_TIMEOUT,
     EvalType,
@@ -33,6 +35,53 @@ def test_failed(case: str, sm: dict[str, str]) -> bool:
         TestStatus.FAILED.value,
         TestStatus.ERROR.value,
     ]
+
+
+_STDOUT_TAMPERING_PATTERNS = (
+    re.compile(r"sys\.stdout\s*="),
+    re.compile(r"SpoofedStdout"),
+)
+
+
+def _validate_eval_log_markers(content: str) -> tuple[str | None, int | None]:
+    """
+    Fail closed unless the log matches the eval script marker contract:
+    exactly one START, END, and exit-code marker in order START < END < EXIT_CODE,
+    with a zero integer exit code.
+    """
+    if (
+        content.count(START_TEST_OUTPUT) != 1
+        or content.count(END_TEST_OUTPUT) != 1
+        or content.count(TEST_EXIT_CODE_PREFIX) != 1
+    ):
+        return None, None
+
+    start_idx = content.index(START_TEST_OUTPUT)
+    end_idx = content.index(END_TEST_OUTPUT)
+    exit_idx = content.index(TEST_EXIT_CODE_PREFIX)
+    if not (start_idx < end_idx < exit_idx):
+        return None, None
+
+    exit_line_end = content.find("\n", exit_idx)
+    exit_line = (
+        content[exit_idx:exit_line_end]
+        if exit_line_end != -1
+        else content[exit_idx:]
+    )
+    code_str = exit_line.strip()[len(TEST_EXIT_CODE_PREFIX) :].strip()
+    try:
+        exit_code = int(code_str)
+    except ValueError:
+        return None, None
+    if exit_code != 0:
+        return None, None
+
+    test_content = content[start_idx + len(START_TEST_OUTPUT) : end_idx]
+    return test_content, exit_code
+
+
+def _detect_stdout_tampering(test_content: str) -> bool:
+    return any(pattern.search(test_content) for pattern in _STDOUT_TAMPERING_PATTERNS)
 
 
 # MARK: Evaluation report functions
@@ -71,12 +120,13 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
         )
         if bad_codes:
             return {}, False
-        elif not (START_TEST_OUTPUT in content and END_TEST_OUTPUT in content):
-            # Test patch did not apply (should not happen at all)
+
+        test_content, _ = _validate_eval_log_markers(content)
+        if test_content is None:
             return {}, False
 
-        # Get status map of evaluation results
-        test_content = content.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0]
+        if _detect_stdout_tampering(test_content):
+            return {}, False
 
         # Try parsing the content between markers first
         status_map = log_parser(test_content, test_spec)
