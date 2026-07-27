@@ -130,6 +130,12 @@ FAIL_ONLY_REPOS = {
     "chartjs/Chart.js",
     "processing/p5.js",
     "markedjs/marked",
+    "bpmn-io/bpmn-js",
+    "openlayers/openlayers",
+    # eslint's log parser (parse_log_eslint) only records failing tests from
+    # the `--reporter min` output, so it must be graded fail-only; otherwise
+    # every gold eslint instance is (incorrectly) marked unresolved.
+    "eslint/eslint",
 }
 
 # Constants - Aggregate Installation Specifiactions

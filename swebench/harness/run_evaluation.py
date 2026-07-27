@@ -495,10 +495,9 @@ def main(
     """
     if dataset_name == "SWE-bench/SWE-bench_Multimodal" and split == "test":
         print(
-            "⚠️ Local evaluation for the test split of SWE-bench Multimodal is not supported. "
-            "Please check out sb-cli (https://github.com/swe-bench/sb-cli/) for instructions on how to submit predictions."
+            "ℹ️ Running local evaluation for the test split of SWE-bench Multimodal. "
+            "You may also use sb-cli (https://github.com/swe-bench/sb-cli/) to submit predictions to the hosted evaluation."
         )
-        return
 
     # set open file limit
     assert len(run_id) > 0, "Run ID must be provided"
