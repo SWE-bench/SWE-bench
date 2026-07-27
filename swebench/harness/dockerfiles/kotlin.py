@@ -1,3 +1,4 @@
+import os
 import platform as _platform
 
 
@@ -69,7 +70,7 @@ RUN dpkg --add-architecture amd64 && \
   rm -rf /var/lib/apt/lists/*
 
 RUN update-ca-certificates
-
+{ca_install}
 # Install SDKMAN and latest Gradle version (9.3.1)
 # Update these commands as new Gradle versions are released
 RUN curl -s "https://get.sdkman.io" | bash
@@ -111,6 +112,34 @@ RUN yes | sdkmanager --licenses && \
   "build-tools;30.0.3" "build-tools;31.0.0" "build-tools;32.0.0" \
   "build-tools;33.0.0" "build-tools;33.0.1" "build-tools;34.0.0" "build-tools;35.0.0" "build-tools;36.0.0"
 """
+
+_CA_INSTALL_BLOCK = """
+# ---- Local dep-cache CA install (SWEBENCH_CA_CERT was set at build time) ----
+COPY ca.crt /usr/local/share/ca-certificates/gradle-swe-bench-cache.crt
+
+RUN update-ca-certificates && \\
+  for CACERTS in $JAVA_HOME/lib/security/cacerts /usr/lib/jvm/*/lib/security/cacerts; do \\
+    if [ -f "$CACERTS" ]; then \\
+      keytool -importcert -noprompt -trustcacerts \\
+        -alias gradle-swe-bench-cache \\
+        -file /usr/local/share/ca-certificates/gradle-swe-bench-cache.crt \\
+        -keystore "$CACERTS" -storepass changeit || true; \\
+    fi; \\
+  done
+# ---- end local dep-cache CA install ----
+"""
+
+
+def get_ca_install_block() -> str:
+    """Return Dockerfile lines that install a local CA into system + JVM trust
+    stores. Env-gated: returns empty string unless SWEBENCH_CA_CERT points to
+    an existing file. Callers must also arrange for that file to appear in
+    the build context as ``ca.crt`` (see docker_build.build_base_images)."""
+    cert = os.environ.get("SWEBENCH_CA_CERT")
+    if cert and os.path.isfile(cert):
+        return _CA_INSTALL_BLOCK
+    return ""
+
 
 def make_gradle_warmup_script(distribution_urls: list[str]) -> str:
     """
