@@ -3,7 +3,6 @@ from __future__ import annotations
 import docker
 import docker.errors
 import logging
-import os
 import platform as _platform
 import subprocess
 import sys
@@ -306,14 +305,16 @@ def build_base_images(
         # Build the base image (if it does not exist or force rebuild is enabled)
         print(f"Building base image ({image_name})")
         scripts = {"gradle_warmup.sh": warmup_script} if language == "kotlin" else {}
-        # If a local CA cert is configured via SWEBENCH_CA_CERT, copy it into
-        # the build context as `ca.crt`. The kotlin base Dockerfile picks this
-        # up via the {ca_install} block wired in get_dockerfile_base().
+        # If SWEBENCH_CA_CERT is set, plumb the PEM bytes into the build
+        # context as `ca.crt`. The kotlin base Dockerfile picks this up via
+        # the {ca_install} block wired in get_dockerfile_base(). Validation
+        # (file exists, is a PEM) lives in the single get_ca_cert_pem()
+        # helper so this call path can't disagree with the Dockerfile side.
         if language == "kotlin":
-            _ca = os.environ.get("SWEBENCH_CA_CERT")
-            if _ca and os.path.isfile(_ca):
-                with open(_ca, "r", encoding="utf-8") as _fh:
-                    scripts["ca.crt"] = _fh.read()
+            from swebench.harness.dockerfiles.kotlin import get_ca_cert_pem
+            pem = get_ca_cert_pem()  # raises on invalid config; None if unset
+            if pem is not None:
+                scripts["ca.crt"] = pem
         build_image(
             image_name=image_name,
             setup_scripts=scripts,
