@@ -450,10 +450,20 @@ def build_env_images(
 
     warmup_script = _collect_gradle_warmup(test_specs)
     args_list = list()
+    # If SWEBENCH_CA_CERT is set, env-image builds also need `ca.crt` in
+    # their build context because the kotlin env-image Dockerfile falls
+    # back to _DOCKERFILE_BASE_KOTLIN (no dedicated _DOCKERFILE_ENV entry
+    # for kotlin exists) and that template's {ca_install} block references
+    # `COPY ca.crt`. Without this plumbing the env build fails with
+    # "ca.crt: not found" at buildx-context transfer time.
+    from swebench.harness.dockerfiles.kotlin import get_ca_cert_pem
+    _ca_pem = get_ca_cert_pem()  # raises on invalid config; None if unset
     for image_name, config in configs_to_build.items():
         scripts = {"setup_env.sh": config["setup_script"]}
         if config.get("language") == "kotlin":
             scripts["gradle_warmup.sh"] = warmup_script
+            if _ca_pem is not None:
+                scripts["ca.crt"] = _ca_pem
         args_list.append(
             (
                 image_name,
