@@ -26,6 +26,26 @@ from swebench.harness.test_spec.test_spec import (
 from swebench.harness.utils import ansi_escape, run_threadpool
 
 
+# ---- Local dep-cache: hostnames whose traffic gets rewritten to nginx
+# via --add-host at image build time when SWEBENCH_DEP_CACHE_ENABLED=1.
+# Kept in sync with infra/dep-cache/nginx/nginx.conf server_name blocks
+# in the PARENT repo. Five distinct hostnames; dl.google.com serves
+# both Google Maven at /dl/android/maven2/ AND Android SDK at
+# /android/repository/ via location-specific rewrites in nginx.
+_DEP_CACHE_HOSTS = (
+    "repo1.maven.org",
+    "repo.maven.apache.org",
+    "dl.google.com",
+    "plugins.gradle.org",
+    "services.gradle.org",
+)
+
+
+def _dep_cache_enabled() -> bool:
+    import os
+    return os.environ.get("SWEBENCH_DEP_CACHE_ENABLED") == "1"
+
+
 def _is_cross_platform_build(target_platform: str) -> bool:
     """Return True when the build targets a platform different from the host.
 
@@ -148,7 +168,7 @@ def build_image(
             f"Building docker image {image_name} in {build_dir} with platform {platform}"
         )
 
-        if _is_cross_platform_build(platform):
+        if _is_cross_platform_build(platform) or _dep_cache_enabled():
             # The Docker SDK's legacy builder (client.api.build) cannot
             # resolve locally-built images when the target platform differs
             # from the host architecture.  Use ``docker buildx build --load``
@@ -165,6 +185,11 @@ def build_image(
             ]
             if nocache:
                 cmd.append("--no-cache")
+
+            if _dep_cache_enabled():
+                for host in _DEP_CACHE_HOSTS:
+                    cmd.extend(["--add-host", f"{host}:host-gateway"])
+
             cmd.append(str(build_dir))
 
             process = subprocess.Popen(
