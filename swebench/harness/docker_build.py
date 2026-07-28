@@ -46,6 +46,40 @@ def _dep_cache_enabled() -> bool:
     return os.environ.get("SWEBENCH_DEP_CACHE_ENABLED") == "1"
 
 
+_DEP_CACHE_BUILDER_NAME = "dep-cache-builder"
+
+
+def _ensure_dep_cache_buildx_builder() -> None:
+    """Docker Desktop's default buildx builder uses the `docker` driver,
+    which silently DROPS --add-host at buildx-build time. That silently
+    routes all base-image downloads to the real internet, defeating the
+    whole point of enabling the dep-cache at build time. This function
+    ensures a `docker-container`-driver buildx builder exists — that
+    driver is a full BuildKit and honors --add-host as intended.
+
+    Idempotent: if the named builder already exists, do nothing. Only
+    invoked when SWEBENCH_DEP_CACHE_ENABLED=1, so operators not using
+    the cache never see this new builder appear."""
+    inspect = subprocess.run(
+        ["docker", "buildx", "inspect", _DEP_CACHE_BUILDER_NAME],
+        capture_output=True,
+        text=True,
+    )
+    if inspect.returncode == 0:
+        return
+    subprocess.run(
+        [
+            "docker", "buildx", "create",
+            "--name", _DEP_CACHE_BUILDER_NAME,
+            "--driver", "docker-container",
+            "--bootstrap",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
 def _is_cross_platform_build(target_platform: str) -> bool:
     """Return True when the build targets a platform different from the host.
 
@@ -187,6 +221,11 @@ def build_image(
                 cmd.append("--no-cache")
 
             if _dep_cache_enabled():
+                # docker-driver builder silently ignores --add-host at
+                # build-container level. Force a docker-container-driver
+                # builder so BuildKit honors the flag.
+                _ensure_dep_cache_buildx_builder()
+                cmd.extend(["--builder", _DEP_CACHE_BUILDER_NAME])
                 for host in _DEP_CACHE_HOSTS:
                     cmd.extend(["--add-host", f"{host}:host-gateway"])
 
