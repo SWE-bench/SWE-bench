@@ -47,37 +47,81 @@ def _dep_cache_enabled() -> bool:
 
 
 _DEP_CACHE_BUILDER_NAME = "dep-cache-builder"
+_DEP_CACHE_NETWORK = "dep-cache_default"
+_DEP_CACHE_NGINX_CONTAINER = "dep-cache-nginx"
 
 
 def _ensure_dep_cache_buildx_builder() -> None:
     """Docker Desktop's default buildx builder uses the `docker` driver,
-    which silently DROPS --add-host at buildx-build time. That silently
-    routes all base-image downloads to the real internet, defeating the
-    whole point of enabling the dep-cache at build time. This function
-    ensures a `docker-container`-driver buildx builder exists — that
-    driver is a full BuildKit and honors --add-host as intended.
+    which silently DROPS --add-host at buildx-build time. That routes
+    base-image downloads to the real internet, defeating the point of
+    enabling the dep-cache at build time.
 
-    Idempotent: if the named builder already exists, do nothing. Only
-    invoked when SWEBENCH_DEP_CACHE_ENABLED=1, so operators not using
-    the cache never see this new builder appear."""
+    We use a `docker-container`-driver builder instead, but there is a
+    second gotcha: that driver honors --add-host as a flag but does NOT
+    understand the `host-gateway` magic value (host-gateway is resolved
+    by dockerd for regular container-run, not by the isolated BuildKit
+    daemon a docker-container builder spawns). So we ALSO attach the
+    builder to the compose network dep-cache_default and pass nginx's
+    concrete IP as the --add-host target (resolved in the caller via
+    _dep_cache_nginx_ip()).
+
+    Idempotent: if the named builder already exists AND was created
+    with the correct network attachment, do nothing. Otherwise the
+    builder is recreated so the network attachment is fresh. Only
+    invoked when SWEBENCH_DEP_CACHE_ENABLED=1."""
     inspect = subprocess.run(
         ["docker", "buildx", "inspect", _DEP_CACHE_BUILDER_NAME],
         capture_output=True,
         text=True,
     )
-    if inspect.returncode == 0:
+    if inspect.returncode == 0 and _DEP_CACHE_NETWORK in inspect.stdout:
         return
+    # Either missing, or present without the network attachment. Recreate
+    # cleanly so we don't inherit a stale network config.
+    if inspect.returncode == 0:
+        subprocess.run(
+            ["docker", "buildx", "rm", _DEP_CACHE_BUILDER_NAME],
+            capture_output=True,
+            text=True,
+        )
     subprocess.run(
         [
             "docker", "buildx", "create",
             "--name", _DEP_CACHE_BUILDER_NAME,
             "--driver", "docker-container",
+            "--driver-opt", f"network={_DEP_CACHE_NETWORK}",
             "--bootstrap",
         ],
         check=True,
         capture_output=True,
         text=True,
     )
+
+
+def _dep_cache_nginx_ip() -> str:
+    """Resolve dep-cache-nginx's IP on the dep-cache_default network so we
+    can pass a concrete --add-host target (docker-container buildx driver
+    doesn't understand `host-gateway`). Fails loudly if nginx isn't
+    running — the wrapper's preflight should have caught that already,
+    but this is a second line of defense."""
+    result = subprocess.run(
+        [
+            "docker", "inspect", _DEP_CACHE_NGINX_CONTAINER,
+            "--format",
+            "{{(index .NetworkSettings.Networks \"" + _DEP_CACHE_NETWORK + "\").IPAddress}}",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    ip = result.stdout.strip()
+    if result.returncode != 0 or not ip:
+        raise RuntimeError(
+            f"could not resolve {_DEP_CACHE_NGINX_CONTAINER}'s IP on "
+            f"network {_DEP_CACHE_NETWORK}: exit {result.returncode}, "
+            f"stderr={result.stderr.strip()!r}"
+        )
+    return ip
 
 
 def _is_cross_platform_build(target_platform: str) -> bool:
@@ -223,11 +267,15 @@ def build_image(
             if _dep_cache_enabled():
                 # docker-driver builder silently ignores --add-host at
                 # build-container level. Force a docker-container-driver
-                # builder so BuildKit honors the flag.
+                # builder so BuildKit honors the flag, attached to the
+                # dep-cache_default network so we can reach nginx by IP.
+                # host-gateway is NOT supported by docker-container so we
+                # resolve nginx's actual IP and pass it directly.
                 _ensure_dep_cache_buildx_builder()
+                nginx_ip = _dep_cache_nginx_ip()
                 cmd.extend(["--builder", _DEP_CACHE_BUILDER_NAME])
                 for host in _DEP_CACHE_HOSTS:
-                    cmd.extend(["--add-host", f"{host}:host-gateway"])
+                    cmd.extend(["--add-host", f"{host}:{nginx_ip}"])
 
             cmd.append(str(build_dir))
 
