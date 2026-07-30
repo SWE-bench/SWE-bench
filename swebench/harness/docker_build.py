@@ -246,7 +246,17 @@ def build_image(
             f"Building docker image {image_name} in {build_dir} with platform {platform}"
         )
 
-        if _is_cross_platform_build(platform) or _dep_cache_enabled():
+        # Instance images (sweb.eval.*) FROM a local `sweb.env.*` image.
+        # BuildKit's docker-container driver runs an isolated daemon that
+        # can't see the host dockerd's image cache, so those local FROMs
+        # get resolved as Docker Hub lookups and fail with "pull access
+        # denied". Only base + env images are safe on dep-cache-builder.
+        # Instance builds fall back to the default docker driver (which
+        # sees local images fine but silently drops --add-host).
+        is_local_from_image = image_name.startswith("sweb.eval.")
+        use_dep_cache_builder = _dep_cache_enabled() and not is_local_from_image
+
+        if _is_cross_platform_build(platform) or use_dep_cache_builder:
             # The Docker SDK's legacy builder (client.api.build) cannot
             # resolve locally-built images when the target platform differs
             # from the host architecture.  Use ``docker buildx build --load``
@@ -264,7 +274,7 @@ def build_image(
             if nocache:
                 cmd.append("--no-cache")
 
-            if _dep_cache_enabled():
+            if use_dep_cache_builder:
                 # docker-driver builder silently ignores --add-host at
                 # build-container level. Force a docker-container-driver
                 # builder so BuildKit honors the flag, attached to the
