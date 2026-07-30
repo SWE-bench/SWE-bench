@@ -10,6 +10,12 @@ from swebench.harness.dockerfiles.java import (
     _DOCKERFILE_BASE_JAVA,
     _DOCKERFILE_INSTANCE_JAVA,
 )
+from swebench.harness.dockerfiles.kotlin import (
+    _DOCKERFILE_BASE_KOTLIN,
+    _DOCKERFILE_INSTANCE_KOTLIN,
+    get_ca_install_block,
+    get_host_arch,
+)
 from swebench.harness.dockerfiles.javascript import (
     _DOCKERFILE_BASE_JS,
     _DOCKERFILE_BASE_JS_2,
@@ -39,6 +45,7 @@ _DOCKERFILE_BASE = {
     "go": _DOCKERFILE_BASE_GO,
     "py": _DOCKERFILE_BASE_PY,
     "java": _DOCKERFILE_BASE_JAVA,
+    "kotlin": _DOCKERFILE_BASE_KOTLIN,
     "js": _DOCKERFILE_BASE_JS,
     "php": _DOCKERFILE_BASE_PHP,
     "rb": _DOCKERFILE_BASE_RUBY,
@@ -55,6 +62,7 @@ _DOCKERFILE_INSTANCE = {
     "go": _DOCKERFILE_INSTANCE_GO,
     "py": _DOCKERFILE_INSTANCE_PY,
     "java": _DOCKERFILE_INSTANCE_JAVA,
+    "kotlin": _DOCKERFILE_INSTANCE_KOTLIN,
     "js": _DOCKERFILE_INSTANCE_JS,
     "php": _DOCKERFILE_INSTANCE_PHP,
     "rb": _DOCKERFILE_INSTANCE_RUBY,
@@ -75,6 +83,9 @@ def get_dockerfile_base(platform, arch, language, **kwargs):
         del kwargs["_variant"]
         return _DOCKERFILE_BASE_JS_2.format(platform=platform, **kwargs)
 
+    if language == "kotlin":
+        kwargs.setdefault("ca_install", get_ca_install_block())
+
     return _DOCKERFILE_BASE[language].format(
         platform=platform, conda_arch=conda_arch, **kwargs
     )
@@ -88,6 +99,9 @@ def get_dockerfile_env(platform, arch, language, base_image_key, **kwargs):
     if "_variant" in kwargs and kwargs["_variant"] == "js_2":
         del kwargs["_variant"]
         return _DOCKERFILE_BASE_JS_2.format(platform=platform, **kwargs)
+
+    if language == "kotlin":
+        kwargs.setdefault("ca_install", get_ca_install_block())
 
     return dockerfile.format(
         platform=platform, arch=arch, base_image_key=base_image_key, **kwargs
@@ -104,4 +118,5 @@ __all__ = [
     "get_dockerfile_base",
     "get_dockerfile_env",
     "get_dockerfile_instance",
+    "get_host_arch",
 ]

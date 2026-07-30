@@ -163,6 +163,7 @@ cython_debug/
 .api_key
 .keys
 .vscode/
+.idea/
 *.jsonl
 *.jsonl.*
 *.patch
@@ -170,3 +171,12 @@ cython_debug/
 data/repos/copies
 notebooks/
 *logs/
+
+.idea/
+
+inputs/
+outputs/
+
+.github/copilot-instructions.md
+gradle-bench/data/*
+!gradle-bench/data/build_cache.json

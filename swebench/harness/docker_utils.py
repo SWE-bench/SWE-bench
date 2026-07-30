@@ -89,7 +89,7 @@ def remove_image(client, image_id, logger=None):
         log_info(f"Attempting to remove image {image_id}...")
         client.images.remove(image_id, force=True)
         log_info(f"Image {image_id} removed.")
-    except docker.errors.ImageNotFound:
+    except (docker.errors.ImageNotFound, docker.errors.NotFound):
         log_info(f"Image {image_id} not found, removing has no effect.")
     except Exception as e:
         if raise_error:
@@ -161,7 +161,7 @@ def cleanup_container(client, container, logger):
     # Attempt to remove the container
     try:
         log_info(f"Attempting to remove container {container.name}...")
-        container.remove(force=True)
+        container.remove(force=True, v=True)
         log_info(f"Container {container.name} removed.")
     except Exception as e:
         if raise_error:

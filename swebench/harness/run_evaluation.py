@@ -3,6 +3,7 @@ from __future__ import annotations
 import docker
 import json
 import platform
+import sys
 import threading
 import traceback
 
@@ -300,7 +301,7 @@ def run_instances(
         run_id (str): Run ID
         timeout (int): Timeout for running tests
     """
-    client = docker.from_env()
+    client = docker.from_env(timeout=120)
     test_specs = list(
         map(
             lambda instance: make_test_spec(
@@ -369,6 +370,14 @@ def run_instances(
 
     run_threadpool(run_evaluation_with_progress, payloads, max_workers)
     print("All instances run.")
+    import gc, os, contextlib
+
+    try:
+        client.close()
+    except ValueError:
+        pass
+    with contextlib.redirect_stderr(open(os.devnull, "w")):
+        gc.collect()
 
 
 def get_dataset_from_preds(
@@ -532,7 +541,12 @@ def main(
     # run instances locally
     if platform.system() == "Linux":
         resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
-    client = docker.from_env()
+    try:
+        client = docker.from_env(timeout=120)
+        client.ping()
+    except docker.errors.DockerException:
+        print("Error: Docker is not running. Please start Docker and try again.")
+        sys.exit(1)
 
     existing_images = list_images(client)
     if not dataset:
@@ -566,7 +580,7 @@ def main(
 
     # clean images + make final report
     clean_images(client, existing_images, cache_level, clean)
-    return make_run_report(
+    report = make_run_report(
         predictions,
         full_dataset,
         run_id,
@@ -575,6 +589,18 @@ def main(
         instance_image_tag,
         env_image_tag,
     )
+    # Close the Docker client and force-collect any lingering urllib3 response
+    # objects while stderr is suppressed, so Python's GC finalizer doesn't print
+    # "Exception ignored in ... ValueError: I/O operation on closed file."
+    import gc, os, contextlib
+
+    try:
+        client.close()
+    except ValueError:
+        pass
+    with contextlib.redirect_stderr(open(os.devnull, "w")):
+        gc.collect()
+    return report
 
 
 if __name__ == "__main__":
@@ -623,7 +649,7 @@ if __name__ == "__main__":
         "-t",
         "--timeout",
         type=int,
-        default=1_800,
+        default=5_400,  # default of 1800 is not enough time for wikimedia repo
         help="Timeout (in seconds) for running tests for each instance",
     )
     parser.add_argument(

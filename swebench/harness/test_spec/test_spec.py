@@ -16,6 +16,7 @@ from swebench.harness.dockerfiles import (
     get_dockerfile_base,
     get_dockerfile_env,
     get_dockerfile_instance,
+    get_host_arch,
 )
 from swebench.harness.test_spec.create_scripts import (
     make_repo_script_list,
@@ -42,6 +43,7 @@ class TestSpec:
     language: str
     docker_specs: dict
     namespace: Optional[str]
+    gradle_distribution_url: Optional[str] = None
     base_image_tag: str = LATEST
     env_image_tag: str = LATEST
     instance_image_tag: str = LATEST
@@ -177,10 +179,12 @@ def make_test_spec(
     base_image_tag: str = LATEST,
     env_image_tag: str = LATEST,
     instance_image_tag: str = LATEST,
-    arch: str = "x86_64",
+    arch: Optional[str] = None,
 ) -> TestSpec:
     if isinstance(instance, TestSpec):
         return instance
+    if arch is None:
+        arch = get_host_arch()
     assert base_image_tag is not None, "base_image_tag cannot be None"
     assert env_image_tag is not None, "env_image_tag cannot be None"
     assert instance_image_tag is not None, "instance_image_tag cannot be None"
@@ -209,6 +213,13 @@ def make_test_spec(
     specs = MAP_REPO_VERSION_TO_SPECS[repo][version]
     docker_specs = specs.get("docker_specs", {})
 
+    # Allow docker_specs to override the detected arch (e.g. repos that
+    # require x86_64 because they depend on Kotlin/Native versions that
+    # don't ship linux-aarch64 prebuilts).
+    arch = docker_specs.get("arch", None) or arch
+    # Don't pass the "arch" override through to Docker — it's our key, not Docker's.
+    docker_specs = {k: v for k, v in docker_specs.items() if k != "arch"}
+
     repo_script_list = make_repo_script_list(
         specs, repo, repo_directory, base_commit, env_name
     )
@@ -232,4 +243,5 @@ def make_test_spec(
         base_image_tag=base_image_tag,
         env_image_tag=env_image_tag,
         instance_image_tag=instance_image_tag,
+        gradle_distribution_url=instance.get("gradle_distribution_url"),
     )

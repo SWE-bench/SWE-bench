@@ -4,7 +4,7 @@ from typing import TypedDict
 
 from swebench.harness.constants.c import *
 from swebench.harness.constants.go import *
-from swebench.harness.constants.java import *
+from swebench.harness.constants.jvm import *
 from swebench.harness.constants.javascript import *
 from swebench.harness.constants.php import *
 from swebench.harness.constants.python import *
@@ -136,7 +136,7 @@ FAIL_ONLY_REPOS = {
 MAP_REPO_VERSION_TO_SPECS = {
     **MAP_REPO_VERSION_TO_SPECS_C,
     **MAP_REPO_VERSION_TO_SPECS_GO,
-    **MAP_REPO_VERSION_TO_SPECS_JAVA,
+    **MAP_REPO_VERSION_TO_SPECS_JVM,
     **MAP_REPO_VERSION_TO_SPECS_JS,
     **MAP_REPO_VERSION_TO_SPECS_PHP,
     **MAP_REPO_VERSION_TO_SPECS_PY,
@@ -147,7 +147,7 @@ MAP_REPO_VERSION_TO_SPECS = {
 MAP_REPO_TO_INSTALL = {
     **MAP_REPO_TO_INSTALL_C,
     **MAP_REPO_TO_INSTALL_GO,
-    **MAP_REPO_TO_INSTALL_JAVA,
+    **MAP_REPO_TO_INSTALL_JVM,
     **MAP_REPO_TO_INSTALL_JS,
     **MAP_REPO_TO_INSTALL_PHP,
     **MAP_REPO_TO_INSTALL_PY,
@@ -158,7 +158,7 @@ MAP_REPO_TO_INSTALL = {
 MAP_REPO_TO_EXT = {
     **{k: "c" for k in MAP_REPO_VERSION_TO_SPECS_C.keys()},
     **{k: "go" for k in MAP_REPO_VERSION_TO_SPECS_GO.keys()},
-    **{k: "java" for k in MAP_REPO_VERSION_TO_SPECS_JAVA.keys()},
+    **{k: "kotlin" for k in MAP_REPO_VERSION_TO_SPECS_JVM.keys()},
     **{k: "js" for k in MAP_REPO_VERSION_TO_SPECS_JS.keys()},
     **{k: "php" for k in MAP_REPO_VERSION_TO_SPECS_PHP.keys()},
     **{k: "py" for k in MAP_REPO_VERSION_TO_SPECS_PY.keys()},

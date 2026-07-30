@@ -3,6 +3,7 @@ import re
 import requests
 import traceback
 from importlib import resources
+from tqdm import tqdm
 import swebench.resources
 
 from argparse import ArgumentTypeError
@@ -77,7 +78,7 @@ def get_predictions_from_file(predictions_path: str, dataset_name: str, split: s
     return predictions
 
 
-def run_threadpool(func, payloads, max_workers):
+def run_threadpool(func, payloads, max_workers, on_complete=None):
     """
     Run a function with a list of payloads using ThreadPoolExecutor.
 
@@ -93,18 +94,23 @@ def run_threadpool(func, payloads, max_workers):
         return run_sequential(func, payloads)
     succeeded, failed = [], []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # Create a future for running each instance
         futures = {executor.submit(func, *payload): payload for payload in payloads}
-        # Wait for each future to complete
-        for future in as_completed(futures):
-            try:
-                # Check if instance ran successfully
-                future.result()
-                succeeded.append(futures[future])
-            except Exception as e:
-                print(f"{type(e)}: {e}")
-                traceback.print_exc()
-                failed.append(futures[future])
+        with tqdm(total=len(payloads), desc="Building", unit="image") as pbar:
+            for future in as_completed(futures):
+                payload = futures[future]
+                try:
+                    future.result()
+                    succeeded.append(payload)
+                    if on_complete:
+                        on_complete(payload, True)
+                    pbar.set_postfix(ok=len(succeeded), fail=len(failed))
+                except Exception as e:
+                    tqdm.write(f"FAILED: {e}")
+                    failed.append(payload)
+                    if on_complete:
+                        on_complete(payload, False)
+                    pbar.set_postfix(ok=len(succeeded), fail=len(failed))
+                pbar.update(1)
     return succeeded, failed
 
 

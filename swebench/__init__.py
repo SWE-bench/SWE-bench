@@ -43,10 +43,6 @@ from swebench.harness.log_parsers import (
     MAP_REPO_TO_PARSER,
 )
 
-from swebench.harness.run_evaluation import (
-    main as run_evaluation,
-)
-
 from swebench.harness.utils import (
     run_threadpool,
 )

@@ -3,6 +3,8 @@ from __future__ import annotations
 import docker
 import docker.errors
 import logging
+import platform as _platform
+import subprocess
 import sys
 import traceback
 
@@ -22,6 +24,125 @@ from swebench.harness.test_spec.test_spec import (
     TestSpec,
 )
 from swebench.harness.utils import ansi_escape, run_threadpool
+
+
+# ---- Local dep-cache: hostnames whose traffic gets rewritten to nginx
+# via --add-host at image build time when SWEBENCH_DEP_CACHE_ENABLED=1.
+# Kept in sync with infra/dep-cache/nginx/nginx.conf server_name blocks
+# in the PARENT repo. Five distinct hostnames; dl.google.com serves
+# both Google Maven at /dl/android/maven2/ AND Android SDK at
+# /android/repository/ via location-specific rewrites in nginx.
+_DEP_CACHE_HOSTS = (
+    "repo1.maven.org",
+    "repo.maven.apache.org",
+    "dl.google.com",
+    "plugins.gradle.org",
+    "services.gradle.org",
+)
+
+
+def _dep_cache_enabled() -> bool:
+    import os
+    return os.environ.get("SWEBENCH_DEP_CACHE_ENABLED") == "1"
+
+
+_DEP_CACHE_BUILDER_NAME = "dep-cache-builder"
+_DEP_CACHE_NETWORK = "dep-cache_default"
+_DEP_CACHE_NGINX_CONTAINER = "dep-cache-nginx"
+
+
+def _ensure_dep_cache_buildx_builder() -> None:
+    """Docker Desktop's default buildx builder uses the `docker` driver,
+    which silently DROPS --add-host at buildx-build time. That routes
+    base-image downloads to the real internet, defeating the point of
+    enabling the dep-cache at build time.
+
+    We use a `docker-container`-driver builder instead, but there is a
+    second gotcha: that driver honors --add-host as a flag but does NOT
+    understand the `host-gateway` magic value (host-gateway is resolved
+    by dockerd for regular container-run, not by the isolated BuildKit
+    daemon a docker-container builder spawns). So we ALSO attach the
+    builder to the compose network dep-cache_default and pass nginx's
+    concrete IP as the --add-host target (resolved in the caller via
+    _dep_cache_nginx_ip()).
+
+    Idempotent: if the named builder already exists AND was created
+    with the correct network attachment, do nothing. Otherwise the
+    builder is recreated so the network attachment is fresh. Only
+    invoked when SWEBENCH_DEP_CACHE_ENABLED=1."""
+    inspect = subprocess.run(
+        ["docker", "buildx", "inspect", _DEP_CACHE_BUILDER_NAME],
+        capture_output=True,
+        text=True,
+    )
+    if inspect.returncode == 0 and _DEP_CACHE_NETWORK in inspect.stdout:
+        return
+    # Either missing, or present without the network attachment. Recreate
+    # cleanly so we don't inherit a stale network config.
+    if inspect.returncode == 0:
+        subprocess.run(
+            ["docker", "buildx", "rm", _DEP_CACHE_BUILDER_NAME],
+            capture_output=True,
+            text=True,
+        )
+    subprocess.run(
+        [
+            "docker", "buildx", "create",
+            "--name", _DEP_CACHE_BUILDER_NAME,
+            "--driver", "docker-container",
+            "--driver-opt", f"network={_DEP_CACHE_NETWORK}",
+            "--bootstrap",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _dep_cache_nginx_ip() -> str:
+    """Resolve dep-cache-nginx's IP on the dep-cache_default network so we
+    can pass a concrete --add-host target (docker-container buildx driver
+    doesn't understand `host-gateway`). Fails loudly if nginx isn't
+    running — the wrapper's preflight should have caught that already,
+    but this is a second line of defense."""
+    result = subprocess.run(
+        [
+            "docker", "inspect", _DEP_CACHE_NGINX_CONTAINER,
+            "--format",
+            "{{(index .NetworkSettings.Networks \"" + _DEP_CACHE_NETWORK + "\").IPAddress}}",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    ip = result.stdout.strip()
+    if result.returncode != 0 or not ip:
+        raise RuntimeError(
+            f"could not resolve {_DEP_CACHE_NGINX_CONTAINER}'s IP on "
+            f"network {_DEP_CACHE_NETWORK}: exit {result.returncode}, "
+            f"stderr={result.stderr.strip()!r}"
+        )
+    return ip
+
+
+def _is_cross_platform_build(target_platform: str) -> bool:
+    """Return True when the build targets a platform different from the host.
+
+    The Docker SDK's legacy builder (``client.api.build``) cannot resolve
+    locally-built images whose architecture differs from the host.  When this
+    function returns ``True`` the caller should fall back to
+    ``docker buildx build --load`` which handles cross-platform local images
+    correctly.
+    """
+    machine = _platform.machine().lower()
+    if machine in ("x86_64", "amd64"):
+        host_platform = "linux/x86_64"
+    elif machine in ("arm64", "aarch64"):
+        host_platform = "linux/arm64/v8"
+    else:
+        # Unknown host – be conservative and assume same platform.
+        return False
+
+    return target_platform != host_platform
 
 
 class BuildImageError(Exception):
@@ -124,30 +245,109 @@ def build_image(
         logger.info(
             f"Building docker image {image_name} in {build_dir} with platform {platform}"
         )
-        response = client.api.build(
-            path=str(build_dir),
-            tag=image_name,
-            rm=True,
-            forcerm=True,
-            decode=True,
-            platform=platform,
-            nocache=nocache,
-        )
 
-        # Log the build process continuously
-        buildlog = ""
-        for chunk in response:
-            if "stream" in chunk:
-                # Remove ANSI escape sequences from the log
-                chunk_stream = ansi_escape(chunk["stream"])
-                logger.info(chunk_stream.strip())
-                buildlog += chunk_stream
-            elif "errorDetail" in chunk:
-                # Decode error message, raise BuildError
-                logger.error(f"Error: {ansi_escape(chunk['errorDetail']['message'])}")
+        # Instance images (sweb.eval.*) FROM a local `sweb.env.*` image.
+        # BuildKit's docker-container driver runs an isolated daemon that
+        # can't see the host dockerd's image cache, so those local FROMs
+        # get resolved as Docker Hub lookups and fail with "pull access
+        # denied". Only base + env images are safe on dep-cache-builder.
+        # Instance builds fall back to the default docker driver (which
+        # sees local images fine but silently drops --add-host).
+        is_local_from_image = image_name.startswith("sweb.eval.")
+        use_dep_cache_builder = _dep_cache_enabled() and not is_local_from_image
+
+        if _is_cross_platform_build(platform) or use_dep_cache_builder:
+            # The Docker SDK's legacy builder (client.api.build) cannot
+            # resolve locally-built images when the target platform differs
+            # from the host architecture.  Use ``docker buildx build --load``
+            # instead, which uses BuildKit and handles this correctly.
+            logger.info(
+                f"Cross-platform build detected (target={platform}). "
+                "Using 'docker buildx build --load'."
+            )
+            cmd = [
+                "docker", "buildx", "build",
+                "--platform", platform,
+                "--load",
+                "--tag", image_name,
+            ]
+            if nocache:
+                cmd.append("--no-cache")
+
+            if use_dep_cache_builder:
+                # docker-driver builder silently ignores --add-host at
+                # build-container level. Force a docker-container-driver
+                # builder so BuildKit honors the flag, attached to the
+                # dep-cache_default network so we can reach nginx by IP.
+                # host-gateway is NOT supported by docker-container so we
+                # resolve nginx's actual IP and pass it directly.
+                _ensure_dep_cache_buildx_builder()
+                nginx_ip = _dep_cache_nginx_ip()
+                cmd.extend(["--builder", _DEP_CACHE_BUILDER_NAME])
+                for host in _DEP_CACHE_HOSTS:
+                    cmd.extend(["--add-host", f"{host}:{nginx_ip}"])
+
+            cmd.append(str(build_dir))
+
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+            buildlog = ""
+            for line in process.stdout:
+                clean_line = ansi_escape(line)
+                logger.info(clean_line.rstrip())
+                buildlog += clean_line
+            process.wait()
+            if process.returncode != 0:
                 raise docker.errors.BuildError(
-                    chunk["errorDetail"]["message"], buildlog
+                    f"docker buildx build exited with code {process.returncode}",
+                    buildlog,
                 )
+        else:
+            response = client.api.build(
+                path=str(build_dir),
+                tag=image_name,
+                rm=True,
+                forcerm=True,
+                decode=True,
+                platform=platform,
+                nocache=nocache,
+            )
+
+            # Log the build process continuously
+            buildlog = ""
+            for chunk in response:
+                if "stream" in chunk:
+                    # Remove ANSI escape sequences from the log
+                    chunk_stream = ansi_escape(chunk["stream"])
+                    logger.info(chunk_stream.strip())
+                    buildlog += chunk_stream
+                elif "errorDetail" in chunk:
+                    # Decode error message, raise BuildError
+                    logger.error(f"Error: {ansi_escape(chunk['errorDetail']['message'])}")
+                    raise docker.errors.BuildError(
+                        chunk["errorDetail"]["message"], buildlog
+                    )
+                elif "error" in chunk:
+                    # Some Docker versions return 'error' without 'errorDetail'
+                    error_msg = ansi_escape(str(chunk["error"]))
+                    logger.error(f"Error: {error_msg}")
+                    raise docker.errors.BuildError(error_msg, buildlog)
+
+        # Verify the image was actually created — the legacy builder can
+        # silently fail (e.g. Dockerfile parse errors) without raising an
+        # error through the response stream.
+        try:
+            client.images.get(image_name)
+        except docker.errors.ImageNotFound:
+            raise docker.errors.BuildError(
+                f"Image {image_name} not found after build completed. "
+                "The build may have silently failed (check the Dockerfile for syntax errors).",
+                buildlog,
+            )
         logger.info("Image built successfully!")
     except docker.errors.BuildError as e:
         logger.error(f"docker.errors.BuildError during {image_name}: {e}")
@@ -157,6 +357,30 @@ def build_image(
         raise BuildImageError(image_name, str(e), logger) from e
     finally:
         close_logger(logger)  # functions that create loggers should close them
+
+
+def _collect_gradle_warmup(test_specs: list[TestSpec]) -> str:
+    """
+    For all Kotlin TestSpecs that have gradle_distribution_url:
+      - injects a stable cache-bust key into docker_specs (so base_image_key hash
+        changes when the URL set changes — must be called before first key access)
+      - returns the shell script content to pass as setup_scripts["gradle_warmup.sh"]
+
+    Returns a no-op script if no Kotlin specs have a distribution URL.
+    """
+    from swebench.harness.dockerfiles.kotlin import make_gradle_warmup_script
+
+    urls = sorted({
+        s.gradle_distribution_url
+        for s in test_specs
+        if s.language == "kotlin" and s.gradle_distribution_url
+    })
+    script = make_gradle_warmup_script(urls) if urls else "#!/bin/bash\nexit 0\n"
+    cache_key = " ".join(urls)  # changes when URL set changes → invalidates base_image_key
+    for spec in test_specs:
+        if spec.language == "kotlin":
+            spec.docker_specs["gradle_warmup_urls"] = cache_key
+    return script
 
 
 def build_base_images(
@@ -182,12 +406,13 @@ def build_base_images(
         instance_image_tag=instance_image_tag,
         env_image_tag=env_image_tag,
     )
+    warmup_script = _collect_gradle_warmup(test_specs)  # mutates docker_specs, must run before first key access
     base_images = {
-        x.base_image_key: (x.base_dockerfile, x.platform) for x in test_specs
+        x.base_image_key: (x.base_dockerfile, x.platform, x.language) for x in test_specs
     }
 
     # Build the base images
-    for image_name, (dockerfile, platform) in base_images.items():
+    for image_name, (dockerfile, platform, language) in base_images.items():
         try:
             # Check if the base image already exists
             client.images.get(image_name)
@@ -201,9 +426,20 @@ def build_base_images(
             pass
         # Build the base image (if it does not exist or force rebuild is enabled)
         print(f"Building base image ({image_name})")
+        scripts = {"gradle_warmup.sh": warmup_script} if language == "kotlin" else {}
+        # If SWEBENCH_CA_CERT is set, plumb the PEM bytes into the build
+        # context as `ca.crt`. The kotlin base Dockerfile picks this up via
+        # the {ca_install} block wired in get_dockerfile_base(). Validation
+        # (file exists, is a PEM) lives in the single get_ca_cert_pem()
+        # helper so this call path can't disagree with the Dockerfile side.
+        if language == "kotlin":
+            from swebench.harness.dockerfiles.kotlin import get_ca_cert_pem
+            pem = get_ca_cert_pem()  # raises on invalid config; None if unset
+            if pem is not None:
+                scripts["ca.crt"] = pem
         build_image(
             image_name=image_name,
-            setup_scripts={},
+            setup_scripts=scripts,
             dockerfile=dockerfile,
             platform=platform,
             client=client,
@@ -235,6 +471,7 @@ def get_env_configs_to_build(
         instance_image_tag=instance_image_tag,
         env_image_tag=env_image_tag,
     )
+    _collect_gradle_warmup(test_specs)  # mutates docker_specs before any key access
 
     for test_spec in test_specs:
         # Check if the base image exists
@@ -263,6 +500,7 @@ def get_env_configs_to_build(
                 "setup_script": test_spec.setup_env_script,
                 "dockerfile": test_spec.env_dockerfile,
                 "platform": test_spec.platform,
+                "language": test_spec.language,
             }
     return image_scripts
 
@@ -286,35 +524,47 @@ def build_env_images(
         max_workers (int): Maximum number of workers to use for building images
     """
     # Get the environment images to build from the dataset
+    test_specs = get_test_specs_from_dataset(
+        dataset,
+        namespace=namespace,
+        instance_image_tag=instance_image_tag,
+        env_image_tag=env_image_tag,
+    )
+    _collect_gradle_warmup(test_specs)  # mutates docker_specs before any key access
     if force_rebuild:
-        env_image_keys = {
-            x.env_image_key
-            for x in get_test_specs_from_dataset(
-                dataset,
-                namespace=namespace,
-                instance_image_tag=instance_image_tag,
-                env_image_tag=env_image_tag,
-            )
-        }
-        for key in env_image_keys:
+        for key in {x.env_image_key for x in test_specs}:
             remove_image(client, key, "quiet")
     build_base_images(
-        client, dataset, force_rebuild, namespace, instance_image_tag, env_image_tag
+        client, test_specs, force_rebuild, namespace, instance_image_tag, env_image_tag
     )
     configs_to_build = get_env_configs_to_build(
-        client, dataset, namespace, instance_image_tag, env_image_tag
+        client, test_specs, namespace, instance_image_tag, env_image_tag
     )
     if len(configs_to_build) == 0:
         print("No environment images need to be built.")
         return [], []
     print(f"Total environment images to build: {len(configs_to_build)}")
 
+    warmup_script = _collect_gradle_warmup(test_specs)
     args_list = list()
+    # If SWEBENCH_CA_CERT is set, env-image builds also need `ca.crt` in
+    # their build context because the kotlin env-image Dockerfile falls
+    # back to _DOCKERFILE_BASE_KOTLIN (no dedicated _DOCKERFILE_ENV entry
+    # for kotlin exists) and that template's {ca_install} block references
+    # `COPY ca.crt`. Without this plumbing the env build fails with
+    # "ca.crt: not found" at buildx-context transfer time.
+    from swebench.harness.dockerfiles.kotlin import get_ca_cert_pem
+    _ca_pem = get_ca_cert_pem()  # raises on invalid config; None if unset
     for image_name, config in configs_to_build.items():
+        scripts = {"setup_env.sh": config["setup_script"]}
+        if config.get("language") == "kotlin":
+            scripts["gradle_warmup.sh"] = warmup_script
+            if _ca_pem is not None:
+                scripts["ca.crt"] = _ca_pem
         args_list.append(
             (
                 image_name,
-                {"setup_env.sh": config["setup_script"]},
+                scripts,
                 config["dockerfile"],
                 config["platform"],
                 client,
@@ -341,6 +591,7 @@ def build_instance_images(
     namespace: str = None,
     tag: str = None,
     env_image_tag: str = None,
+    on_complete=None,
 ):
     """
     Builds the instance images required for the dataset if they do not already exist.
@@ -368,14 +619,17 @@ def build_instance_images(
             remove_image(client, spec.instance_image_key, "quiet")
     _, env_failed = build_env_images(client, test_specs, force_rebuild, max_workers)
 
+    skipped_payloads = []
     if len(env_failed) > 0:
         # Don't build images for instances that depend on failed-to-build env images
+        env_failed_keys = {payload[0] for payload in env_failed}
         dont_run_specs = [
-            spec for spec in test_specs if spec.env_image_key in env_failed
+            spec for spec in test_specs if spec.env_image_key in env_failed_keys
         ]
         test_specs = [
-            spec for spec in test_specs if spec.env_image_key not in env_failed
+            spec for spec in test_specs if spec.env_image_key not in env_failed_keys
         ]
+        skipped_payloads = [(spec, client, None, False) for spec in dont_run_specs]
         print(
             f"Skipping {len(dont_run_specs)} instances - due to failed env image builds"
         )
@@ -385,7 +639,8 @@ def build_instance_images(
     # `logger` is set to None b/c logger is created in build-instage_image
     payloads = [(spec, client, None, False) for spec in test_specs]
     # Build the instance images
-    successful, failed = run_threadpool(build_instance_image, payloads, max_workers)
+    successful, failed = run_threadpool(build_instance_image, payloads, max_workers, on_complete=on_complete)
+    failed.extend(skipped_payloads)
     # Show how many images failed to build
     if len(failed) == 0:
         print("All instance images built successfully.")
