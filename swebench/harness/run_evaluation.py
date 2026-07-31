@@ -217,8 +217,14 @@ async def run_instance(
         await container.copy(eval_file, PurePosixPath("/eval.sh"))
 
         # Run eval script, write output to logs
-        test_output, timed_out, total_runtime = exec_run_with_timeout(
-            container, "/bin/bash /eval.sh", timeout
+        # Original code:
+        # test_output, timed_out, total_runtime = exec_run_with_timeout(
+        #     container, "/bin/bash /eval.sh", timeout
+        # )
+        # 
+        # Modified code:
+        test_output, timed_out, total_runtime = await container.exec_run_with_timeout(
+            "/bin/bash /eval.sh", timeout=timeout
         )
         test_output_path = log_dir / LOG_TEST_OUTPUT
         logger.info(f"Test runtime: {total_runtime:_.2f} seconds")
