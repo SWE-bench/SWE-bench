@@ -176,7 +176,7 @@ async def run_instance(
         # Attempt to apply patch to container (TODO: FIX THIS)
         applied_patch = False
         for git_apply_cmd in GIT_APPLY_CMDS:
-            val = container.exec_run(
+            val = await container.exec_run(
                 f"{git_apply_cmd} {DOCKER_PATCH}",
                 workdir=DOCKER_WORKDIR,
                 user=DOCKER_USER,
@@ -197,7 +197,7 @@ async def run_instance(
 
         # Get git diff before running eval script
         git_diff_output_before = (
-            container.exec_run(
+            await container.exec_run(
                 "git -c core.fileMode=false diff", workdir=DOCKER_WORKDIR
             )
             .output.decode(UTF8)
@@ -235,7 +235,7 @@ async def run_instance(
 
         # Get git diff after running eval script (ignore permission changes)
         git_diff_output_after = (
-            container.exec_run(
+            await container.exec_run(
                 "git -c core.fileMode=false diff", workdir=DOCKER_WORKDIR
             )
             .output.decode(UTF8)
