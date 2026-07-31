@@ -67,8 +67,10 @@ GIT_APPLY_CMDS = [
     "patch --batch --fuzz=5 -p1 -i",
 ]
 
-
-def run_instance(
+# @bxyu-nvidia: We modify the run_instance function to:
+# 1. Enable async container operations.
+# 2. Avoid complicated patching logic.
+async def run_instance(
     test_spec: TestSpec,
     pred: dict,
     rm_image: bool,
@@ -148,12 +150,16 @@ def run_instance(
     eval_completed = False
     report = {}
     try:
+        # Original code:
         # Build + start instance container (instance image should already be built)
-        container = build_container(
-            test_spec, client, run_id, logger, rm_image, force_rebuild
-        )
-        container.start()
-        logger.info(f"Container for {instance_id} started: {container.id}")
+        # container = build_container(
+        #     test_spec, client, run_id, logger, rm_image, force_rebuild
+        # )
+        # container.start()
+        # logger.info(f"Container for {instance_id} started: {container.id}")
+        # 
+        # Modified code:
+        container = client  # We just directly pass the Docker wrapper in.
 
         # Copy model prediction as patch file to container
         patch_file = Path(log_dir / "patch.diff")
@@ -161,7 +167,11 @@ def run_instance(
         logger.info(
             f"Intermediate patch for {instance_id} written to {patch_file}, now applying to container..."
         )
-        copy_to_container(container, patch_file, PurePosixPath(DOCKER_PATCH))
+        # Original code:
+        # copy_to_container(container, patch_file, PurePosixPath(DOCKER_PATCH))
+        # 
+        # Modified code:
+        await container.copy(patch_file, PurePosixPath(DOCKER_PATCH))
 
         # Attempt to apply patch to container (TODO: FIX THIS)
         applied_patch = False
@@ -200,7 +210,11 @@ def run_instance(
         logger.info(
             f"Eval script for {instance_id} written to {eval_file}; copying to container..."
         )
-        copy_to_container(container, eval_file, PurePosixPath("/eval.sh"))
+        # Original code:
+        # copy_to_container(container, eval_file, PurePosixPath("/eval.sh"))
+        # 
+        # Modified code:
+        await container.copy(eval_file, PurePosixPath("/eval.sh"))
 
         # Run eval script, write output to logs
         test_output, timed_out, total_runtime = exec_run_with_timeout(
@@ -262,8 +276,13 @@ def run_instance(
         )
         logger.error(error_msg)
     finally:
+        # Original code:
         # Remove instance container + image, close logger
-        cleanup_container(client, container, logger)
+        # cleanup_container(client, container, logger)
+        # 
+        # Modified code:
+        await container.cleanup()
+
         if rm_image:
             remove_image(client, test_spec.instance_image_key, logger)
         close_logger(logger)
