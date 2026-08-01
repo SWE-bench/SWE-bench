@@ -197,9 +197,7 @@ async def run_instance(
 
         # Get git diff before running eval script
         git_diff_output_before = (
-            await container.exec_run(
-                "git -c core.fileMode=false diff", workdir=DOCKER_WORKDIR
-            )
+            (await container.exec_run("git -c core.fileMode=false diff", workdir=DOCKER_WORKDIR))
             .output.decode(UTF8)
             .strip()
         )
@@ -241,9 +239,7 @@ async def run_instance(
 
         # Get git diff after running eval script (ignore permission changes)
         git_diff_output_after = (
-            await container.exec_run(
-                "git -c core.fileMode=false diff", workdir=DOCKER_WORKDIR
-            )
+            (await container.exec_run("git -c core.fileMode=false diff", workdir=DOCKER_WORKDIR))
             .output.decode(UTF8)
             .strip()
         )
