@@ -66,9 +66,10 @@ def get_test_cmds_openlayers(instance) -> list:
                     'su chromeuser -c "npm run test-browser"'
                 )
         elif test_type == "rendering":
+            # CI=true -> puppeteer headless; headed Chrome under Xvfb hangs on WebGL
             cmds.append(
                 f'{SET_PUPPETEER_ENV_VAR} {TEST_XVFB_PREFIX} '
-                'su chromeuser -c "npm run test-rendering"'
+                'su chromeuser -c "CI=true npm run test-rendering"'
             )
         elif test_type == "spec":
             cmds.append(
@@ -204,7 +205,7 @@ def get_test_cmds_prettier(instance) -> list:
         if test_path.endswith(".md"):
             test_path = "/".join(test_path.split("/")[:-1])
         test_cmds.append(f"yarn test {test_path}")
-    return list(set(test_cmds))
+    return sorted(set(test_cmds))
 
 
 def get_test_cmds_react_pdf(instance) -> list:
@@ -314,6 +315,16 @@ def get_download_img_commands(instance) -> list:
     return cmds
 
 
+_SYNC_DEPS_IF_MANIFEST_CHANGED = (
+    'if ! git diff --quiet HEAD -- package.json 2>/dev/null; then '
+    'echo "package.json changed by patch; re-syncing dependencies"; '
+    'if [ -f yarn.lock ]; then yarn install --silent > /dev/null 2>&1 || true; '
+    'else npm install --silent > /dev/null 2>&1 || true; fi; '
+    "chmod -R a+rX node_modules > /dev/null 2>&1 || true; "
+    "fi"
+)
+
+
 # MARK: Script Creation Functions
 def make_eval_script_list_js(
     instance, specs, env_name, repo_directory, base_commit, test_patch
@@ -332,4 +343,7 @@ def make_eval_script_list_js(
         idx_start_test_out = eval_commands.index(f": '{START_TEST_OUTPUT}'")
         idx_end_test_out = eval_commands.index(f": '{END_TEST_OUTPUT}'")
         eval_commands[idx_start_test_out + 1 : idx_end_test_out] = test_commands
+    # emitted before START_TEST_OUTPUT so installer output never reaches the log parsers
+    idx_start = eval_commands.index(f": '{START_TEST_OUTPUT}'")
+    eval_commands.insert(idx_start, _SYNC_DEPS_IF_MANIFEST_CHANGED)
     return eval_commands

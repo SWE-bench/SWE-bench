@@ -219,8 +219,9 @@ SPECS_ESLINT = {
 for v in ['0.20', '0.24', '0.3', '0.5', '1.0', '1.1', '1.10', '1.5',
     '1.7', '1.9', '2.0', '2.10', '2.12', '2.13', '2.5', '3.1', '3.11']:
     SPECS_ESLINT[v]["docker_specs"]["node_version"] = "4.9.1"
-for v in ['8.1', '8.50']:
-    SPECS_ESLINT[v]["docker_specs"]["node_version"] = "21.6.2"
+SPECS_ESLINT['8.1']["docker_specs"]["node_version"] = "21.6.2"
+# eslint 8.50 needs re2 -> node-gyp 13, which requires node ^20.17 || >=22.9 (21.x unsupported)
+SPECS_ESLINT['8.50']["docker_specs"]["node_version"] = "20.18.1"
 
 TEST_CMD_BPMN_JS = "./node_modules/.bin/karma start test/config/karma.unit.js --no-colors"
 SPECS_BPMN_JS = {
@@ -411,12 +412,19 @@ SPECS_CYPRESS = {
 for v in ['12.9', '12.10', '12.11', '12.12', '12.14', '12.17', '13.4', '13.6']:
     SPECS_CYPRESS[v]['docker_specs']['node_version'] = '21.6.2'
 
+# carbon a11y engine is fetched from a CDN at runtime; pin it so results are reproducible
+CARBON_ACHECKER_ARCHIVE = "07Oct2020"
+_PIN_CARBON_ACHECKER = (
+    f"printf 'ruleArchive: {CARBON_ACHECKER_ARCHIVE}\\n' > /testbed/.achecker.yml; "
+    f'echo "achecker archive pinned to {CARBON_ACHECKER_ARCHIVE}"'
+)
 SPECS_CARBON = {
     **{k: {
         "install": [
             "npm i -g yarn",
             "yarn install",
             "yarn build",
+            _PIN_CARBON_ACHECKER,
         ],
         "test_cmd": "yarn test",
         "docker_specs": {
@@ -534,15 +542,34 @@ PIP_INSTALLS_QUARTOCLI = [
     "pip3 install appnope",
     "pip3 install ipykernel",
 ]
+# quarto: TeX Live 2026 loops forever on tests/docs/page-layout/tufte-pdf.qmd; 2024 renders it in 9s
+TEXLIVE_2024_REPO = (
+    "https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2024/tlnet-final"
+)
+PIN_TINYTEX_2024 = [
+    "rm -rf /root/.TinyTeX /opt/TinyTeX",
+    "wget -qO /tmp/install-tinytex.sh https://tinytex.yihui.org/install-bin-unix.sh",
+    "TINYTEX_VERSION=2024.12 sh /tmp/install-tinytex.sh",
+    f'"$(echo /root/.TinyTeX/bin/*)"/tlmgr option repository {TEXLIVE_2024_REPO}',
+    # babel-french unpacked directly: `tlmgr update --self` against the frozen repo breaks the tree
+    f"curl -sSL {TEXLIVE_2024_REPO}/archive/babel-french.tar.xz "
+    "-o /tmp/babel-french.tar.xz || true",
+    "tar -xJf /tmp/babel-french.tar.xz -C /root/.TinyTeX/texmf-dist "
+    "tex/generic/babel-french || true",
+    '"$(echo /root/.TinyTeX/bin/*)"/mktexlsr || true',
+    'tex_ver="$("$(echo /root/.TinyTeX/bin/*)"/xelatex --version)"; '
+    'case "$tex_ver" in *"TeX Live 2024"*) echo "TinyTeX pinned to TL2024 OK";; '
+    '*) echo "TinyTeX pin FAILED, got: $tex_ver"; exit 1;; esac',
+]
 SPECS_QUARTOCLI = {
     None : {
         "apt-pkgs": ["libffi-dev", "zip", "unzip", "python3", "python3-pip", "python3.10-distutils", "r-base-core",
                      "poppler-utils", "libxml2-utils"],
-        "install": INSTALL_JULIA + ["ls .", 
-                    "[ -f configure.sh ] || ./configure-linux.sh", 
+        "install": INSTALL_JULIA + ["ls .",
+                    "[ -f configure.sh ] || ./configure-linux.sh",
                     "[ -f configure-linux.sh ] || ./configure.sh",
                     "cd tests", "./configure-test-env.sh || true", "cd ..",
-                    ] + PIP_INSTALLS_QUARTOCLI,
+                    ] + PIN_TINYTEX_2024 + PIP_INSTALLS_QUARTOCLI,
         "test_cmd": [ # test generates files that add future test cases -- run tests fairly
             "cp -r tests/ tests_tmp/", 
             "cd tests", 
@@ -1117,6 +1144,20 @@ MAP_REPO_VERSION_TO_SPECS_JS = {
     "quarto-dev/quarto-cli": SPECS_QUARTOCLI,
     "scratchfoundation/scratch-gui": SPECS_SCRATCH,
 }
+
+# these repos use system chrome, so puppeteer's ~150MB download is waste and stalls builds
+_PUPPETEER_SKIP_DOWNLOAD = (
+    "export PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true"
+)
+for _repo in (
+    "openlayers/openlayers",
+    "bpmn-io/bpmn-js",
+    "alibaba-fusion/next",
+    "GoogleChrome/lighthouse",
+):
+    for _spec in MAP_REPO_VERSION_TO_SPECS_JS[_repo].values():
+        if "install" in _spec and _PUPPETEER_SKIP_DOWNLOAD not in _spec["install"]:
+            _spec["install"] = [_PUPPETEER_SKIP_DOWNLOAD] + list(_spec["install"])
 
 # Constants - Repository Specific Installation Instructions
 MAP_REPO_TO_INSTALL_JS = {}

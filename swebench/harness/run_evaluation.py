@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import docker
 import json
+import os
 import platform
 import threading
 import traceback
@@ -63,9 +64,20 @@ from swebench.harness.utils import (
 
 GIT_APPLY_CMDS = [
     "git apply --verbose",
+    "git apply --verbose --3way",
     "git apply --verbose --reject",
-    "patch --batch --fuzz=5 -p1 -i",
+    "patch --batch --forward --fuzz=5 -p1 -i",
 ]
+
+DOCKER_CLIENT_TIMEOUT = int(os.environ.get("SWEBENCH_DOCKER_TIMEOUT", "1800"))
+DOCKER_CLIENT_POOL_SIZE = int(os.environ.get("SWEBENCH_DOCKER_POOL_SIZE", "128"))
+
+
+def _docker_client() -> docker.DockerClient:
+    return docker.from_env(
+        timeout=DOCKER_CLIENT_TIMEOUT,
+        max_pool_size=DOCKER_CLIENT_POOL_SIZE,
+    )
 
 
 def run_instance(
@@ -177,6 +189,16 @@ def run_instance(
                 break
             else:
                 logger.info(f"Failed to apply patch to container: {git_apply_cmd}")
+        if not applied_patch:
+            # the fallback chain can leave the patch fully applied while every command still exited non-zero
+            reverse_check = container.exec_run(
+                f"git apply --check --reverse {DOCKER_PATCH}",
+                workdir=DOCKER_WORKDIR,
+                user=DOCKER_USER,
+            )
+            if reverse_check.exit_code == 0:
+                logger.info(f"{APPLY_PATCH_PASS}: verified already applied")
+                applied_patch = True
         if not applied_patch:
             logger.info(f"{APPLY_PATCH_FAIL}:\n{val.output.decode(UTF8)}")
             raise EvaluationError(
@@ -300,7 +322,7 @@ def run_instances(
         run_id (str): Run ID
         timeout (int): Timeout for running tests
     """
-    client = docker.from_env()
+    client = _docker_client()
     test_specs = list(
         map(
             lambda instance: make_test_spec(
@@ -531,7 +553,7 @@ def main(
     # run instances locally
     if platform.system() == "Linux":
         resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
-    client = docker.from_env()
+    client = _docker_client()
 
     existing_images = list_images(client)
     if not dataset:

@@ -26,12 +26,21 @@ def make_repo_script_list_common(
     Create a list of bash commands to set up the repository for testing.
     This is the setup script for the instance image.
     """
+    clone_cmd = (
+        "for attempt in 1 2 3 4 5; do "
+        f"git clone -o origin https://github.com/{repo} {repo_directory} && break; "
+        f'echo "git clone failed (attempt $attempt), retrying..."; '
+        f"rm -rf {repo_directory}; "
+        "sleep $((attempt * 15)); "
+        "done; "
+        f"[ -d {repo_directory}/.git ]"
+    )
     setup_commands = [
-        f"git clone -o origin https://github.com/{repo} {repo_directory}",
-        f"chmod -R 777 {repo_directory}",  # So nonroot user can run tests
+        clone_cmd,
         f"cd {repo_directory}",
         f"git reset --hard {base_commit}",
         "git remote remove origin",  # Remove the remote so the agent won't see newer commits
+        f"chmod -R 777 {repo_directory}",  # So nonroot user can run tests
     ]
     if "pre_install" in specs:
         setup_commands.extend(specs["pre_install"])
@@ -39,6 +48,13 @@ def make_repo_script_list_common(
         setup_commands.extend(specs["install"])
     if "build" in specs:
         setup_commands.extend(specs["build"])
+    # npm rewrites tracked lockfiles during install, which breaks patches that touch them
+    setup_commands.append(
+        "for lockfile in package-lock.json npm-shrinkwrap.json yarn.lock; do "
+        'git ls-files --error-unmatch "$lockfile" >/dev/null 2>&1 '
+        '&& git checkout -- "$lockfile" && chmod 777 "$lockfile" || true; '
+        "done"
+    )
     return setup_commands
 
 
