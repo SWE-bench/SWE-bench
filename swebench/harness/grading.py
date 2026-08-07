@@ -108,10 +108,7 @@ def get_eval_tests_report(
             failed.append(test_case)
 
     def check_fail_only(test_case, eval_status_map, success, failed):
-        if (
-            test_case in eval_status_map
-            and eval_status_map[test_case] == TestStatus.FAILED.value
-        ):
+        if test_case not in eval_status_map or eval_status_map[test_case] == TestStatus.FAILED.value:
             failed.append(test_case)
         else:
             success.append(test_case)
