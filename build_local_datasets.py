@@ -6,6 +6,7 @@ Validates that every datum has all required fields with no missing/default value
 """
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -18,10 +19,11 @@ from datasets import load_dataset
 # the three sb_dockerfile_gen packages).
 # ---------------------------------------------------------------------------
 
+_CODE_ROOT = Path(os.environ.get("SWE_BENCH_CODE_ROOT", Path(__file__).resolve().parent.parent))
 DOCKERFILE_REPOS = {
-    "og": Path("/home/ubuntu/code/swe-bench-dockerfiles"),
-    "multilingual": Path("/home/ubuntu/code/swe-bench-multilingual-dockerfiles"),
-    "multimodal": Path("/home/ubuntu/code/swe-bench-multimodal-dockerfiles"),
+    "og": _CODE_ROOT / "swe-bench-dockerfiles",
+    "multilingual": _CODE_ROOT / "swe-bench-multilingual-dockerfiles",
+    "multimodal": _CODE_ROOT / "swe-bench-multimodal-dockerfiles",
 }
 
 # Inline script that loads a generator and produces eval scripts for a batch
@@ -189,6 +191,68 @@ BASE_REQUIRED_FIELDS = {
 
 
 # ---------------------------------------------------------------------------
+# Upstream dataset corrections
+# ---------------------------------------------------------------------------
+# Fixes for known issues in the HuggingFace dataset that can't be fixed in the
+# dockerfile generator. Each entry maps instance_id to field overrides.
+# See SWE-bench-v5_1/CHANGES.md for detailed root cause analysis.
+
+UPSTREAM_FIXES = {
+    # #505: pytest renders empty parametrize marker as [unit0], not [].
+    # Grader does exact string match on P2P test names, so it fails.
+    "astropy__astropy-7606": {
+        "PASS_TO_PASS": lambda p2p: [
+            t.replace("test_compose_roundtrip[]", "test_compose_roundtrip[unit0]")
+            if "test_compose_roundtrip[]" in t else t
+            for t in p2p
+        ],
+    },
+    # #487: eval_script runs ALL Django tests (no test directive). F2P has 438
+    # unrelated tests that pass regardless of the fix. The actual discriminating
+    # tests are 6 URLValidator entries added by test_patch to invalid_urls.txt.
+    "django__django-10097": {
+        "FAIL_TO_PASS": lambda f2p: f2p + [
+            "test_URLValidator_raises_error_352 (validators.tests.TestSimpleValidators)",
+            "test_URLValidator_raises_error_353 (validators.tests.TestSimpleValidators)",
+            "test_URLValidator_raises_error_354 (validators.tests.TestSimpleValidators)",
+            "test_URLValidator_raises_error_355 (validators.tests.TestSimpleValidators)",
+            "test_URLValidator_raises_error_356 (validators.tests.TestSimpleValidators)",
+            "test_URLValidator_raises_error_357 (validators.tests.TestSimpleValidators)",
+        ],
+    },
+    # #502: F2P has test_squashmigrations_initial_attribute — unrelated test that
+    # passes regardless. The actual discriminating test is in the test_patch.
+    "django__django-7530": {
+        "FAIL_TO_PASS": lambda f2p: [
+            "test_makemigrations_consistency_checks_respect_routers (migrations.test_commands.MakeMigrationsTests)"
+        ],
+    },
+    # #484: Bug only manifests on Python 2 (builtin_str fix). F2P has 6 unrelated
+    # tests that pass on any Python version. Correct F2P is the unicode method test.
+    # Note: also requires Python 2.7 Docker image (fixed in swe-bench-dockerfiles).
+    "psf__requests-1724": {
+        "FAIL_TO_PASS": lambda f2p: [
+            "test_requests.py::RequestsTestCase::test_unicode_method_name"
+        ],
+    },
+}
+
+
+def apply_upstream_fixes(ex: dict) -> dict:
+    """Apply known upstream dataset corrections to an instance."""
+    iid = ex["instance_id"]
+    if iid not in UPSTREAM_FIXES:
+        return ex
+    fixes = UPSTREAM_FIXES[iid]
+    for field, fix_fn in fixes.items():
+        val = ex[field]
+        if isinstance(val, str):
+            val = json.loads(val)
+        ex[field] = json.dumps(fix_fn(val))
+    return ex
+
+
+# ---------------------------------------------------------------------------
 # Processing
 # ---------------------------------------------------------------------------
 
@@ -255,6 +319,9 @@ def process_dataset(
 
         ds = ds.map(add_metadata)
 
+        # Apply upstream dataset corrections
+        ds = ds.map(apply_upstream_fixes)
+
         # Validate every row
         for i, ex in enumerate(ds):
             validate_no_missing(ex, all_required, f"{label}/{split_name}[{i}]")
@@ -271,48 +338,62 @@ def process_dataset(
 
 
 def main():
-    base_output = Path("/home/ubuntu/code/swe-bench/data")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--datasets", nargs="+",
+                        choices=["verified", "multilingual", "multimodal", "swebench", "all"],
+                        default=["all"])
+    args = parser.parse_args()
+    targets = set(args.datasets)
+    if "all" in targets:
+        targets = {"verified", "multilingual", "multimodal", "swebench"}
 
-    process_dataset(
-        hf_name="SWE-bench/SWE-bench",
-        parser_map=MAP_REPO_TO_PARSER_NAME_OG,
-        fail_only_repos=FAIL_ONLY_REPOS_OG,
-        generator_key="og",
-        output_dir=base_output / "SWE-bench",
-        label="SWE-bench",
-        extra_required_fields={"environment_setup_commit"},
-        splits=["dev", "test"],
-    )
+    base_output = Path(__file__).resolve().parent / "data"
 
-    process_dataset(
-        hf_name="SWE-bench/SWE-bench_Verified",
-        parser_map=MAP_REPO_TO_PARSER_NAME_OG,
-        fail_only_repos=FAIL_ONLY_REPOS_OG,
-        generator_key="og",
-        output_dir=base_output / "SWE-bench_Verified",
-        label="SWE-bench_Verified",
-        extra_required_fields={"environment_setup_commit", "difficulty"},
-    )
+    if "swebench" in targets:
+        process_dataset(
+            hf_name="SWE-bench/SWE-bench",
+            parser_map=MAP_REPO_TO_PARSER_NAME_OG,
+            fail_only_repos=FAIL_ONLY_REPOS_OG,
+            generator_key="og",
+            output_dir=base_output / "SWE-bench",
+            label="SWE-bench",
+            extra_required_fields={"environment_setup_commit"},
+            splits=["dev", "test"],
+        )
 
-    process_dataset(
-        hf_name="SWE-bench/SWE-bench_Multilingual",
-        parser_map=MAP_REPO_TO_PARSER_NAME_MULTILINGUAL,
-        fail_only_repos=FAIL_ONLY_REPOS_MULTILINGUAL,
-        generator_key="multilingual",
-        output_dir=base_output / "SWE-bench_Multilingual",
-        label="SWE-bench_Multilingual",
-    )
+    if "verified" in targets:
+        process_dataset(
+            hf_name="SWE-bench/SWE-bench_Verified",
+            parser_map=MAP_REPO_TO_PARSER_NAME_OG,
+            fail_only_repos=FAIL_ONLY_REPOS_OG,
+            generator_key="og",
+            output_dir=base_output / "SWE-bench_Verified",
+            label="SWE-bench_Verified",
+            extra_required_fields={"environment_setup_commit", "difficulty"},
+        )
 
-    process_dataset(
-        hf_name="SWE-bench/SWE-bench_Multimodal",
-        parser_map=MAP_REPO_TO_PARSER_NAME_MULTIMODAL,
-        fail_only_repos=FAIL_ONLY_REPOS_MULTIMODAL,
-        generator_key="multimodal",
-        output_dir=base_output / "SWE-bench_Multimodal",
-        label="SWE-bench_Multimodal",
-        extra_required_fields={"image_assets"},
-        splits=["dev"],
-    )
+    if "multilingual" in targets:
+        process_dataset(
+            hf_name="SWE-bench/SWE-bench_Multilingual",
+            parser_map=MAP_REPO_TO_PARSER_NAME_MULTILINGUAL,
+            fail_only_repos=FAIL_ONLY_REPOS_MULTILINGUAL,
+            generator_key="multilingual",
+            output_dir=base_output / "SWE-bench_Multilingual",
+            label="SWE-bench_Multilingual",
+        )
+
+    if "multimodal" in targets:
+        process_dataset(
+            hf_name="SWE-bench/SWE-bench_Multimodal",
+            parser_map=MAP_REPO_TO_PARSER_NAME_MULTIMODAL,
+            fail_only_repos=FAIL_ONLY_REPOS_MULTIMODAL,
+            generator_key="multimodal",
+            output_dir=base_output / "SWE-bench_Multimodal",
+            label="SWE-bench_Multimodal",
+            extra_required_fields={"image_assets"},
+            splits=["dev"],
+        )
 
     print(f"\n{'='*60}")
     print("All datasets saved to:", base_output)
