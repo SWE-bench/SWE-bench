@@ -47,6 +47,7 @@ class ResolvedStatus(Enum):
     NO = "RESOLVED_NO"
     PARTIAL = "RESOLVED_PARTIAL"
     FULL = "RESOLVED_FULL"
+    INFRA_FAILURE = "RESOLVED_INFRA_FAILURE"
 
 
 class TestStatus(Enum):
@@ -82,6 +83,8 @@ APPLY_PATCH_PASS = ">>>>> Applied Patch"
 INSTALL_FAIL = ">>>>> Init Failed"
 INSTALL_PASS = ">>>>> Init Succeeded"
 INSTALL_TIMEOUT = ">>>>> Init Timed Out"
+PRE_FLIGHT_FAIL = ">>>>> Pre-flight Check Failed"
+PRE_FLIGHT_PASS = ">>>>> Pre-flight Check Passed"
 RESET_FAILED = ">>>>> Reset Failed"
 TESTS_ERROR = ">>>>> Tests Errored"
 TESTS_FAILED = ">>>>> Some Tests Failed"

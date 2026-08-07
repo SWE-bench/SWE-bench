@@ -258,6 +258,7 @@ def get_eval_report(
         "patch_exists": False,
         "patch_successfully_applied": False,
         "resolved": False,
+        "infra_failure": False,
     }
 
     # Check if the model patch exists

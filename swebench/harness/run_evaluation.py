@@ -26,7 +26,10 @@ from swebench.harness.constants import (
     LOG_REPORT,
     LOG_INSTANCE,
     LOG_TEST_OUTPUT,
+    PRE_FLIGHT_FAIL,
+    PRE_FLIGHT_PASS,
     RUN_EVALUATION_LOG_DIR,
+    ResolvedStatus,
     UTF8,
 )
 from swebench.harness.docker_utils import (
@@ -66,6 +69,70 @@ GIT_APPLY_CMDS = [
     "git apply --verbose --reject",
     "patch --batch --fuzz=5 -p1 -i",
 ]
+
+
+def verify_environment(
+    container,
+    test_spec: TestSpec,
+    logger,
+) -> bool:
+    """
+    Verify environment integrity before applying model patch.
+    Checks that the repository is set up correctly and test files exist.
+
+    Args:
+        container: Docker container to check
+        test_spec (TestSpec): Test specification
+        logger: Logger for output
+    Returns:
+        bool: True if environment is sound, False if infrastructure failure detected
+    """
+    workdir = DOCKER_WORKDIR
+
+    # Check 1: Repository directory exists and is a git repo
+    check_repo = container.exec_run(
+        f"test -d {workdir} && git -C {workdir} rev-parse --git-dir",
+        user=DOCKER_USER,
+    )
+    if check_repo.exit_code != 0:
+        logger.info(
+            f"{PRE_FLIGHT_FAIL}: Repository directory {workdir} not found or not a git repo"
+        )
+        return False
+
+    # Check 2: Test files from test_patch exist in the repository
+    if test_spec.test_files:
+        missing_files = []
+        for test_file in test_spec.test_files:
+            check_file = container.exec_run(
+                f"test -f {workdir}/{test_file}",
+                user=DOCKER_USER,
+            )
+            if check_file.exit_code != 0:
+                missing_files.append(test_file)
+
+        if missing_files:
+            logger.info(
+                f"{PRE_FLIGHT_FAIL}: Missing test files in {workdir}: {missing_files}"
+            )
+            logger.info(
+                f"{PRE_FLIGHT_FAIL}: This is an infrastructure failure, not a model failure."
+            )
+            return False
+
+    # Check 3: Basic tooling is functional
+    check_git = container.exec_run(
+        "git --version",
+        user=DOCKER_USER,
+    )
+    if check_git.exit_code != 0:
+        logger.info(f"{PRE_FLIGHT_FAIL}: Git not available in container")
+        return False
+
+    logger.info(
+        f"{PRE_FLIGHT_PASS}: Environment verification passed for {test_spec.instance_id}"
+    )
+    return True
 
 
 def run_instance(
@@ -154,6 +221,25 @@ def run_instance(
         )
         container.start()
         logger.info(f"Container for {instance_id} started: {container.id}")
+
+        # Pre-flight environment verification before applying model patch
+        if not verify_environment(container, test_spec, logger):
+            report = {
+                instance_id: {
+                    "patch_is_None": False,
+                    "patch_exists": False,
+                    "patch_successfully_applied": False,
+                    "resolved": False,
+                    "infra_failure": True,
+                }
+            }
+            with open(report_path, "w") as f:
+                f.write(json.dumps(report, indent=4))
+            raise EvaluationError(
+                instance_id,
+                f"{PRE_FLIGHT_FAIL}: Environment verification failed for {instance_id}",
+                logger,
+            )
 
         # Copy model prediction as patch file to container
         patch_file = Path(log_dir / "patch.diff")
@@ -270,6 +356,7 @@ def run_instance(
         return {
             "completed": eval_completed,
             "resolved": report.get(instance_id, {}).get("resolved", False),
+            "infra_failure": report.get(instance_id, {}).get("infra_failure", False),
         }
 
 
@@ -349,14 +436,16 @@ def run_instances(
 
     # run instances in parallel
     print(f"Running {len(instances)} instances...")
-    stats = {"✓": 0, "✖": 0, "error": 0}
+    stats = {"✓": 0, "✖": 0, "infra": 0, "error": 0}
     pbar = tqdm(total=len(payloads), desc="Evaluation", postfix=stats)
     lock = threading.Lock()
 
     def run_evaluation_with_progress(*args):
         result = run_instance(*args)
         with lock:
-            if result["completed"]:
+            if result.get("infra_failure"):
+                stats["infra"] += 1
+            elif result["completed"]:
                 if result["resolved"]:
                     stats["✓"] += 1
                 else:

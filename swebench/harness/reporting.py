@@ -44,6 +44,7 @@ def make_run_report(
     unremoved_images = set()
     unresolved_ids = set()
     incomplete_ids = set()
+    infra_failure_ids = set()
     # get instances with empty patches
     empty_patch_ids = set()
 
@@ -74,7 +75,10 @@ def make_run_report(
                     continue
 
                 report = json.loads(content)
-                if report[instance_id]["resolved"]:
+                if report[instance_id].get("infra_failure"):
+                    # Record if the instance failed due to infrastructure issues
+                    infra_failure_ids.add(instance_id)
+                elif report[instance_id]["resolved"]:
                     # Record if the instance was resolved
                     resolved_ids.add(instance_id)
                 else:
@@ -117,6 +121,7 @@ def make_run_report(
     print(f"Instances incomplete: {len(incomplete_ids)}")
     print(f"Instances resolved: {len(resolved_ids)}")
     print(f"Instances unresolved: {len(unresolved_ids)}")
+    print(f"Instances with infrastructure failures: {len(infra_failure_ids)}")
     print(f"Instances with empty patches: {len(empty_patch_ids)}")
     print(f"Instances with errors: {len(error_ids)}")
     if client:
@@ -130,6 +135,7 @@ def make_run_report(
         "completed_instances": len(completed_ids),
         "resolved_instances": len(resolved_ids),
         "unresolved_instances": len(unresolved_ids),
+        "infra_failure_instances": len(infra_failure_ids),
         "empty_patch_instances": len(empty_patch_ids),
         "error_instances": len(error_ids),
         "completed_ids": list(sorted(completed_ids)),
@@ -138,6 +144,7 @@ def make_run_report(
         "submitted_ids": list(sorted(predictions.keys())),
         "resolved_ids": list(sorted(resolved_ids)),
         "unresolved_ids": list(sorted(unresolved_ids)),
+        "infra_failure_ids": list(sorted(infra_failure_ids)),
         "error_ids": list(sorted(error_ids)),
         "schema_version": 2,
     }

@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional, Union, cast
 
 from swebench.harness.constants import (
@@ -22,6 +22,7 @@ from swebench.harness.test_spec.create_scripts import (
     make_env_script_list,
     make_eval_script_list,
 )
+from swebench.harness.utils import get_modified_files
 
 
 @dataclass
@@ -45,6 +46,7 @@ class TestSpec:
     base_image_tag: str = LATEST
     env_image_tag: str = LATEST
     instance_image_tag: str = LATEST
+    test_files: list[str] = field(default_factory=list)
 
     @property
     def setup_env_script(self):
@@ -216,6 +218,8 @@ def make_test_spec(
     eval_script_list = make_eval_script_list(
         instance, specs, env_name, repo_directory, base_commit, test_patch
     )
+    # Extract test file paths from test_patch for pre-flight verification
+    test_files = [f for f in get_modified_files(test_patch) if not f.startswith(".")]
     return TestSpec(
         instance_id=instance_id,
         repo=repo,
@@ -232,4 +236,5 @@ def make_test_spec(
         base_image_tag=base_image_tag,
         env_image_tag=env_image_tag,
         instance_image_tag=instance_image_tag,
+        test_files=test_files,
     )
