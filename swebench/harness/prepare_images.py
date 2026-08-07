@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 
 from swebench.harness.constants import KEY_INSTANCE_ID
 from swebench.harness.docker_build import build_instance_images
+from swebench.harness.run_evaluation import _docker_client
 from swebench.harness.docker_utils import list_images
 from swebench.harness.test_spec.test_spec import make_test_spec
 from swebench.harness.utils import load_swebench_dataset, str2bool, optional_str
@@ -84,7 +85,8 @@ def main(
     """
     # Set open file limit
     resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
-    client = docker.from_env()
+    # stock 60s timeout / 10-conn pool saturates under parallel builds and stalls
+    client = _docker_client()
 
     # Filter out instances that were not specified
     dataset = load_swebench_dataset(dataset_name, split)
