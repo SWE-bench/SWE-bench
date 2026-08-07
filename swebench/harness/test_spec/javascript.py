@@ -318,8 +318,10 @@ def get_download_img_commands(instance) -> list:
 _SYNC_DEPS_IF_MANIFEST_CHANGED = (
     'if ! git diff --quiet HEAD -- package.json 2>/dev/null; then '
     'echo "package.json changed by patch; re-syncing dependencies"; '
-    'if [ -f yarn.lock ]; then yarn install --silent > /dev/null 2>&1 || true; '
-    'else npm install --silent > /dev/null 2>&1 || true; fi; '
+    # without the skip guard the install hangs forever fetching Chromium
+    "export PUPPETEER_SKIP_DOWNLOAD=true PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true; "
+    "if [ -f yarn.lock ]; then timeout 900 yarn install --silent > /dev/null 2>&1 || true; "
+    "else timeout 900 npm install --silent > /dev/null 2>&1 || true; fi; "
     "chmod -R a+rX node_modules > /dev/null 2>&1 || true; "
     "fi"
 )

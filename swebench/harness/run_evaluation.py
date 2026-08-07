@@ -177,7 +177,15 @@ def run_instance(
 
         # Attempt to apply patch to container (TODO: FIX THIS)
         applied_patch = False
-        for git_apply_cmd in GIT_APPLY_CMDS:
+        for attempt, git_apply_cmd in enumerate(GIT_APPLY_CMDS):
+            if attempt:
+                # a failed attempt (notably --reject) leaves partial state behind, which
+                # makes every later command fail; restart each one from a pristine tree
+                container.exec_run(
+                    ["/bin/bash", "-c", "git checkout -- . ; git clean -fd"],
+                    workdir=DOCKER_WORKDIR,
+                    user=DOCKER_USER,
+                )
             val = container.exec_run(
                 f"{git_apply_cmd} {DOCKER_PATCH}",
                 workdir=DOCKER_WORKDIR,
