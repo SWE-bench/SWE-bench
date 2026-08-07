@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/swellama.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -5109,7 +5109,7 @@
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="transformers.utils.logging.get_logger">get_logger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="transformers.utils.logging">logging</span></span><span class="o">.</span><span class="n"><span title="transformers.utils.logging.get_logger">get_logger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5196,7 +5196,7 @@
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">weight</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Parameter">Parameter</span></span><span class="p">(</span><span class="n"><span title="torch.ones">ones</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(hidden_size)">hidden_size</span></span><span class="p">))</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">weight</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Parameter">Parameter</span></span><span class="p">(</span><span class="n"><span title="torch">torch</span></span><span class="o">.</span><span class="n"><span title="torch.ones">ones</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(hidden_size)">hidden_size</span></span><span class="p">))</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5754,7 +5754,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">hidden_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config).hidden_size">hidden_size</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">hidden_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config).hidden_size">hidden_size</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5776,7 +5776,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">intermediate_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config).intermediate_size">intermediate_size</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">intermediate_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config).intermediate_size">intermediate_size</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5798,7 +5798,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">gate_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).intermediate_size">intermediate_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">gate_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).intermediate_size">intermediate_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5820,7 +5820,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">up_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).intermediate_size">intermediate_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">up_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).intermediate_size">intermediate_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5842,7 +5842,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">down_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).intermediate_size">intermediate_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">down_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).intermediate_size">intermediate_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5864,7 +5864,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">act_fn</span> <span class="o">=</span> <span class="n"><span title="transformers.activations.ACT2FN">ACT2FN</span></span><span class="p">[</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config).hidden_act">hidden_act</span></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">act_fn</span> <span class="o">=</span> <span class="n"><span title="transformers.activations.ACT2FN">ACT2FN</span></span><span class="p">[</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaMLP(config).hidden_act">hidden_act</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6091,7 +6091,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">hidden_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config).hidden_size">hidden_size</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">hidden_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config).hidden_size">hidden_size</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6113,7 +6113,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_heads</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config).num_attention_heads">num_attention_heads</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_heads</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config).num_attention_heads">num_attention_heads</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6135,7 +6135,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">head_dim</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span> <span class="o">//</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">head_dim</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span> <span class="o">//</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6157,7 +6157,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_key_value_heads</span> <span class="o">=</span> <span class="n"><span title="getattr">getattr</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config)">config</span></span><span class="p">,</span> <span class="s1">'num_key_value_heads'</span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_key_value_heads</span> <span class="o">=</span> <span class="n"><span title="getattr">getattr</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config)">config</span></span><span class="p">,</span> <span class="s1">'num_key_value_heads'</span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6179,7 +6179,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_key_value_groups</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span> <span class="o">//</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_key_value_heads">num_key_value_heads</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_key_value_groups</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span> <span class="o">//</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_key_value_heads">num_key_value_heads</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6201,7 +6201,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">max_position_embeddings</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config).max_position_embeddings">max_position_embeddings</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">max_position_embeddings</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(config).max_position_embeddings">max_position_embeddings</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6223,7 +6223,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">q_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">q_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6245,7 +6245,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">k_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_key_value_heads">num_key_value_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">k_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_key_value_heads">num_key_value_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6267,7 +6267,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">v_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_key_value_heads">num_key_value_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">v_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_key_value_heads">num_key_value_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6289,7 +6289,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">o_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">o_proj</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).num_heads">num_heads</span></span> <span class="o">*</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6311,7 +6311,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">rotary_emb</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            FlashRotaryEmbedding (swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding)" href="#swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding">FlashRotaryEmbedding</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding(base)">base</span></span><span class="o">=</span><span class="n"><span title="theta">theta</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding(interleaved)">interleaved</span></span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding(scaling_factor)">scaling_factor</span></span><span class="o">=</span><span class="n"><span title="scaling_factor">scaling_factor</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">rotary_emb</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            FlashRotaryEmbedding (swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding)" href="#swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding">FlashRotaryEmbedding</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaAttention(self).head_dim">head_dim</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding(base)">base</span></span><span class="o">=</span><span class="n"><span title="theta">theta</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding(interleaved)">interleaved</span></span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.FlashRotaryEmbedding(scaling_factor)">scaling_factor</span></span><span class="o">=</span><span class="n"><span title="scaling_factor">scaling_factor</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6674,7 +6674,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">hidden_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).hidden_size">hidden_size</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">hidden_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).hidden_size">hidden_size</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6740,7 +6740,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_layernorm</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LlamaRMSNorm (swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm">LlamaRMSNorm</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(eps)">eps</span></span><span class="o">=</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).rms_norm_eps">rms_norm_eps</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_layernorm</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LlamaRMSNorm (swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm">LlamaRMSNorm</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(eps)">eps</span></span><span class="o">=</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).rms_norm_eps">rms_norm_eps</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6762,7 +6762,7 @@ token in the batch.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">post_attention_layernorm</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LlamaRMSNorm (swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm">LlamaRMSNorm</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(eps)">eps</span></span><span class="o">=</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).rms_norm_eps">rms_norm_eps</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">post_attention_layernorm</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LlamaRMSNorm (swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm">LlamaRMSNorm</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(eps)">eps</span></span><span class="o">=</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer(config).rms_norm_eps">rms_norm_eps</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7252,7 +7252,7 @@ returned tensors for more detail.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">padding_idx</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).pad_token_id">pad_token_id</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">padding_idx</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).pad_token_id">pad_token_id</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7274,7 +7274,7 @@ returned tensors for more detail.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">vocab_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).vocab_size">vocab_size</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">vocab_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).vocab_size">vocab_size</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7296,7 +7296,7 @@ returned tensors for more detail.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">embed_tokens</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Embedding">Embedding</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).vocab_size">vocab_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(self).padding_idx">padding_idx</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">embed_tokens</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Embedding">Embedding</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).vocab_size">vocab_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(self).padding_idx">padding_idx</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7318,7 +7318,7 @@ returned tensors for more detail.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">layers</span> <span class="o">=</span> <span class="n"><span title="torch.nn.ModuleList">ModuleList</span></span><span class="p">([(</span><span class="n"><a class="autorefs autorefs-internal" title="            LlamaDecoderLayer (swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer">LlamaDecoderLayer</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="p">))</span> <span class="k">for</span> <span class="n"><span title="_">_</span></span> <span class="ow">in</span> <span class="p">(</span><span class="n"><span title="range">range</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).num_hidden_layers">num_hidden_layers</span></span><span class="p">))])</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">layers</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.ModuleList">ModuleList</span></span><span class="p">([(</span><span class="n"><a class="autorefs autorefs-internal" title="            LlamaDecoderLayer (swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaDecoderLayer">LlamaDecoderLayer</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="p">))</span> <span class="k">for</span> <span class="n"><span title="_">_</span></span> <span class="ow">in</span> <span class="p">(</span><span class="n"><span title="range">range</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).num_hidden_layers">num_hidden_layers</span></span><span class="p">))])</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7340,7 +7340,7 @@ returned tensors for more detail.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">norm</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LlamaRMSNorm (swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm">LlamaRMSNorm</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(eps)">eps</span></span><span class="o">=</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).rms_norm_eps">rms_norm_eps</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">norm</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            LlamaRMSNorm (swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm)" href="#swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm">LlamaRMSNorm</a></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaRMSNorm(eps)">eps</span></span><span class="o">=</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaModel(config).rms_norm_eps">rms_norm_eps</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7833,7 +7833,7 @@ returned tensors for more detail.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">vocab_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config).vocab_size">vocab_size</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">vocab_size</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config).vocab_size">vocab_size</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7855,7 +7855,7 @@ returned tensors for more detail.</p>
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">lm_head</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config).vocab_size">vocab_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">lm_head</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForCausalLM(config).vocab_size">vocab_size</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8458,7 +8458,7 @@ config.vocab_size]</code> or -100 (see <code>input_ids</code> docstring). Tokens
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_labels</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(config).num_labels">num_labels</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_labels</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(config).num_labels">num_labels</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8502,7 +8502,7 @@ config.vocab_size]</code> or -100 (see <code>input_ids</code> docstring). Tokens
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">score</span> <span class="o">=</span> <span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(self).num_labels">num_labels</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">score</span> <span class="o">=</span> <span class="n"><span title="torch.nn">nn</span></span><span class="o">.</span><span class="n"><span title="torch.nn.Linear">Linear</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(config)">config</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(config).hidden_size">hidden_size</span></span><span class="p">,</span> <span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.llamao.modeling_flash_llama.LlamaForSequenceClassification(self).num_labels">num_labels</span></span><span class="p">,</span> <span class="n"><span title="torch.nn.Linear(bias)">bias</span></span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8966,7 +8966,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -9032,7 +9032,12 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.make_datasets.bm25_retrieval.parser.parse_args">parse_args</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            parser
+
+
+  
+      module-attribute
+   (swebench.inference.make_datasets.bm25_retrieval.parser)" href="#swebench.inference.make_datasets.bm25_retrieval.parser">parser</a></span><span class="o">.</span><span class="n"><span title="swebench.inference.make_datasets.bm25_retrieval.parser.parse_args">parse_args</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -9283,7 +9288,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">repo_path</span> <span class="o">=</span> <span class="n"><span title="as_posix">as_posix</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">repo_path</span> <span class="o">=</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.make_datasets.bm25_retrieval.ContextManager(repo_path)">repo_path</span></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="resolve">resolve</span></span><span class="p">()</span><span class="o">.</span><span class="n"><span title="as_posix">as_posix</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -9349,7 +9354,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">repo</span> <span class="o">=</span> <span class="n"><span title="git.Repo">Repo</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.make_datasets.bm25_retrieval.ContextManager(self).repo_path">repo_path</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">repo</span> <span class="o">=</span> <span class="n"><span title="git.Repo">Repo</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.make_datasets.bm25_retrieval.ContextManager(self)">self</span></span><span class="o">.</span><span class="n"><span title="swebench.inference.make_datasets.bm25_retrieval.ContextManager(self).repo_path">repo_path</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -11340,7 +11345,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -12436,7 +12441,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13107,7 +13112,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13151,7 +13156,12 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.make_datasets.eval_retrieval.parser.parse_args">parse_args</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            parser
+
+
+  
+      module-attribute
+   (swebench.inference.make_datasets.eval_retrieval.parser)" href="#swebench.inference.make_datasets.eval_retrieval.parser">parser</a></span><span class="o">.</span><span class="n"><span title="swebench.inference.make_datasets.eval_retrieval.parser.parse_args">parse_args</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13316,7 +13326,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13338,7 +13348,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">TOKENIZER_FUNCS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'cl100k'</span><span class="p">:</span> <span class="p">(</span><span class="n"><span title="tiktoken.get_encoding">get_encoding</span></span><span class="p">(</span><span class="s1">'cl100k_base'</span><span class="p">),</span> <span class="n"><a class="autorefs autorefs-internal" title="            cl100k (swebench.inference.make_datasets.tokenize_dataset.cl100k)" href="#swebench.inference.make_datasets.tokenize_dataset.cl100k">cl100k</a></span><span class="p">),</span> <span class="s1">'llama'</span><span class="p">:</span> <span class="p">(</span><span class="n"><span title="transformers.LlamaTokenizer.from_pretrained">from_pretrained</span></span><span class="p">(</span><span class="s1">'togethercomputer/LLaMA-2-7B-32K'</span><span class="p">),</span> <span class="n"><a class="autorefs autorefs-internal" title="            llama (swebench.inference.make_datasets.tokenize_dataset.llama)" href="#swebench.inference.make_datasets.tokenize_dataset.llama">llama</a></span><span class="p">)}</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">TOKENIZER_FUNCS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'cl100k'</span><span class="p">:</span> <span class="p">(</span><span class="n"><span title="tiktoken">tiktoken</span></span><span class="o">.</span><span class="n"><span title="tiktoken.get_encoding">get_encoding</span></span><span class="p">(</span><span class="s1">'cl100k_base'</span><span class="p">),</span> <span class="n"><a class="autorefs autorefs-internal" title="            cl100k (swebench.inference.make_datasets.tokenize_dataset.cl100k)" href="#swebench.inference.make_datasets.tokenize_dataset.cl100k">cl100k</a></span><span class="p">),</span> <span class="s1">'llama'</span><span class="p">:</span> <span class="p">(</span><span class="n"><span title="transformers.LlamaTokenizer">LlamaTokenizer</span></span><span class="o">.</span><span class="n"><span title="transformers.LlamaTokenizer.from_pretrained">from_pretrained</span></span><span class="p">(</span><span class="s1">'togethercomputer/LLaMA-2-7B-32K'</span><span class="p">),</span> <span class="n"><a class="autorefs autorefs-internal" title="            llama (swebench.inference.make_datasets.tokenize_dataset.llama)" href="#swebench.inference.make_datasets.tokenize_dataset.llama">llama</a></span><span class="p">)}</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13892,7 +13902,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">DIFF_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'^diff(?:.*)'</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">DIFF_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'^diff(?:.*)'</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13914,7 +13924,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">PATCH_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'(?:diff[</span><span class="se">\\</span><span class="s1">w</span><span class="se">\\</span><span class="s1">_</span><span class="se">\\</span><span class="s1">.</span><span class="se">\\</span><span class="s1"> </span><span class="se">\\</span><span class="s1">/</span><span class="se">\\</span><span class="s1">-]+</span><span class="se">\\</span><span class="s1">n)?</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">s+a</span><span class="se">\\</span><span class="s1">/(?:.*?)</span><span class="se">\\</span><span class="s1">n</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">s+b</span><span class="se">\\</span><span class="s1">/(?:.*?)(?=diff</span><span class="se">\\</span><span class="s1"> |</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1"> a</span><span class="se">\\</span><span class="s1">/|</span><span class="se">\\</span><span class="s1">Z)'</span><span class="p">,</span> <span class="n"><span title="re.DOTALL">DOTALL</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">PATCH_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'(?:diff[</span><span class="se">\\</span><span class="s1">w</span><span class="se">\\</span><span class="s1">_</span><span class="se">\\</span><span class="s1">.</span><span class="se">\\</span><span class="s1"> </span><span class="se">\\</span><span class="s1">/</span><span class="se">\\</span><span class="s1">-]+</span><span class="se">\\</span><span class="s1">n)?</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">s+a</span><span class="se">\\</span><span class="s1">/(?:.*?)</span><span class="se">\\</span><span class="s1">n</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">s+b</span><span class="se">\\</span><span class="s1">/(?:.*?)(?=diff</span><span class="se">\\</span><span class="s1"> |</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1"> a</span><span class="se">\\</span><span class="s1">/|</span><span class="se">\\</span><span class="s1">Z)'</span><span class="p">,</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.DOTALL">DOTALL</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13936,7 +13946,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">PATCH_FILE_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">s+a</span><span class="se">\\</span><span class="s1">/(?:.+)</span><span class="se">\\</span><span class="s1">n</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">s+b</span><span class="se">\\</span><span class="s1">/(?:.+)'</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">PATCH_FILE_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">s+a</span><span class="se">\\</span><span class="s1">/(?:.+)</span><span class="se">\\</span><span class="s1">n</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">+</span><span class="se">\\</span><span class="s1">s+b</span><span class="se">\\</span><span class="s1">/(?:.+)'</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -13958,7 +13968,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">PATCH_HUNK_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">s+</span><span class="se">\\</span><span class="s1">-(</span><span class="se">\\</span><span class="s1">d+),(</span><span class="se">\\</span><span class="s1">d+)</span><span class="se">\\</span><span class="s1">s+</span><span class="se">\\</span><span class="s1">+(</span><span class="se">\\</span><span class="s1">d+),(</span><span class="se">\\</span><span class="s1">d+)</span><span class="se">\\</span><span class="s1">s+</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">@(.+?)(?=diff</span><span class="se">\\</span><span class="s1"> |</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1"> a</span><span class="se">\\</span><span class="s1">/|</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1"> </span><span class="se">\\</span><span class="s1">-|</span><span class="se">\\</span><span class="s1">Z)'</span><span class="p">,</span> <span class="n"><span title="re.DOTALL">DOTALL</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">PATCH_HUNK_PATTERN</span> <span class="o">=</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">s+</span><span class="se">\\</span><span class="s1">-(</span><span class="se">\\</span><span class="s1">d+),(</span><span class="se">\\</span><span class="s1">d+)</span><span class="se">\\</span><span class="s1">s+</span><span class="se">\\</span><span class="s1">+(</span><span class="se">\\</span><span class="s1">d+),(</span><span class="se">\\</span><span class="s1">d+)</span><span class="se">\\</span><span class="s1">s+</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">@(.+?)(?=diff</span><span class="se">\\</span><span class="s1"> |</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1">-</span><span class="se">\\</span><span class="s1"> a</span><span class="se">\\</span><span class="s1">/|</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1">@</span><span class="se">\\</span><span class="s1"> </span><span class="se">\\</span><span class="s1">-|</span><span class="se">\\</span><span class="s1">Z)'</span><span class="p">,</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.DOTALL">DOTALL</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -14029,7 +14039,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">repo_path</span> <span class="o">=</span> <span class="n"><span title="as_posix">as_posix</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">repo_path</span> <span class="o">=</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">(</span><span class="n"><span title="swebench.inference.make_datasets.utils.ContextManager(repo_path)">repo_path</span></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="resolve">resolve</span></span><span class="p">()</span><span class="o">.</span><span class="n"><span title="as_posix">as_posix</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -14051,7 +14061,7 @@ num_key_value_heads, seqlen, head_dim) to (batch, num_attention_heads, seqlen, h
   </span>
 
 </h7>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">old_dir</span> <span class="o">=</span> <span class="n"><span title="os.getcwd">getcwd</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">old_dir</span> <span class="o">=</span> <span class="n"><span title="os">os</span></span><span class="o">.</span><span class="n"><span title="os.getcwd">getcwd</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -15188,7 +15198,7 @@ It sorts instances by length and continually writes the outputs to a specified f
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -15320,7 +15330,12 @@ It sorts instances by length and continually writes the outputs to a specified f
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.run_api.parser.parse_args">parse_args</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            parser
+
+
+  
+      module-attribute
+   (swebench.inference.run_api.parser)" href="#swebench.inference.run_api.parser">parser</a></span><span class="o">.</span><span class="n"><span title="swebench.inference.run_api.parser.parse_args">parse_args</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -16503,7 +16518,7 @@ specified directory.</p>
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -16547,7 +16562,12 @@ specified directory.</p>
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.run_live.parser.parse_args">parse_args</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            parser
+
+
+  
+      module-attribute
+   (swebench.inference.run_live.parser)" href="#swebench.inference.run_live.parser">parser</a></span><span class="o">.</span><span class="n"><span title="swebench.inference.run_live.parser.parse_args">parse_args</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -17387,7 +17407,7 @@ specified directory.</p>
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n"><span title="logging">logging</span></span><span class="o">.</span><span class="n"><span title="logging.getLogger">getLogger</span></span><span class="p">(</span><span class="n"><span title="__name__">__name__</span></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -17409,7 +17429,7 @@ specified directory.</p>
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">DEVICE_MAPS</span> <span class="o">=</span> <span class="n"><span title="json.load">load</span></span><span class="p">(</span><span class="n"><span title="open">open</span></span><span class="p">(</span><span class="n"><span title="parent">parent</span></span> <span class="o">/</span> <span class="s1">'codellama_device_maps.json'</span><span class="p">))</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">DEVICE_MAPS</span> <span class="o">=</span> <span class="n"><span title="json">json</span></span><span class="o">.</span><span class="n"><span title="json.load">load</span></span><span class="p">(</span><span class="n"><span title="open">open</span></span><span class="p">(</span><span class="n"><span title="pathlib.Path">Path</span></span><span class="p">(</span><span class="n"><span title="__file__">__file__</span></span><span class="p">)</span><span class="o">.</span><span class="n"><span title="parent">parent</span></span> <span class="o">/</span> <span class="s1">'codellama_device_maps.json'</span><span class="p">))</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -17453,7 +17473,12 @@ specified directory.</p>
   </span>
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><span title="swebench.inference.run_llama.parser.parse_args">parse_args</span></span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">args</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            parser
+
+
+  
+      module-attribute
+   (swebench.inference.run_llama.parser)" href="#swebench.inference.run_llama.parser">parser</a></span><span class="o">.</span><span class="n"><span title="swebench.inference.run_llama.parser.parse_args">parse_args</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -18996,7 +19021,7 @@ specified directory.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "content.action.edit", "navigation.footer", "content.code.copy", "content.footnote.tooltips", "header.autohide", "announce.dismiss", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   
