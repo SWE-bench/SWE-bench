@@ -1,6 +1,6 @@
 import re
 from swebench.harness.constants import TestStatus
-from swebench.harness.test_spec.test_spec import TestSpec
+from swebench.types import TestSpec
 
 
 def parse_log_gotest(log: str, test_spec: TestSpec) -> dict[str, str]:

@@ -91,3 +91,6 @@ namespaces = false
 "Bug Reports" = "http://github.com/swe-bench/SWE-bench/issues"
 "Source Code" = "http://github.com/swe-bench/SWE-bench"
 "Website" = "https://swebench.com"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

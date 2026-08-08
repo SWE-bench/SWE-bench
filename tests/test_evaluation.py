@@ -5,8 +5,6 @@ import docker
 from swebench.harness.constants import (
     FAIL_TO_PASS,
     PASS_TO_PASS,
-    KEY_INSTANCE_ID,
-    KEY_MODEL,
 )
 from swebench.harness.run_evaluation import make_run_report
 
@@ -21,7 +19,7 @@ def test_make_run_report(tmpdir) -> None:
     client = docker.from_env()
     with tmpdir.as_cwd():
         output_path = make_run_report(
-            {"test": {KEY_INSTANCE_ID: "test", KEY_MODEL: "test"}},
+            {"test": {"instance_id": "test", "model_name_or_path": "test"}},
             [TEST_INSTANCE],
             "test",
             client,

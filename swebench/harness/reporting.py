@@ -4,14 +4,10 @@ from pathlib import Path
 from typing import Optional
 
 from swebench.harness.constants import (
-    KEY_INSTANCE_ID,
-    KEY_MODEL,
-    KEY_PREDICTION,
     RUN_EVALUATION_LOG_DIR,
     LOG_REPORT,
 )
-from swebench.harness.docker_utils import list_images
-from swebench.harness.test_spec.test_spec import make_test_spec
+from swebench.image_builder.docker_utils import list_images
 
 
 def make_run_report(
@@ -19,9 +15,6 @@ def make_run_report(
     full_dataset: list,
     run_id: str,
     client: Optional[docker.DockerClient] = None,
-    namespace: str = None,
-    instance_image_tag: str = "latest",
-    env_image_tag: str = "latest",
 ) -> Path:
     """
     Make a final evaluation and run report of the instances that have been run.
@@ -49,39 +42,31 @@ def make_run_report(
 
     # iterate through dataset and check if the instance has been run
     for instance in full_dataset:
-        instance_id = instance[KEY_INSTANCE_ID]
+        instance_id = instance["instance_id"]
         if instance_id not in predictions:
             # skip instances without predictions
             incomplete_ids.add(instance_id)
             continue
         prediction = predictions[instance_id]
-        if prediction.get(KEY_PREDICTION, None) in ["", None]:
+        if prediction.get("model_patch", None) in ["", None]:
             empty_patch_ids.add(instance_id)
             continue
         report_file = (
             RUN_EVALUATION_LOG_DIR
             / run_id
-            / prediction[KEY_MODEL].replace("/", "__")
-            / prediction[KEY_INSTANCE_ID]
+            / prediction["model_name_or_path"].replace("/", "__")
+            / prediction["instance_id"]
             / LOG_REPORT
         )
         if report_file.exists():
+            # If report file exists, then the instance has been run
             completed_ids.add(instance_id)
-            try:
-                content = report_file.read_text().strip()
-                if not content:  # Empty file
-                    error_ids.add(instance_id)
-                    continue
-
-                report = json.loads(content)
-                if report[instance_id]["resolved"]:
-                    # Record if the instance was resolved
-                    resolved_ids.add(instance_id)
-                else:
-                    unresolved_ids.add(instance_id)
-            except (json.JSONDecodeError, KeyError):
-                # If the report file is not valid JSON or missing keys, treat as error
-                error_ids.add(instance_id)
+            report = json.loads(report_file.read_text())
+            if report[instance_id]["resolved"]:
+                # Record if the instance was resolved
+                resolved_ids.add(instance_id)
+            else:
+                unresolved_ids.add(instance_id)
         else:
             # Otherwise, the instance was not run successfully
             error_ids.add(instance_id)
@@ -89,19 +74,8 @@ def make_run_report(
     if client:
         # get remaining images and containers
         images = list_images(client)
-        test_specs = list(
-            map(
-                lambda x: make_test_spec(
-                    x,
-                    namespace=namespace,
-                    instance_image_tag=instance_image_tag,
-                    env_image_tag=env_image_tag,
-                ),
-                full_dataset,
-            )
-        )
-        for spec in test_specs:
-            image_name = spec.instance_image_key
+        for instance in full_dataset:
+            image_name = instance.get("image", "")
             if image_name in images:
                 unremoved_images.add(image_name)
         containers = client.containers.list(all=True)
@@ -110,7 +84,7 @@ def make_run_report(
                 unstopped_containers.add(container.name)
 
     # print final report
-    dataset_ids = {i[KEY_INSTANCE_ID] for i in full_dataset}
+    dataset_ids = {i["instance_id"] for i in full_dataset}
     print(f"Total instances: {len(full_dataset)}")
     print(f"Instances submitted: {len(set(predictions.keys()) & dataset_ids)}")
     print(f"Instances completed: {len(completed_ids)}")
@@ -141,7 +115,7 @@ def make_run_report(
         "error_ids": list(sorted(error_ids)),
         "schema_version": 2,
     }
-    if not client:
+    if client:
         report.update(
             {
                 "unstopped_instances": len(unstopped_containers),
@@ -150,7 +124,7 @@ def make_run_report(
             }
         )
     report_file = Path(
-        list(predictions.values())[0][KEY_MODEL].replace("/", "__")
+        list(predictions.values())[0]["model_name_or_path"].replace("/", "__")
         + f".{run_id}"
         + ".json"
     )

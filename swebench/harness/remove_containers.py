@@ -1,3 +1,4 @@
+# TODO: update this for new structure
 import docker
 import json
 

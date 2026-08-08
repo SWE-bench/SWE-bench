@@ -3,12 +3,8 @@ from typing import Any
 from swebench.harness.constants import (
     APPLY_PATCH_FAIL,
     END_TEST_OUTPUT,
-    FAIL_ONLY_REPOS,
     FAIL_TO_FAIL,
     FAIL_TO_PASS,
-    KEY_INSTANCE_ID,
-    KEY_PREDICTION,
-    MAP_REPO_VERSION_TO_SPECS,
     PASS_TO_FAIL,
     PASS_TO_PASS,
     RESET_FAILED,
@@ -19,8 +15,8 @@ from swebench.harness.constants import (
     ResolvedStatus,
     TestStatus,
 )
-from swebench.harness.test_spec.test_spec import TestSpec
-from swebench.harness.log_parsers import MAP_REPO_TO_PARSER
+from swebench.types import TestSpec
+from swebench.harness.log_parsers import PARSER_REGISTRY
 
 
 # MARK: Utility functions
@@ -48,12 +44,7 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
 
     TODO(john-b-yang): Check this is working properly...
     """
-    repo = test_spec.repo
-    version = test_spec.version
-    log_parser = MAP_REPO_TO_PARSER[repo]
-    test_cmd = MAP_REPO_VERSION_TO_SPECS[repo][version]["test_cmd"]
-    if isinstance(test_cmd, list):
-        test_cmd = test_cmd[-1]
+    log_parser = PARSER_REGISTRY[test_spec.log_parser]
 
     with open(log_fp) as f:
         content = f.read()
@@ -76,19 +67,8 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
             return {}, False
 
         # Get status map of evaluation results
-        test_content = content.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0]
-
-        # Try parsing the content between markers first
-        status_map = log_parser(test_content, test_spec)
-
-        # If no test results found between markers (common in Modal environment),
-        # try parsing the entire log content as fallback
-        if not status_map:
-            # Look for pytest output patterns in the entire log content
-            # This handles cases where pytest output goes to stderr and isn't captured between markers
-            status_map = log_parser(content, test_spec)
-
-        return status_map, True
+        content = content.split(START_TEST_OUTPUT)[1].split(END_TEST_OUTPUT)[0]
+        return log_parser(content, test_spec), True
 
 
 def get_eval_tests_report(
@@ -252,7 +232,7 @@ def get_eval_report(
     """
     report_map = {}
 
-    instance_id = prediction[KEY_INSTANCE_ID]
+    instance_id = prediction["instance_id"]
     report_map[instance_id] = {
         "patch_is_None": False,
         "patch_exists": False,
@@ -261,7 +241,7 @@ def get_eval_report(
     }
 
     # Check if the model patch exists
-    if prediction[KEY_PREDICTION] is None:
+    if prediction["model_patch"] is None:
         report_map[instance_id]["patch_is_None"] = True
         return report_map
     report_map[instance_id]["patch_exists"] = True
@@ -274,16 +254,12 @@ def get_eval_report(
     report_map[instance_id]["patch_successfully_applied"] = True
 
     eval_ref = {
-        KEY_INSTANCE_ID: test_spec.instance_id,
+        "instance_id": test_spec.instance_id,
         FAIL_TO_PASS: test_spec.FAIL_TO_PASS,
         PASS_TO_PASS: test_spec.PASS_TO_PASS,
     }
 
-    eval_type = (
-        EvalType.FAIL_ONLY
-        if test_spec.repo in FAIL_ONLY_REPOS
-        else EvalType.PASS_AND_FAIL
-    )
+    eval_type = EvalType(test_spec.eval_type)
 
     report = get_eval_tests_report(eval_status_map, eval_ref, eval_type=eval_type)
     if get_resolution_status(report) == ResolvedStatus.FULL.value:
