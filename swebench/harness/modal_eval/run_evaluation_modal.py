@@ -17,6 +17,7 @@ from swebench.harness.docker_build import setup_logger
 from swebench.harness.reporting import make_run_report
 from swebench.harness.utils import EvaluationError
 from typing import cast
+from swebench.harness.modal_eval.utils import prepare_modal_eval_script
 
 SANDBOX_ENTRYPOINT = "run_evaluation_modal_entrypoint"
 LOCAL_SANDBOX_ENTRYPOINT_PATH = (
@@ -299,9 +300,7 @@ def run_instance_modal(
         logger.info(f"Git diff before:\n{git_diff_output_before}")
 
         eval_file = "/root/eval.sh"
-        eval_script = test_spec.eval_script
-        # django hack
-        eval_script = eval_script.replace("locale-gen", "locale-gen en_US.UTF-8")
+        eval_script = prepare_modal_eval_script(test_spec.eval_script)
         runner.write_file(eval_file, eval_script)
 
         start_time = time.time()

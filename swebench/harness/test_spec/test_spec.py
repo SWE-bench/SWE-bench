@@ -24,6 +24,9 @@ from swebench.harness.test_spec.create_scripts import (
 )
 
 
+EVAL_SCRIPT_STRICT_MODE_HEADER = "set -uxo pipefail"  # Modal injects BASH_XTRACEFD=1 above this; see #447.
+
+
 @dataclass
 class TestSpec:
     """
@@ -56,7 +59,9 @@ class TestSpec:
     @property
     def eval_script(self):
         return (
-            "\n".join(["#!/bin/bash", "set -uxo pipefail"] + self.eval_script_list)
+            "\n".join(
+                ["#!/bin/bash", EVAL_SCRIPT_STRICT_MODE_HEADER] + self.eval_script_list
+            )
             + "\n"
         )
         # Don't exit early because we need to revert tests at the end
