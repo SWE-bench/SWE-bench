@@ -4,6 +4,31 @@ from swebench.harness.constants import TestStatus
 from swebench.harness.test_spec.test_spec import TestSpec
 
 
+_PYTEST_STATUS_PATTERN = "|".join(re.escape(status.value) for status in TestStatus)
+_PYTEST_STATUS_FIRST = re.compile(rf"^({_PYTEST_STATUS_PATTERN})\s+(\S+)")
+_PYTEST_TEST_FIRST = re.compile(rf"^(\S+)\s+({_PYTEST_STATUS_PATTERN})(?:\s|$)")
+_PYTEST_SKIP_COUNT = re.compile(r"\[\d+\]")
+
+
+def _parse_pytest_result_line(line: str) -> tuple[str, str] | None:
+    """Parse pytest result lines without treating skip summaries as tests."""
+    status_first = _PYTEST_STATUS_FIRST.match(line)
+    if status_first:
+        status, test_name = status_first.groups()
+        if status == TestStatus.FAILED.value:
+            test_name = line.replace(" - ", " ").split()[1]
+        if status == TestStatus.SKIPPED.value and _PYTEST_SKIP_COUNT.match(test_name):
+            return None
+        return test_name, status
+
+    test_first = _PYTEST_TEST_FIRST.match(line)
+    if test_first:
+        test_name, status = test_first.groups()
+        return test_name, status
+
+    return None
+
+
 def parse_log_pytest(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     Parser for test logs generated with PyTest framework
@@ -15,15 +40,24 @@ def parse_log_pytest(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     test_status_map = {}
     for line in log.split("\n"):
-        if any([line.startswith(x.value) for x in TestStatus]):
-            # Additional parsing for FAILED status
-            if line.startswith(TestStatus.FAILED.value):
-                line = line.replace(" - ", " ")
-            test_case = line.split()
-            if len(test_case) <= 1:
-                continue
-            test_status_map[test_case[1]] = test_case[0]
+        parsed = _parse_pytest_result_line(line)
+        if parsed is None:
+            continue
+        test_case, status = parsed
+        test_status_map[test_case] = status
     return test_status_map
+
+
+def _normalize_pytest_option_test_name(test_name: str) -> str:
+    option_pattern = re.compile(r"(.*?)\[(.*)\]")
+    has_option = option_pattern.search(test_name)
+    if not has_option:
+        return test_name
+
+    main, option = has_option.groups()
+    if option.startswith("/") and not option.startswith("//") and "*" not in option:
+        option = "/" + option.split("/")[-1]
+    return f"{main}[{option}]"
 
 
 def parse_log_pytest_options(log: str, test_spec: TestSpec) -> dict[str, str]:
@@ -35,29 +69,13 @@ def parse_log_pytest_options(log: str, test_spec: TestSpec) -> dict[str, str]:
     Returns:
         dict: test case to test status mapping
     """
-    option_pattern = re.compile(r"(.*?)\[(.*)\]")
     test_status_map = {}
     for line in log.split("\n"):
-        if any([line.startswith(x.value) for x in TestStatus]):
-            # Additional parsing for FAILED status
-            if line.startswith(TestStatus.FAILED.value):
-                line = line.replace(" - ", " ")
-            test_case = line.split()
-            if len(test_case) <= 1:
-                continue
-            has_option = option_pattern.search(test_case[1])
-            if has_option:
-                main, option = has_option.groups()
-                if (
-                    option.startswith("/")
-                    and not option.startswith("//")
-                    and "*" not in option
-                ):
-                    option = "/" + option.split("/")[-1]
-                test_name = f"{main}[{option}]"
-            else:
-                test_name = test_case[1]
-            test_status_map[test_name] = test_case[0]
+        parsed = _parse_pytest_result_line(line)
+        if parsed is None:
+            continue
+        test_case, status = parsed
+        test_status_map[_normalize_pytest_option_test_name(test_case)] = status
     return test_status_map
 
 
@@ -156,17 +174,11 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
         line = re.sub(r"\[(\d+)m", "", line)
         translator = str.maketrans("", "", escapes)
         line = line.translate(translator)
-        if any([line.startswith(x.value) for x in TestStatus]):
-            if line.startswith(TestStatus.FAILED.value):
-                line = line.replace(" - ", " ")
-            test_case = line.split()
-            if len(test_case) >= 2:
-                test_status_map[test_case[1]] = test_case[0]
-        # Support older pytest versions by checking if the line ends with the test status
-        elif any([line.endswith(x.value) for x in TestStatus]):
-            test_case = line.split()
-            if len(test_case) >= 2:
-                test_status_map[test_case[0]] = test_case[1]
+        parsed = _parse_pytest_result_line(line)
+        if parsed is None:
+            continue
+        test_case, status = parsed
+        test_status_map[test_case] = status
     return test_status_map
 
 
