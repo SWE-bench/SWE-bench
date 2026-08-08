@@ -125,6 +125,16 @@ The `--cache_level` parameter controls how Docker images are cached between runs
 
 Most users should use the default `env` level, which provides a good balance between speed and storage usage.
 
+## Result Caching
+
+The evaluation harness caches evaluation results by `run_id` and `instance_id`. This means:
+
+- If you run the same instance with the same `run_id` multiple times, the harness will reuse the cached results from the first run
+- **The cache does not consider the prediction diff content** - even if you provide a different prediction diff for the same `run_id` and `instance_id`, the harness will return the cached results without re-evaluating
+- To re-evaluate an instance with a different prediction diff, you must use a different `run_id`
+
+This caching behavior is designed to speed up repeated evaluations, but it's important to be aware that changing the prediction diff alone will not trigger a re-evaluation.
+
 ## Dataset Options
 
 The harness supports evaluation on various SWE-bench datasets:
