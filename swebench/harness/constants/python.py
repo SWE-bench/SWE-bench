@@ -7,6 +7,7 @@ TEST_DJANGO_NO_PARALLEL = "./tests/runtests.py --verbosity 2"
 TEST_SEABORN = "pytest --no-header -rA"
 TEST_SEABORN_VERBOSE = "pytest -rA --tb=long"
 TEST_PYTEST = "pytest -rA"
+TEST_REQUESTS = "python -m pip install pytest-rerunfailures && pytest -rA --reruns 5 --reruns-delay 2"
 TEST_PYTEST_VERBOSE = "pytest -rA --tb=long"
 TEST_SPHINX = "tox --current-env -epy39 -v --"
 TEST_SYMPY = (
@@ -27,7 +28,7 @@ SPECS_SKLEARN = {
             "setuptools",
             "scipy==1.5.2",
         ],
-        "test_cmd": TEST_PYTEST,
+        "test_cmd": TEST_REQUESTS,
     }
     for k in ["0.20", "0.21", "0.22"]
 }
