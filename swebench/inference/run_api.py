@@ -42,6 +42,7 @@ MODEL_LIMITS = {
     "gpt-4-0613": 8_192,
     "gpt-4-1106-preview": 128_000,
     "gpt-4-0125-preview": 128_000,
+    "gpt-4o-2024-11-20": 128_000,
 }
 
 # The cost per token for each model input.
@@ -61,6 +62,7 @@ MODEL_COST_PER_INPUT = {
     "gpt-4-32k": 0.00006,
     "gpt-4-1106-preview": 0.00001,
     "gpt-4-0125-preview": 0.00001,
+    "gpt-4o-2024-11-20": 0.000002212,
 }
 
 # The cost per token for each model output.
@@ -80,6 +82,7 @@ MODEL_COST_PER_OUTPUT = {
     "gpt-4-32k": 0.00012,
     "gpt-4-1106-preview": 0.00003,
     "gpt-4-0125-preview": 0.00003,
+    "gpt-4o-2024-11-20": 0.000008848,
 }
 
 # used for azure
@@ -87,6 +90,7 @@ ENGINES = {
     "gpt-3.5-turbo-16k-0613": "gpt-35-turbo-16k",
     "gpt-4-0613": "gpt-4",
     "gpt-4-32k-0613": "gpt-4-32k",
+    "gpt-4o-2024-11-20": "gpt-4o",
 }
 
 
@@ -127,15 +131,19 @@ def call_chat(model_name_or_path, inputs, use_azure, temperature, top_p, **model
     user_message = inputs.split("\n", 1)[1]
     try:
         if use_azure:
-            response = openai.chat.completions.create(
-                engine=ENGINES[model_name_or_path] if use_azure else None,
+            client = openai.AzureOpenAI(
+                api_version=openai.api_version,
+                azure_endpoint=openai.api_base,
+                api_key=openai.api_key,
+            )
+            response = client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_messages},
                     {"role": "user", "content": user_message},
                 ],
                 temperature=temperature,
                 top_p=top_p,
-                **model_args,
+                model=model_args.get('model'),
             )
         else:
             response = openai.chat.completions.create(
@@ -196,6 +204,7 @@ def openai_inference(
         desc="Filtering",
         load_from_cache_file=False,
     )
+    optional_model_args = {}
     openai_key = os.environ.get("OPENAI_API_KEY", None)
     if openai_key is None:
         raise ValueError(
@@ -206,8 +215,21 @@ def openai_inference(
     use_azure = model_args.pop("use_azure", False)
     if use_azure:
         openai.api_type = "azure"
-        openai.api_base = "https://pnlpopenai3.openai.azure.com/"
-        openai.api_version = "2023-05-15"
+        openai.api_base = os.environ.get("AZURE_OPENAI_API_BASE", None)
+        if openai.api_base is None:
+            raise ValueError(
+                "Must provide an api base. Expected in AZURE_OPENAI_API_BASE environment variable."
+            )
+        openai.api_version = os.environ.get("AZURE_OPENAI_API_VERSION", None)
+        if openai.api_version is None:
+            raise ValueError(
+                "Must provide an api version. Expected in AZURE_OPENAI_API_VERSION environment variable."
+            )
+        optional_model_args.update({"model": os.environ.get("AZURE_MODEL_DEPLOYMENT_NAME", None)})
+        if optional_model_args["model"] is None:
+            raise ValueError(
+                "Must provide a model deployment name. Expected in AZURE_MODEL_DEPLOYMENT_NAME environment variable."
+            )
     temperature = model_args.pop("temperature", 0.2)
     top_p = model_args.pop("top_p", 0.95 if temperature > 0 else 1)
     print(f"Using temperature={temperature}, top_p={top_p}")
@@ -216,6 +238,10 @@ def openai_inference(
     }
     total_cost = 0
     print(f"Filtered to {len(test_dataset)} instances")
+    # Ensure output directory exists
+    output_dir = os.path.dirname(output_file)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
     with open(output_file, "a+") as f:
         for datum in tqdm(test_dataset, desc=f"Inference for {model_name_or_path}"):
             instance_id = datum["instance_id"]
@@ -230,6 +256,7 @@ def openai_inference(
                 use_azure,
                 temperature,
                 top_p,
+                **optional_model_args
             )
             completion = response.choices[0].message.content
             total_cost += cost
