@@ -22,6 +22,7 @@ def make_run_report(
     namespace: str = None,
     instance_image_tag: str = "latest",
     env_image_tag: str = "latest",
+    arch: str = "x86_64",
 ) -> Path:
     """
     Make a final evaluation and run report of the instances that have been run.
@@ -96,6 +97,7 @@ def make_run_report(
                     namespace=namespace,
                     instance_image_tag=instance_image_tag,
                     env_image_tag=env_image_tag,
+                    arch=arch,
                 ),
                 full_dataset,
             )

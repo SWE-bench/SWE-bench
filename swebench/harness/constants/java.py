@@ -266,6 +266,9 @@ SPECS_DRUID = {
     "15402": {
         "docker_specs": {"java_version": "11"},
         "install": [
+            # Fix Maven resource bundle SNAPSHOT reference that fails on fresh ARM64 images
+            # without cached artifacts. See https://github.com/apache/druid/pull/14054
+            r"sed -i 's/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT<\/resourceBundle>/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5<\/resourceBundle>/' pom.xml",
             "mvn clean install -B -pl processing -DskipTests -am",
         ],
         "test_cmd": [
@@ -279,6 +282,8 @@ SPECS_DRUID = {
     "14092": {
         "docker_specs": {"java_version": "11"},
         "install": [
+            # Fix Maven resource bundle SNAPSHOT reference that fails on fresh ARM64 images
+            r"sed -i 's/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT<\/resourceBundle>/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5<\/resourceBundle>/' pom.xml",
             "mvn clean install -B -pl processing,cloud/aws-common,cloud/gcp-common -DskipTests -am",
         ],
         "test_cmd": [
@@ -291,6 +296,8 @@ SPECS_DRUID = {
     "14136": {
         "docker_specs": {"java_version": "11"},
         "install": [
+            # Fix Maven resource bundle SNAPSHOT reference that fails on fresh ARM64 images
+            r"sed -i 's/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT<\/resourceBundle>/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5<\/resourceBundle>/' pom.xml",
             "mvn clean install -B -pl processing -DskipTests -am",
         ],
         "test_cmd": [
@@ -322,6 +329,8 @@ SPECS_DRUID = {
     "16875": {
         "docker_specs": {"java_version": "11"},
         "install": [
+            # Fix Maven resource bundle SNAPSHOT reference that fails on fresh ARM64 images
+            r"sed -i 's/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT<\/resourceBundle>/<resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5<\/resourceBundle>/' pom.xml",
             "mvn clean install -B -pl server -DskipTests -am",
         ],
         "test_cmd": [

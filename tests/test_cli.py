@@ -1,8 +1,9 @@
 import subprocess
+import sys
 
 
 def test_smoke_test():
-    cmd = ["python", "-m", "swebench.harness.run_evaluation", "--help"]
+    cmd = [sys.executable, "-m", "swebench.harness.run_evaluation", "--help"]
     result = subprocess.run(cmd, capture_output=True)
     print(result.stdout)
     print(result.stderr)
@@ -11,7 +12,7 @@ def test_smoke_test():
 
 def test_one_instance():
     cmd = [
-        "python",
+        sys.executable,
         "-m",
         "swebench.harness.run_evaluation",
         "--predictions_path",

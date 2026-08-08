@@ -9,6 +9,8 @@ from swebench.harness.dockerfiles.go import (
 from swebench.harness.dockerfiles.java import (
     _DOCKERFILE_BASE_JAVA,
     _DOCKERFILE_INSTANCE_JAVA,
+    _MVND_INSTALL_AMD64,
+    _MVND_INSTALL_ARM64,
 )
 from swebench.harness.dockerfiles.javascript import (
     _DOCKERFILE_BASE_JS,
@@ -68,6 +70,36 @@ def get_dockerfile_base(platform, arch, language, **kwargs):
     else:
         conda_arch = arch
 
+    # Special handling for JavaScript Chrome/Chromium installation
+    if language == "js":
+        if arch == "arm64":
+            # Use Chromium on ARM64 (Chrome not available)
+            chrome_install = """# Install Chromium for browser testing (ARM64 - Chrome not available)
+RUN apt-get update \\
+    && apt-get install -y chromium-browser fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg \\
+        fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \\
+        --no-install-recommends \\
+    && rm -rf /var/lib/apt/lists/* \\
+    && ln -sf /usr/bin/chromium-browser /usr/bin/google-chrome"""
+        else:
+            # Use Chrome on x86_64
+            chrome_install = """# Install Chrome for browser testing
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \\
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \\
+    && apt-get update \\
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg \\
+        fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \\
+        --no-install-recommends \\
+    && rm -rf /var/lib/apt/lists/*"""
+        kwargs["chrome_install"] = chrome_install
+
+    # Special handling for Java mvnd (Maven Daemon) installation
+    if language == "java":
+        if arch == "arm64":
+            kwargs["mvnd_install"] = _MVND_INSTALL_ARM64
+        else:
+            kwargs["mvnd_install"] = _MVND_INSTALL_AMD64
+
     # Special handling for some js repos that require a different base image.
     # If other languages also start using variants, this logic should be moved
     # to a helper function
@@ -84,6 +116,50 @@ def get_dockerfile_env(platform, arch, language, base_image_key, **kwargs):
     # Some languages do not have an environment Dockerfile. In those cases, the
     # base Dockerfile is used as the environment Dockerfile.
     dockerfile = _DOCKERFILE_ENV.get(language, _DOCKERFILE_BASE[language])
+
+    # Special handling for JavaScript pnpm architecture, chrome install, and Python
+    if language == "js":
+        if arch == "arm64":
+            kwargs["pnpm_arch"] = "arm64"
+            # deadsnakes PPA has no ARM64 packages; use system python3
+            kwargs.setdefault("python_install",
+                "RUN apt-get update && apt-get install -y python3 python3-dev "
+                "&& ln -sf /usr/bin/python3 /usr/bin/python"
+            )
+            # Use Chromium on ARM64 (Chrome not available)
+            chrome_install = """# Install Chromium for browser testing (ARM64 - Chrome not available)
+RUN apt-get update \\
+    && apt-get install -y chromium-browser fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg \\
+        fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \\
+        --no-install-recommends \\
+    && rm -rf /var/lib/apt/lists/* \\
+    && ln -sf /usr/bin/chromium-browser /usr/bin/google-chrome"""
+        else:
+            kwargs["pnpm_arch"] = "x64"
+            # Use deadsnakes PPA for specific Python version on x86_64
+            python_version = kwargs.get("python_version", "3.10")
+            kwargs.setdefault("python_install",
+                f"RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update "
+                f"&& apt-get install -y python{python_version}\n"
+                f"RUN ln -s /usr/bin/python{python_version} /usr/bin/python"
+            )
+            # Use Chrome on x86_64
+            chrome_install = """# Install Chrome for browser testing
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \\
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \\
+    && apt-get update \\
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg \\
+        fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \\
+        --no-install-recommends \\
+    && rm -rf /var/lib/apt/lists/*"""
+        kwargs["chrome_install"] = chrome_install
+
+    # Special handling for Java mvnd (Maven Daemon) installation
+    if language == "java":
+        if arch == "arm64":
+            kwargs["mvnd_install"] = _MVND_INSTALL_ARM64
+        else:
+            kwargs["mvnd_install"] = _MVND_INSTALL_AMD64
 
     if "_variant" in kwargs and kwargs["_variant"] == "js_2":
         del kwargs["_variant"]

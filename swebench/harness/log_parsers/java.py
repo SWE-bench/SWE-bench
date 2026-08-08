@@ -95,7 +95,9 @@ def parse_log_gradle_custom(log: str, test_spec: TestSpec) -> dict[str, str]:
     # Pattern for normal case: test name and status on the same line
     # e.g., "com.example.Test > testMethod PASSED"
     # [^>] ensures we don't match lines starting with > (shell prompts, etc.)
-    full_pattern = r"^([^>].+)\s+(PASSED|FAILED)$"
+    # Non-greedy .+? and no $ anchor: JVM may concatenate WARNING messages
+    # directly after PASSED/FAILED with no separator (e.g., "testFoo PASSEDWARNING: ...")
+    full_pattern = r"^([^>].+?)\s+(PASSED|FAILED)"
 
     # Pattern for test name without status (race condition case)
     # e.g., "com.example.Test > testMethod" followed by warnings, then "PASSED"
