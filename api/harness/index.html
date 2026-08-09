@@ -16043,9 +16043,7 @@ Raises an exception if credentials are not configured.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/remove_containers.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
@@ -16069,7 +16067,9 @@ Raises an exception if credentials are not configured.</p>
 <span class="normal">35</span>
 <span class="normal">36</span>
 <span class="normal">37</span>
-<span class="normal">38</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">instance_ids</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">):</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">instance_ids</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">):</span>
     <span class="n">all_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">predictions_path</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">predictions_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -16084,9 +16084,9 @@ Raises an exception if credentials are not configured.</p>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"No instance IDs provided, exiting."</span><span class="p">)</span>
         <span class="k">return</span>
 
+    <span class="n">client</span> <span class="o">=</span> <span class="n">_docker_client</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">instance_id</span> <span class="ow">in</span> <span class="n">all_ids</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">docker</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>
             <span class="n">container</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sweb.eval.</span><span class="si">{</span><span class="n">instance_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">container</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="n">container</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
