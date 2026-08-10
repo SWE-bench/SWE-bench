@@ -879,6 +879,8 @@
       
         
       
+        
+      
     
     
     
@@ -921,6 +923,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1330,11 +1360,14 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </code></pre></div>
 <h2 id="running-a-basic-evaluation">Running a Basic Evaluation</h2>
 <p>To evaluate an LLM's performance on SWE-bench:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--dataset_name<span class="w"> </span>princeton-nlp/SWE-bench_Lite<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--num_workers<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--predictions_path<span class="w"> </span>&lt;path_to_predictions&gt;
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>lite<span class="w"> </span>-p<span class="w"> </span>&lt;path_to_predictions&gt;<span class="w"> </span>--run-id<span class="w"> </span>&lt;run_id&gt;<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
+
+<span class="c1"># reference patches</span>
+swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>lite<span class="w"> </span>--gold<span class="w"> </span>-i<span class="w"> </span>sympy__sympy-20590<span class="w"> </span>--run-id<span class="w"> </span>validate-gold
 </code></pre></div>
+<blockquote>
+<p>The previous <code>python -m swebench.harness.run_evaluation ...</code> form still works.</p>
+</blockquote>
 <h3 id="check-that-your-evaluation-setup-is-correct">Check That Your Evaluation Setup Is Correct</h3>
 <p>To verify that your evaluation setup is correct, you can evaluate the ground truth ("gold") patches:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span><span class="se">\</span>

@@ -738,6 +738,8 @@
       
         
       
+        
+      
     
     
     
@@ -780,6 +782,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1207,7 +1237,9 @@ Supply the <em>repository name(s)</em> and <em>logging folders</em> as arguments
 <p>This step is the most manual of all parts.
 To create an appropriate execution environment for task instances from a new repository, you must do the following steps:
 * Assign a repository-specific <em>version</em> (i.e. <code>1.2</code>) to every task instance.
-* Specify repository+version-specific installation commands in <code>harness/constants.py</code>.</p>
+* Specify repository+version-specific installation commands in the matching dockerfile repository
+  (<code>swe-bench-dockerfiles</code>, <code>swe-bench-multilingual-dockerfiles</code>, <code>swe-bench-multimodal-dockerfiles</code>),
+  under <code>src/sb_dockerfile_gen/</code>. These used to live in <code>harness/constants.py</code>, which no longer holds them.</p>
 <h3 id="part-a-versioning">Part A: Versioning</h3>
 <p>Determining a version for each task instance can be accomplished in a number of ways, depending on the availability + feasability with respect to each repository.
 * Scrape from code: A version is explicitly specified in the codebase (in <code>__init__.py</code> or <code>_version.py</code> for PyPI packages).

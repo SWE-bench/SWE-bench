@@ -5,13 +5,13 @@
       
       
       
-        <link rel="canonical" href="https://swe-bench.com/guides/docker_setup/">
+        <link rel="canonical" href="https://swe-bench.com/reference/cli/">
       
       
-        <link rel="prev" href="../evaluation/">
+        <link rel="prev" href="../../guides/create_rag_datasets/">
       
       
-        <link rel="next" href="../datasets/">
+        <link rel="next" href="../harness/">
       
       
         
@@ -22,7 +22,7 @@
     
     
       
-        <title>Docker Setup - SWE-bench</title>
+        <title>CLI - SWE-bench</title>
       
     
     
@@ -105,7 +105,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#docker-setup-guide" class="md-skip">
+        <a href="#command-line-interface" class="md-skip">
           Skip to content
         </a>
       
@@ -140,7 +140,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Docker Setup
+              CLI
             
           </span>
         </div>
@@ -300,7 +300,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../quickstart/" class="md-tabs__link">
+        <a href="../../guides/quickstart/" class="md-tabs__link">
           
   
   
@@ -601,7 +601,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quickstart/" class="md-nav__link">
+      <a href="../../guides/quickstart/" class="md-nav__link">
         
   
   
@@ -629,7 +629,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../evaluation/" class="md-nav__link">
+      <a href="../../guides/evaluation/" class="md-nav__link">
         
   
   
@@ -654,37 +654,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Docker Setup
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../guides/docker_setup/" class="md-nav__link">
         
   
   
@@ -700,226 +673,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
-      
-        <li class="md-nav__item">
-  <a href="#introduction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Introduction
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docker-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Docker Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#macos" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        macOS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#linux" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Linux
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#windows" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Windows
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#testing-your-docker-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing Your Docker Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docker-resource-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker Resource Management
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Docker Resource Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#understanding-swe-benchs-docker-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Understanding SWE-bench's Docker Usage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resource-management-commands" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Resource Management Commands
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cache-level-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cache Level Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-optimization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance Optimization
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Performance Optimization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#setting-the-right-number-of-workers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Setting the Right Number of Workers
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting-docker-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting Docker Issues
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting Docker Issues">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-problems-and-solutions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Problems and Solutions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cleaning-up-after-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cleaning Up After Evaluation
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -932,7 +685,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../datasets/" class="md-nav__link">
+      <a href="../../guides/datasets/" class="md-nav__link">
         
   
   
@@ -960,7 +713,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../create_rag_datasets/" class="md-nav__link">
+      <a href="../../guides/create_rag_datasets/" class="md-nav__link">
         
   
   
@@ -985,8 +738,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -1005,11 +760,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_6" checked="">
         
           
           <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
@@ -1030,7 +785,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1045,10 +800,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../reference/cli/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1064,6 +846,137 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Evaluate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swebench-eval-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench eval DATASET
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-report-run_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench report RUN_ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Images
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datasets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swebench-dataset-build-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench dataset build DATASET
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-dataset-collect-repos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench dataset collect REPOS...
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-dataset-versions-instances_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench dataset versions INSTANCES_PATH
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#older-invocations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Older invocations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1076,7 +989,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/harness/" class="md-nav__link">
+      <a href="../harness/" class="md-nav__link">
         
   
   
@@ -1104,7 +1017,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/inference/" class="md-nav__link">
+      <a href="../inference/" class="md-nav__link">
         
   
   
@@ -1132,7 +1045,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/versioning/" class="md-nav__link">
+      <a href="../versioning/" class="md-nav__link">
         
   
   
@@ -1345,44 +1258,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
-  <a href="#introduction" class="md-nav__link">
+  <a href="#evaluate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction
+        Evaluate
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docker-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Docker Installation">
+    <nav class="md-nav" aria-label="Evaluate">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#macos" class="md-nav__link">
+  <a href="#swebench-eval-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       
-        macOS
+        swebench eval DATASET
       
     </span>
   </a>
@@ -1390,21 +1281,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#linux" class="md-nav__link">
+  <a href="#swebench-report-run_id" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Linux
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#windows" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Windows
+        swebench report RUN_ID
       
     </span>
   </a>
@@ -1417,10 +1297,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#testing-your-docker-installation" class="md-nav__link">
+  <a href="#images" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Testing Your Docker Installation
+        Images
       
     </span>
   </a>
@@ -1428,22 +1308,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-resource-management" class="md-nav__link">
+  <a href="#datasets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker Resource Management
+        Datasets
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Docker Resource Management">
+    <nav class="md-nav" aria-label="Datasets">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#understanding-swe-benchs-docker-usage" class="md-nav__link">
+  <a href="#swebench-dataset-build-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Understanding SWE-bench's Docker Usage
+        swebench dataset build DATASET
       
     </span>
   </a>
@@ -1451,10 +1331,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#resource-management-commands" class="md-nav__link">
+  <a href="#swebench-dataset-collect-repos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resource Management Commands
+        swebench dataset collect REPOS...
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-dataset-versions-instances_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench dataset versions INSTANCES_PATH
       
     </span>
   </a>
@@ -1467,77 +1358,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cache-level-configuration" class="md-nav__link">
+  <a href="#older-invocations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cache Level Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-optimization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance Optimization
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Performance Optimization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#setting-the-right-number-of-workers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Setting the Right Number of Workers
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting-docker-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting Docker Issues
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting Docker Issues">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-problems-and-solutions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Problems and Solutions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cleaning-up-after-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cleaning Up After Evaluation
+        Older invocations
       
     </span>
   </a>
@@ -1561,7 +1385,7 @@
 
 
   
-    <a href="https://github.com/SWE-bench/SWE-bench/edit/main/docs/guides/docker_setup.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/SWE-bench/SWE-bench/edit/main/docs/reference/cli.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
     </a>
@@ -1569,180 +1393,100 @@
   
 
 
-<h1 id="docker-setup-guide">Docker Setup Guide</h1>
-<h2 id="introduction">Introduction</h2>
-<p>SWE-bench uses a Docker-based evaluation harness to ensure consistent, reproducible results across different platforms. This containerized approach eliminates environment discrepancies and provides isolated environments for each evaluation task.</p>
-<h2 id="prerequisites">Prerequisites</h2>
-<p>Before setting up Docker for SWE-bench, ensure you have:</p>
-<ul>
-<li>Docker installed on your system (<a href="https://docs.docker.com/engine/install/">Docker installation guide</a>)</li>
-<li>For Linux users, follow the <a href="https://docs.docker.com/engine/install/linux-postinstall/">post-installation steps</a></li>
-<li>Sufficient disk space (at least 120GB free)</li>
-<li>Adequate system resources (16GB+ RAM recommended)</li>
-</ul>
-<h2 id="docker-installation">Docker Installation</h2>
-<h3 id="macos">macOS</h3>
-<ol>
-<li>Download and install Docker Desktop for Mac from the <a href="https://www.docker.com/products/docker-desktop">official website</a></li>
-<li>Increase resource allocation in Docker Desktop settings:
-   - Open Docker Desktop preferences
-   - Go to Resources &gt; Advanced
-   - Allocate at least 8 CPUs and 16GB RAM
-   - Set disk image size to at least 120GB</li>
-</ol>
-<h3 id="linux">Linux</h3>
-<ol>
-<li>Install Docker using your distribution's package manager or follow the <a href="https://docs.docker.com/engine/install/">official guide</a></li>
-<li>Add your user to the docker group to run Docker without sudo:
-   <div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>groupadd<span class="w"> </span>docker
-sudo<span class="w"> </span>usermod<span class="w"> </span>-aG<span class="w"> </span>docker<span class="w"> </span><span class="nv">$USER</span>
-newgrp<span class="w"> </span>docker<span class="w">  </span><span class="c1"># Apply changes without logging out</span>
-</code></pre></div></li>
-</ol>
-<h3 id="windows">Windows</h3>
-<ol>
-<li>Install Docker Desktop for Windows from the <a href="https://www.docker.com/products/docker-desktop">official website</a></li>
-<li>Ensure WSL 2 is installed and configured</li>
-<li>Increase resource allocation in Docker Desktop settings:
-   - Open Docker Desktop settings
-   - Go to Resources &gt; Advanced
-   - Allocate at least 8 CPUs and 16GB RAM
-   - Set disk image size to at least 120GB</li>
-</ol>
-<h2 id="testing-your-docker-installation">Testing Your Docker Installation</h2>
-<p>Verify your Docker installation with these commands:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Check Docker version</span>
-docker<span class="w"> </span>--version
-
-<span class="c1"># Run a simple test container</span>
-docker<span class="w"> </span>run<span class="w"> </span>hello-world
-
-<span class="c1"># Check available disk space</span>
-docker<span class="w"> </span>system<span class="w"> </span>df
-</code></pre></div>
-<h2 id="docker-resource-management">Docker Resource Management</h2>
-<h3 id="understanding-swe-benchs-docker-usage">Understanding SWE-bench's Docker Usage</h3>
-<p>The SWE-bench evaluation harness builds Docker images in three layers:</p>
-<ol>
-<li><strong>Base image</strong>: Common dependencies for all evaluations</li>
-<li><strong>Environment images</strong>: Python environments for different configurations (~60 images)</li>
-<li><strong>Instance images</strong>: Specific dependencies for each evaluation task</li>
-</ol>
-<p>These images require significant disk space, so it's important to understand how to manage them.</p>
-<h3 id="resource-management-commands">Resource Management Commands</h3>
-<p>Useful commands for managing Docker resources:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># View Docker disk usage</span>
-docker<span class="w"> </span>system<span class="w"> </span>df
-
-<span class="c1"># Remove all stopped containers</span>
-docker<span class="w"> </span>container<span class="w"> </span>prune
-
-<span class="c1"># Remove dangling images (untagged)</span>
-docker<span class="w"> </span>image<span class="w"> </span>prune
-
-<span class="c1"># Remove all unused Docker objects (containers, images, networks, volumes)</span>
-docker<span class="w"> </span>system<span class="w"> </span>prune
-</code></pre></div>
-<h2 id="cache-level-configuration">Cache Level Configuration</h2>
-<p>SWE-bench provides different caching options to balance speed vs. storage:</p>
+<h1 id="command-line-interface">Command line interface</h1>
+<p>Installing the package provides a <code>swebench</code> command. Every command takes
+<code>-h/--help</code>, and the top level takes <code>-v/--verbose</code>.</p>
+<p><code>DATASET</code> accepts an alias, a HuggingFace id, or a local path:</p>
 <table>
 <thead>
 <tr>
-<th>Cache Level</th>
-<th>Description</th>
-<th>Storage Impact</th>
-<th>Performance</th>
+<th>alias</th>
+<th>dataset</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>none</code></td>
-<td>No image caching</td>
-<td>Minimal (~120GB during run)</td>
-<td>Slowest</td>
+<td><code>full</code></td>
+<td><code>SWE-bench/SWE-bench</code></td>
 </tr>
 <tr>
-<td><code>base</code></td>
-<td>Cache only base image</td>
-<td>Minimal (~120GB during run)</td>
-<td>Slow</td>
+<td><code>lite</code></td>
+<td><code>SWE-bench/SWE-bench_Lite</code></td>
 </tr>
 <tr>
-<td><code>env</code> (default)</td>
-<td>Cache base and environment images</td>
-<td>Moderate (~100GB)</td>
-<td>Moderate</td>
+<td><code>verified</code></td>
+<td><code>SWE-bench/SWE-bench_Verified</code></td>
 </tr>
 <tr>
-<td><code>instance</code></td>
-<td>Cache all images</td>
-<td>High (~2,000GB)</td>
-<td>Fastest</td>
+<td><code>multimodal</code>, <code>mm</code></td>
+<td><code>SWE-bench/SWE-bench_Multimodal</code></td>
+</tr>
+<tr>
+<td><code>multilingual</code>, <code>ml</code></td>
+<td><code>SWE-bench/SWE-bench_Multilingual</code></td>
 </tr>
 </tbody>
 </table>
-<p>Set the cache level when running the evaluation:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--predictions_path<span class="w"> </span>&lt;path_to_predictions&gt;<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--cache_level<span class="w"> </span>env<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--clean<span class="w"> </span>True
+<h2 id="evaluate">Evaluate</h2>
+<h3 id="swebench-eval-dataset"><code>swebench eval DATASET</code></h3>
+<p>Run the reference patches or a model's predictions.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>verified<span class="w"> </span>--gold
+swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>lite<span class="w"> </span>-p<span class="w"> </span>preds.jsonl<span class="w"> </span>--run-id<span class="w"> </span>gpt5<span class="w"> </span>-j<span class="w"> </span><span class="m">16</span>
+swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>multimodal<span class="w"> </span>--gold<span class="w"> </span>-i<span class="w"> </span>carbon-design-system__carbon-10188
+swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>full<span class="w"> </span>--gold<span class="w"> </span>--modal
 </code></pre></div>
-<p>For most users, the default <code>env</code> setting provides a good balance between evaluation speed and disk usage.</p>
-<h2 id="performance-optimization">Performance Optimization</h2>
-<h3 id="setting-the-right-number-of-workers">Setting the Right Number of Workers</h3>
-<p>The optimal number of workers depends on your system resources:</p>
-<ul>
-<li>Use fewer than <code>min(0.75 * os.cpu_count(), 24)</code> workers</li>
-<li>For an 8-core machine, 6 workers is typically appropriate</li>
-<li>For a 16-core machine, 12 workers is typically appropriate</li>
-</ul>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--predictions_path<span class="w"> </span>&lt;path_to_predictions&gt;<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--max_workers<span class="w"> </span><span class="m">8</span>
+<p>Pass exactly one of <code>--gold</code> or <code>-p/--predictions</code>. <code>-i/--instance</code> is
+repeatable, <code>-j/--workers</code> sets parallelism, <code>-t/--timeout</code> is per instance.</p>
+<h3 id="swebench-report-run_id"><code>swebench report RUN_ID</code></h3>
+<p>Recompute verdicts from a finished run's saved logs, without starting
+containers. Useful after a log-parser fix, since the test output is already on
+disk.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w"> </span>-d<span class="w"> </span>verified
+swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w"> </span>-d<span class="w"> </span>multimodal<span class="w"> </span>-i<span class="w"> </span>grommet__grommet-6282
 </code></pre></div>
-<p>Increasing worker count beyond your system's capabilities can actually slow down evaluation due to resource contention.</p>
-<h2 id="troubleshooting-docker-issues">Troubleshooting Docker Issues</h2>
-<h3 id="common-problems-and-solutions">Common Problems and Solutions</h3>
-<ol>
-<li>
-<p><strong>Insufficient disk space</strong>:
-   - Free up disk space or increase Docker Desktop's disk image size
-   - Use <code>--cache_level=env</code> or <code>--cache_level=base</code> to reduce storage needs</p>
-</li>
-<li>
-<p><strong>Docker build failures</strong>:
-   - Check network connectivity
-   - Inspect build logs in <code>logs/build_images</code></p>
-</li>
-<li>
-<p><strong>Permission issues</strong>:
-   - Ensure your user is in the docker group (Linux)
-   - Run with elevated privileges if necessary</p>
-</li>
-<li>
-<p><strong>Slow evaluation times</strong>:
-   - Reduce the number of parallel workers
-   - Check CPU and memory usage during evaluation
-   - Consider using a more powerful machine</p>
-</li>
-<li>
-<p><strong>Network-related issues</strong>:
-   - Check Docker network settings:
-     </p><div class="highlight"><pre><span></span><code>docker<span class="w"> </span>network<span class="w"> </span>ls
-docker<span class="w"> </span>network<span class="w"> </span>inspect<span class="w"> </span>bridge
-</code></pre></div><p></p>
-</li>
-</ol>
-<h2 id="cleaning-up-after-evaluation">Cleaning Up After Evaluation</h2>
-<p>To reclaim disk space after running evaluations:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Remove all unused Docker resources</span>
-docker<span class="w"> </span>system<span class="w"> </span>prune<span class="w"> </span>-a
+<h2 id="images">Images</h2>
+<p>Images are per instance but selected through a dataset, because the Dockerfile
+comes from the instance row. Narrow with <code>-i</code>.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>images<span class="w"> </span>build<span class="w"> </span>verified<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
+swebench<span class="w"> </span>images<span class="w"> </span>build<span class="w"> </span>multimodal<span class="w"> </span>-i<span class="w"> </span>carbon-design-system__carbon-10188
+swebench<span class="w"> </span>images<span class="w"> </span>build<span class="w"> </span>lite<span class="w"> </span>--dry-run
 
-<span class="c1"># Or for more control, remove specific resources</span>
-docker<span class="w"> </span>container<span class="w"> </span>prune<span class="w">  </span><span class="c1"># Remove all stopped containers</span>
-docker<span class="w"> </span>image<span class="w"> </span>prune<span class="w">      </span><span class="c1"># Remove unused images</span>
+swebench<span class="w"> </span>images<span class="w"> </span>check<span class="w"> </span>multilingual<span class="w">        </span><span class="c1"># which images are missing from the registry</span>
+swebench<span class="w"> </span>images<span class="w"> </span>clean<span class="w"> </span>--run-id<span class="w"> </span>my-run<span class="w">     </span><span class="c1"># remove leftover containers</span>
 </code></pre></div>
-<p>You can also set <code>--clean=True</code> when running the evaluation to automatically clean up instance-specific resources. </p>
+<p><code>images check</code> is worth running before a long evaluation: it catches a stale or
+partially-pushed image set in seconds rather than one instance at a time.</p>
+<h2 id="datasets">Datasets</h2>
+<h3 id="swebench-dataset-build-dataset"><code>swebench dataset build DATASET</code></h3>
+<p>Regenerate a dataset's parquet. This joins the public columns from HuggingFace
+with the <code>eval_script</code>, <code>log_parser</code>, <code>eval_type</code> and <code>image</code> fields produced by
+the dockerfile repositories' generators. Run it after changing a generator, then
+push the result to HuggingFace.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class="w"> </span>multimodal<span class="w"> </span>-s<span class="w"> </span><span class="nb">test</span>
+swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class="w"> </span>verified<span class="w"> </span>--dockerfile-repos<span class="w"> </span>~/code
+</code></pre></div>
+<p>It expects the <code>swe-bench-dockerfiles</code>, <code>swe-bench-multilingual-dockerfiles</code> and
+<code>swe-bench-multimodal-dockerfiles</code> checkouts, found via <code>--dockerfile-repos</code> or
+<code>SWEBENCH_DOCKERFILE_REPOS</code>.</p>
+<h3 id="swebench-dataset-collect-repos"><code>swebench dataset collect REPOS...</code></h3>
+<p>Scrape pull requests from GitHub into candidate task instances.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>collect<span class="w"> </span>scikit-learn/scikit-learn
+swebench<span class="w"> </span>dataset<span class="w"> </span>collect<span class="w"> </span>psf/requests<span class="w"> </span>--max-pulls<span class="w"> </span><span class="m">200</span><span class="w"> </span>--cutoff-date<span class="w"> </span><span class="m">20230101</span>
+</code></pre></div>
+<h3 id="swebench-dataset-versions-instances_path"><code>swebench dataset versions INSTANCES_PATH</code></h3>
+<p>Attach a version to each candidate instance. Install specs are keyed by version,
+so instances without one cannot be built.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>versions<span class="w"> </span>tasks/scikit-learn-task-instances.jsonl
+swebench<span class="w"> </span>dataset<span class="w"> </span>versions<span class="w"> </span>tasks/foo.jsonl<span class="w"> </span>--retrieval-method<span class="w"> </span>build<span class="w"> </span>--testbed<span class="w"> </span>/tmp/tb
+</code></pre></div>
+<h2 id="older-invocations">Older invocations</h2>
+<p>Every module is still runnable directly, with the same arguments as before:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span>--dataset_name<span class="w"> </span>...<span class="w"> </span>--predictions_path<span class="w"> </span>...
+python<span class="w"> </span>-m<span class="w"> </span>swebench.image_builder.prepare_images<span class="w"> </span>--dataset_name<span class="w"> </span>...
+</code></pre></div>
+<p>The inference utilities are not exposed through <code>swebench</code> and are run this way:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.inference.run_api<span class="w"> </span>--help
+</code></pre></div>
 
 
 
@@ -1774,7 +1518,7 @@ docker<span class="w"> </span>image<span class="w"> </span>prune<span class="w">
       <nav class="md-footer__inner md-grid" aria-label="Footer">
         
           
-          <a href="../evaluation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Evaluation">
+          <a href="../../guides/create_rag_datasets/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Create RAG Datasets">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
@@ -1784,20 +1528,20 @@ docker<span class="w"> </span>image<span class="w"> </span>prune<span class="w">
                 Previous
               </span>
               <div class="md-ellipsis">
-                Evaluation
+                Create RAG Datasets
               </div>
             </div>
           </a>
         
         
           
-          <a href="../datasets/" class="md-footer__link md-footer__link--next" aria-label="Next: Datasets">
+          <a href="../harness/" class="md-footer__link md-footer__link--next" aria-label="Next: The Harness">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Datasets
+                The Harness
               </div>
             </div>
             <div class="md-footer__button md-icon">

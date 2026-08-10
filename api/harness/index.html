@@ -749,6 +749,8 @@
       
         
       
+        
+      
     
     
     
@@ -791,6 +793,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2913,17 +2943,6 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;args
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#swebench.harness.remove_containers.instance_ids" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;instance_ids
       
     </span>
   </a>
@@ -5292,17 +5311,6 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;args
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#swebench.harness.remove_containers.instance_ids" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;instance_ids
       
     </span>
   </a>
@@ -15992,38 +16000,6 @@ Raises an exception if credentials are not configured.</p>
 
 </div>
 
-<div class="doc doc-object doc-attribute">
-
-
-
-<h5 id="swebench.harness.remove_containers.instance_ids" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">instance_ids</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
-  </span>
-
-</h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">instance_ids</span> <span class="o">=</span> <span class="p">[(</span><span class="n"><span title="i">i</span></span><span class="o">.</span><span class="n"><span title="i.strip">strip</span></span><span class="p">())</span> <span class="k">for</span> <span class="n"><span title="i">i</span></span> <span class="ow">in</span> <span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="            args
-
-
-  
-      module-attribute
-   (swebench.harness.remove_containers.args)" href="#swebench.harness.remove_containers.args">args</a></span><span class="o">.</span><span class="n"><span title="swebench.harness.remove_containers.args.instance_ids">instance_ids</span></span><span class="o">.</span><span class="n"><span title="swebench.harness.remove_containers.args.instance_ids.split">split</span></span><span class="p">(</span><span class="s1">','</span><span class="p">))]</span> <span class="k">if</span> <span class="n"><a class="autorefs autorefs-internal" title="            args
-
-
-  
-      module-attribute
-   (swebench.harness.remove_containers.args)" href="#swebench.harness.remove_containers.args">args</a></span><span class="o">.</span><span class="n"><span title="swebench.harness.remove_containers.args.instance_ids">instance_ids</span></span> <span class="k">else</span> <span class="p">[]</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-    </div>
-
-</div>
-
 
 
 
@@ -16035,7 +16011,7 @@ Raises an exception if credentials are not configured.</p>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">instance_ids</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">instance_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predictions_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -16043,7 +16019,10 @@ Raises an exception if credentials are not configured.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/remove_containers.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
@@ -16069,7 +16048,15 @@ Raises an exception if credentials are not configured.</p>
 <span class="normal">37</span>
 <span class="normal">38</span>
 <span class="normal">39</span>
-<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">instance_ids</span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">):</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">instance_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predictions_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">all_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">predictions_path</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">predictions_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -16080,22 +16067,33 @@ Raises an exception if credentials are not configured.</p>
     <span class="k">if</span> <span class="n">instance_ids</span><span class="p">:</span>
         <span class="n">all_ids</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">instance_ids</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">all_ids</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"No instance IDs provided, exiting."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">all_ids</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">run_id</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Provide --instance_ids, --predictions_path or --run_id, exiting."</span><span class="p">)</span>
         <span class="k">return</span>
 
     <span class="n">client</span> <span class="o">=</span> <span class="n">_docker_client</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">instance_id</span> <span class="ow">in</span> <span class="n">all_ids</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">container</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sweb.eval.</span><span class="si">{</span><span class="n">instance_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-            <span class="n">container</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-            <span class="n">container</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Removed container </span><span class="si">{</span><span class="n">instance_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">docker</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">NotFound</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Container </span><span class="si">{</span><span class="n">instance_id</span><span class="si">}</span><span class="s2"> not found, skipping."</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error removing container </span><span class="si">{</span><span class="n">instance_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># containers are named sweb.eval.&lt;instance_id&gt;.&lt;run_id&gt;, so match on the</span>
+    <span class="c1"># prefix rather than an exact name</span>
+    <span class="n">removed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">container</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="nb">all</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"sweb.eval."</span><span class="p">):</span>
             <span class="k">continue</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"sweb.eval."</span><span class="p">)</span> <span class="p">:]</span>
+        <span class="n">instance_id</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">container_run</span> <span class="o">=</span> <span class="n">rest</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">instance_id</span><span class="p">:</span>  <span class="c1"># no run id in the name</span>
+            <span class="n">instance_id</span><span class="p">,</span> <span class="n">container_run</span> <span class="o">=</span> <span class="n">rest</span><span class="p">,</span> <span class="s2">""</span>
+        <span class="k">if</span> <span class="n">all_ids</span> <span class="ow">and</span> <span class="n">instance_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_ids</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">run_id</span> <span class="ow">and</span> <span class="n">container_run</span> <span class="o">!=</span> <span class="n">run_id</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">container</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Removed container </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">removed</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error removing container </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Removed </span><span class="si">{</span><span class="n">removed</span><span class="si">}</span><span class="s2"> container(s)."</span><span class="p">)</span>
 </code></pre></div></td></tr></tbody></table></div>
             </details>
     </div>
