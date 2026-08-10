@@ -12,7 +12,11 @@ if platform.system() == "Linux":
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from pathlib import Path, PurePosixPath
 
-from swebench.image_builder.constants import CONTAINER_USER, CONTAINER_WORKDIR
+from swebench.image_builder.constants import (
+    CONTAINER_SECURITY_OPT,
+    CONTAINER_USER,
+    CONTAINER_WORKDIR,
+)
 from swebench.harness.constants import (
     APPLY_PATCH_FAIL,
     APPLY_PATCH_PASS,
@@ -114,6 +118,7 @@ def create_container(
                 user=CONTAINER_USER,
                 detach=True,
                 command="tail -f /dev/null",
+                security_opt=CONTAINER_SECURITY_OPT,
             )
         except docker.errors.APIError as e:
             if "409" in str(e) or "Conflict" in str(e):

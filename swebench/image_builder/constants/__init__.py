@@ -5,6 +5,8 @@ IMAGE_BUILDER_LOG_DIR = Path("logs/image_builder")
 # Constants - Docker Image Building
 CONTAINER_USER = "root"
 CONTAINER_WORKDIR = "/testbed"
+# Docker's default seccomp profile blocks CLONE_NEWUSER, which browser sandboxes need
+CONTAINER_SECURITY_OPT = ["seccomp=unconfined"]
 CONTAINER_ENV_NAME = "testbed"
 
 # Constants - Installation Logging
