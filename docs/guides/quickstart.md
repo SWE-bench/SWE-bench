@@ -37,11 +37,13 @@ swebench_multilingual = load_dataset('princeton-nlp/SWE-bench_Multilingual', spl
 To evaluate an LLM's performance on SWE-bench:
 
 ```bash
-python -m swebench.harness.run_evaluation \
-    --dataset_name princeton-nlp/SWE-bench_Lite \
-    --num_workers 4 \
-    --predictions_path <path_to_predictions>
+swebench eval lite -p <path_to_predictions> --run-id <run_id> -j 8
+
+# reference patches
+swebench eval lite --gold -i sympy__sympy-20590 --run-id validate-gold
 ```
+
+> The previous `python -m swebench.harness.run_evaluation ...` form still works.
 
 ### Check That Your Evaluation Setup Is Correct
 

@@ -64,6 +64,7 @@ nav:
     - "Datasets": guides/datasets.md
     - "Create RAG Datasets": guides/create_rag_datasets.md
     - "Reference":
+      - "CLI": reference/cli.md
       - "The Harness": reference/harness.md
       - "Inference": reference/inference.md
       - "Versioning": reference/versioning.md

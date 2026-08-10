@@ -64,11 +64,7 @@ pip install -e .
 
 Test your installation by running:
 ```bash
-python -m swebench.harness.run_evaluation \
-    --predictions_path gold \
-    --max_workers 1 \
-    --instance_ids sympy__sympy-20590 \
-    --run_id validate-gold
+swebench eval lite --gold -i sympy__sympy-20590 --run-id validate-gold
 ```
 > [!NOTE]
 > If using a MacOS M-series or other ARM-based systems, add `--namespace ''` to the above script.
@@ -78,15 +74,31 @@ python -m swebench.harness.run_evaluation \
 ## 💽 Usage
 Evaluate patch predictions on SWE-bench Lite with the following command:
 ```bash
-python -m swebench.harness.run_evaluation \
-    --dataset_name princeton-nlp/SWE-bench_Lite \
-    --predictions_path <path_to_predictions> \
-    --max_workers <num_workers> \
-    --run_id <run_id>
-    # use --predictions_path 'gold' to verify the gold patches
-    # use --run_id to name the evaluation run
-    # use --modal true to run on Modal
+swebench eval lite -p <path_to_predictions> --run-id <run_id> -j <num_workers>
 ```
+
+`DATASET` accepts an alias (`full`, `lite`, `verified`, `multimodal`, `multilingual`), a
+HuggingFace id, or a local path:
+
+```bash
+swebench eval verified --gold                 # reference patches
+swebench eval multimodal --gold -i carbon-design-system__carbon-10188
+swebench eval full -p preds.jsonl --modal     # run on Modal
+swebench report <run_id> -d verified          # re-grade saved logs, no containers
+```
+
+Other commands:
+
+```bash
+swebench images build verified -j 8           # build/pull images ahead of time
+swebench images check multilingual            # verify images exist on the registry
+swebench images clean --run-id <run_id>       # remove leftover containers
+swebench --help                               # all commands
+```
+
+> [!NOTE]
+> The previous `python -m swebench.harness.run_evaluation ...` form still works
+> and takes the same arguments as before.
 
 This command will generate docker build logs (`logs/build_images`) and evaluation logs (`logs/run_evaluation`) in the current directory.
 
@@ -103,7 +115,7 @@ The final evaluation results will be stored in the `evaluation_results` director
 
 To see the full list of arguments for the evaluation harness, run:
 ```bash
-python -m swebench.harness.run_evaluation --help
+swebench eval --help
 ```
 
 See the [evaluation tutorial](docs/guides/evaluation.md) for the full rundown on datasets you can evaluate.

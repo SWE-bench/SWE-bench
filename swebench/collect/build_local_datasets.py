@@ -293,7 +293,7 @@ def process_dataset(
 
 
 def main():
-    base_output = Path(os.environ.get("SWEBENCH_DATA_DIR", Path(__file__).parent.parent / "data"))
+    base_output = Path(os.environ.get("SWEBENCH_DATA_DIR", Path(__file__).parent.parent.parent / "data"))
 
     process_dataset(
         hf_name="SWE-bench/SWE-bench",

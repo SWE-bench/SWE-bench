@@ -53,7 +53,9 @@ At this point, for a repository, you should have...
 This step is the most manual of all parts.
 To create an appropriate execution environment for task instances from a new repository, you must do the following steps:
 * Assign a repository-specific *version* (i.e. `1.2`) to every task instance.
-* Specify repository+version-specific installation commands in `harness/constants.py`.
+* Specify repository+version-specific installation commands in the matching dockerfile repository
+  (`swe-bench-dockerfiles`, `swe-bench-multilingual-dockerfiles`, `swe-bench-multimodal-dockerfiles`),
+  under `src/sb_dockerfile_gen/`. These used to live in `harness/constants.py`, which no longer holds them.
 
 ### Part A: Versioning
 Determining a version for each task instance can be accomplished in a number of ways, depending on the availability + feasability with respect to each repository.

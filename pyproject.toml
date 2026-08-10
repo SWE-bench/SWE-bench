@@ -32,6 +32,7 @@ dependencies = [
     "python-dotenv",
     "requests",
     "rich",
+    "typer",
     "tenacity",
     "tqdm",
     "unidiff",
@@ -78,6 +79,9 @@ docs = [
 
 [tool.setuptools]
 include-package-data = true
+
+[project.scripts]
+swebench = "swebench.cli.cli:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "swebench.__version__"}
