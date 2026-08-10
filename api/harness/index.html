@@ -18555,12 +18555,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_swebench_dataset</span><span class="p">(</span>
+<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_swebench_dataset</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">"SWE-bench/SWE-bench"</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">"test"</span><span class="p">,</span> <span class="n">instance_ids</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SWEbenchInstance</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -18589,11 +18584,6 @@ If exclude_completed is True, only return instances that have not been run yet.<
         <span class="p">}:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s2">"SWE-bench/SWE-bench_Lite"</span>
         <span class="n">parquet_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">split</span><span class="si">}</span><span class="s2">.parquet"</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">parquet_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="c1"># fall back to the parquets bundled in the repo's data/ directory</span>
-            <span class="n">bundled</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"data"</span> <span class="o">/</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">split</span><span class="si">}</span><span class="s2">.parquet"</span>
-            <span class="k">if</span> <span class="n">bundled</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="n">parquet_path</span> <span class="o">=</span> <span class="n">bundled</span>
         <span class="k">if</span> <span class="n">parquet_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">"parquet"</span><span class="p">,</span> <span class="n">data_files</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">parquet_path</span><span class="p">),</span> <span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">))</span>
         <span class="k">elif</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">/</span> <span class="n">split</span> <span class="o">/</span> <span class="s2">"dataset_info.json"</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -18637,18 +18627,18 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">str2bool</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">str2bool</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Minor helper function to convert string to boolean</span>
 <span class="sd">    """</span>
@@ -18684,13 +18674,13 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">optional_str</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">optional_str</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert special string values to None, otherwise return the string as-is.</span>
 <span class="sd">    """</span>
@@ -18721,13 +18711,13 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_eval_script</span><span class="p">(</span><span class="n">eval_script</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_eval_script</span><span class="p">(</span><span class="n">eval_script</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Parse an eval.sh script into a command list (strip shebang + set flags)."""</span>
     <span class="k">return</span> <span class="p">[</span>
         <span class="n">line</span>
@@ -18760,7 +18750,12 @@ FAIL_TO_PASS, PASS_TO_PASS, log_parser, eval_type, eval_script.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">203</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
 <span class="normal">204</span>
 <span class="normal">205</span>
 <span class="normal">206</span>
@@ -18774,12 +18769,7 @@ FAIL_TO_PASS, PASS_TO_PASS, log_parser, eval_type, eval_script.</p>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_test_spec</span><span class="p">(</span><span class="n">instance</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestSpec</span><span class="p">:</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_test_spec</span><span class="p">(</span><span class="n">instance</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestSpec</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build a TestSpec from a dataset instance.</span>
 
