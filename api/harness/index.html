@@ -7164,7 +7164,8 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
-<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exec_run_with_timeout</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">60</span><span class="p">):</span>
+<span class="normal">145</span>
+<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exec_run_with_timeout</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">60</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a command in a container with a timeout.</span>
 
@@ -7200,7 +7201,8 @@ Performs this forcefully if the container cannot be stopped with the standard do
             <span class="n">container</span><span class="o">.</span><span class="n">exec_run</span><span class="p">(</span><span class="sa">f</span><span class="s2">"kill -TERM </span><span class="si">{</span><span class="n">exec_pid</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">detach</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">exec_result</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span> <span class="n">timed_out</span><span class="p">,</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="c1"># test output is arbitrary bytes; a stray non-UTF-8 byte must not kill the run</span>
+    <span class="k">return</span> <span class="n">exec_result</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">),</span> <span class="n">timed_out</span><span class="p">,</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
 </code></pre></div></td></tr></tbody></table></div>
             </details>
     </div>
@@ -16762,11 +16764,7 @@ Also reports on images and containers that may still running if client is provid
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 71</span>
 <span class="normal"> 72</span>
 <span class="normal"> 73</span>
 <span class="normal"> 74</span>
@@ -16834,7 +16832,12 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
-<span class="normal">139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_container</span><span class="p">(</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_container</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">,</span>
     <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -16884,6 +16887,7 @@ Also reports on images and containers that may still running if client is provid
                 <span class="n">user</span><span class="o">=</span><span class="n">CONTAINER_USER</span><span class="p">,</span>
                 <span class="n">detach</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">command</span><span class="o">=</span><span class="s2">"tail -f /dev/null"</span><span class="p">,</span>
+                <span class="n">security_opt</span><span class="o">=</span><span class="n">CONTAINER_SECURITY_OPT</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="n">docker</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">APIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">"409"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"Conflict"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
@@ -17058,12 +17062,7 @@ Also reports on images and containers that may still running if client is provid
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
@@ -17247,7 +17246,12 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instance</span><span class="p">(</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instance</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">pred</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">,</span>
@@ -17573,12 +17577,7 @@ Expects instances to have pre-built images.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">339</span>
 <span class="normal">340</span>
 <span class="normal">341</span>
 <span class="normal">342</span>
@@ -17615,7 +17614,12 @@ Expects instances to have pre-built images.</p>
 <span class="normal">373</span>
 <span class="normal">374</span>
 <span class="normal">375</span>
-<span class="normal">376</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances</span><span class="p">(</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances</span><span class="p">(</span>
     <span class="n">predictions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">instances</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -17684,12 +17688,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
@@ -17781,7 +17780,12 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">473</span>
 <span class="normal">474</span>
 <span class="normal">475</span>
-<span class="normal">476</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_from_preds</span><span class="p">(</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_from_preds</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -17903,12 +17907,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">484</span>
 <span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
@@ -17971,7 +17970,12 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">544</span>
 <span class="normal">545</span>
 <span class="normal">546</span>
-<span class="normal">547</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
