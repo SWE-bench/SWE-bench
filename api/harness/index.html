@@ -1557,6 +1557,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#swebench.harness.grading.SUITE_RAN" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;SUITE_RAN
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swebench.harness.grading.test_passed" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3934,6 +3945,17 @@
   
     <nav class="md-nav" aria-label="&nbsp;grading">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swebench.harness.grading.SUITE_RAN" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;SUITE_RAN
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#swebench.harness.grading.test_passed" class="md-nav__link">
@@ -7268,6 +7290,28 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
 
 
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="swebench.harness.grading.SUITE_RAN" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">SUITE_RAN</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">SUITE_RAN</span> <span class="o">=</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.compile">compile</span></span><span class="p">(</span><span class="s1">'Executed </span><span class="se">\\</span><span class="s1">d+ of </span><span class="se">\\</span><span class="s1">d+|TOTAL: </span><span class="se">\\</span><span class="s1">d+ (?:SUCCESS|FAILED)|</span><span class="se">\\</span><span class="s1">d+ passing|Tests:</span><span class="se">\\</span><span class="s1">s+</span><span class="se">\\</span><span class="s1">d+|Test Suites:|^# tests </span><span class="se">\\</span><span class="s1">d+'</span><span class="p">,</span> <span class="n"><span title="re">re</span></span><span class="o">.</span><span class="n"><span title="re.M">M</span></span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
 
 
 
@@ -7287,12 +7331,12 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_passed</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_passed</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="n">key</span> <span class="o">=</span> <span class="n">_resolve_case</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">sm</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sm</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span>
         <span class="n">TestStatus</span><span class="o">.</span><span class="n">PASSED</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
@@ -7322,12 +7366,12 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_maintained</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_maintained</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""P2P semantics: a skipped test is not a regression, unlike for F2P."""</span>
     <span class="n">key</span> <span class="o">=</span> <span class="n">_resolve_case</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">sm</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">test_passed</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">sm</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
@@ -7355,15 +7399,15 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_failed</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_failed</span><span class="p">(</span><span class="n">case</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="n">key</span> <span class="o">=</span> <span class="n">_resolve_case</span><span class="p">(</span><span class="n">case</span><span class="p">,</span> <span class="n">sm</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">sm</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span>
         <span class="n">TestStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
@@ -7431,21 +7475,7 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 89</span>
 <span class="normal"> 90</span>
 <span class="normal"> 91</span>
 <span class="normal"> 92</span>
@@ -7473,7 +7503,27 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
-<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_logs_eval</span><span class="p">(</span><span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span> <span class="n">log_fp</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_logs_eval</span><span class="p">(</span><span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span> <span class="n">log_fp</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Retrieve evaluation results for a task instance from its corresponding log file</span>
 
@@ -7515,6 +7565,12 @@ Performs this forcefully if the container cannot be stopped with the standard do
             <span class="c1"># differs, e.g. on Modal), so fall back to the whole log rather than</span>
             <span class="c1"># reporting a run with no results at all.</span>
             <span class="n">status_map</span> <span class="o">=</span> <span class="n">log_parser</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">status_map</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">SUITE_RAN</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+            <span class="c1"># No parsed results *and* no sign the suite ran: the run is invalid, not</span>
+            <span class="c1"># a pass. Under EvalType.FAIL_ONLY an absent test counts as success, so</span>
+            <span class="c1"># without this a suite that never started (e.g. a browser that fails to</span>
+            <span class="c1"># launch) scores every F2P test as resolved.</span>
+            <span class="k">return</span> <span class="p">{},</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">status_map</span><span class="p">,</span> <span class="kc">True</span>
 </code></pre></div></td></tr></tbody></table></div>
             </details>
@@ -7621,27 +7677,7 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
 <span class="normal">143</span>
@@ -7727,7 +7763,27 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
-<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_tests_report</span><span class="p">(</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_tests_report</span><span class="p">(</span>
     <span class="n">eval_status_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">gold_results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">calculate_to_fail</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -7858,14 +7914,14 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_fail_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_fail_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute fail-to-pass metric. Accepts single report as argument.</span>
 <span class="sd">    """</span>
@@ -7897,15 +7953,15 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_pass_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_pass_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute pass-to-pass metric. Accepts single report as argument.</span>
 <span class="sd">    """</span>
@@ -7947,24 +8003,24 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_resolution_status</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_resolution_status</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Determine resolved status of an evaluation instance</span>
 
@@ -8088,27 +8144,7 @@ and evaluation log.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">290</span>
 <span class="normal">291</span>
 <span class="normal">292</span>
 <span class="normal">293</span>
@@ -8144,7 +8180,27 @@ and evaluation log.</p>
 <span class="normal">323</span>
 <span class="normal">324</span>
 <span class="normal">325</span>
-<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_report</span><span class="p">(</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_report</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">prediction</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">test_log_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -16957,7 +17013,13 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
-<span class="normal">139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_container</span><span class="p">(</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_container</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">,</span>
     <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -17007,6 +17069,9 @@ Also reports on images and containers that may still running if client is provid
                 <span class="n">user</span><span class="o">=</span><span class="n">CONTAINER_USER</span><span class="p">,</span>
                 <span class="n">detach</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">command</span><span class="o">=</span><span class="s2">"tail -f /dev/null"</span><span class="p">,</span>
+                <span class="c1"># Docker's default seccomp profile only permits CLONE_NEWUSER with</span>
+                <span class="c1"># CAP_SYS_ADMIN, which browser sandboxes need (e.g. openlayers karma)</span>
+                <span class="n">cap_add</span><span class="o">=</span><span class="p">[</span><span class="s2">"SYS_ADMIN"</span><span class="p">],</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="n">docker</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">APIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">"409"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"Conflict"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
@@ -17020,6 +17085,9 @@ Also reports on images and containers that may still running if client is provid
                     <span class="n">user</span><span class="o">=</span><span class="n">CONTAINER_USER</span><span class="p">,</span>
                     <span class="n">detach</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">command</span><span class="o">=</span><span class="s2">"tail -f /dev/null"</span><span class="p">,</span>
+                <span class="c1"># Docker's default seccomp profile only permits CLONE_NEWUSER with</span>
+                <span class="c1"># CAP_SYS_ADMIN, which browser sandboxes need (e.g. openlayers karma)</span>
+                <span class="n">cap_add</span><span class="o">=</span><span class="p">[</span><span class="s2">"SYS_ADMIN"</span><span class="p">],</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span>
@@ -17181,13 +17249,7 @@ Also reports on images and containers that may still running if client is provid
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
@@ -17370,7 +17432,13 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instance</span><span class="p">(</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instance</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">pred</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">,</span>
@@ -17696,13 +17764,7 @@ Expects instances to have pre-built images.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">340</span>
 <span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
@@ -17738,7 +17800,13 @@ Expects instances to have pre-built images.</p>
 <span class="normal">373</span>
 <span class="normal">374</span>
 <span class="normal">375</span>
-<span class="normal">376</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances</span><span class="p">(</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances</span><span class="p">(</span>
     <span class="n">predictions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">instances</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -17807,13 +17875,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
 <span class="normal">388</span>
@@ -17904,7 +17966,13 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">473</span>
 <span class="normal">474</span>
 <span class="normal">475</span>
-<span class="normal">476</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_from_preds</span><span class="p">(</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_from_preds</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -18026,13 +18094,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
@@ -18094,7 +18156,13 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">544</span>
 <span class="normal">545</span>
 <span class="normal">546</span>
-<span class="normal">547</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
