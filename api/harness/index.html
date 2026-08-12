@@ -16327,7 +16327,7 @@ Raises an exception if credentials are not configured.</p>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="docker.DockerClient">DockerClient</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pathlib.Path">Path</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="docker.DockerClient">DockerClient</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">'.'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pathlib.Path">Path</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -16561,11 +16561,15 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
-<span class="normal">134</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_run_report</span><span class="p">(</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_run_report</span><span class="p">(</span>
     <span class="n">predictions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">full_dataset</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">report_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Make a final evaluation and run report of the instances that have been run.</span>
@@ -16674,7 +16678,9 @@ Also reports on images and containers that may still running if client is provid
                 <span class="s2">"unremoved_images"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unremoved_images</span><span class="p">)),</span>
             <span class="p">}</span>
         <span class="p">)</span>
-    <span class="n">report_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
+    <span class="n">report_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">report_dir</span><span class="p">)</span>
+    <span class="n">report_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">report_file</span> <span class="o">=</span> <span class="n">report_dir</span> <span class="o">/</span> <span class="p">(</span>
         <span class="nb">list</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"model_name_or_path"</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="s2">"__"</span><span class="p">)</span>
         <span class="o">+</span> <span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">run_id</span><span class="si">}</span><span class="s2">"</span>
         <span class="o">+</span> <span class="s2">".json"</span>
@@ -18217,7 +18223,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"No instances to run."</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># run instances (images assumed to be pre-built)</span>
         <span class="n">run_instances</span><span class="p">(</span>
@@ -18230,7 +18236,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
         <span class="p">)</span>
 
     <span class="c1"># make final report</span>
-    <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">)</span>
 </code></pre></div></td></tr></tbody></table></div>
             </details>
     </div>
