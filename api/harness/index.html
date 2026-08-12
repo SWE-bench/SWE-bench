@@ -12691,7 +12691,8 @@ Returns:
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
-<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_pytest_v2</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="normal">170</span>
+<span class="normal">171</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_pytest_v2</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parser for test logs generated with PyTest framework (Later Version)</span>
 
@@ -12708,15 +12709,16 @@ Returns:
         <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">translator</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">TestStatus</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">TestStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
-                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">" - "</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span>
+                <span class="c1"># drop the trailing " - &lt;assertion message&gt;" so it can't enter the id</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">" - "</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">test_case</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_case</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">test_status_map</span><span class="p">[</span><span class="n">test_case</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">test_case</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">test_status_map</span><span class="p">[</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_case</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span> <span class="o">=</span> <span class="n">test_case</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="c1"># Support older pytest versions by checking if the line ends with the test status</span>
         <span class="k">elif</span> <span class="nb">any</span><span class="p">([</span><span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">TestStatus</span><span class="p">]):</span>
             <span class="n">test_case</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_case</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">test_status_map</span><span class="p">[</span><span class="n">test_case</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">test_case</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">test_status_map</span><span class="p">[</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_case</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span> <span class="o">=</span> <span class="n">test_case</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">test_status_map</span>
 </code></pre></div></td></tr></tbody></table></div>
             </details>
@@ -12775,8 +12777,7 @@ Returns:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/log_parsers/python.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
-<span class="normal">174</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
@@ -12799,7 +12800,8 @@ Returns:
 <span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_seaborn</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="normal">197</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_seaborn</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parser for test logs generated with seaborn testing framework</span>
 
@@ -12881,8 +12883,7 @@ Returns:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/log_parsers/python.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
-<span class="normal">201</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
@@ -12908,7 +12909,8 @@ Returns:
 <span class="normal">224</span>
 <span class="normal">225</span>
 <span class="normal">226</span>
-<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_sympy</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="normal">227</span>
+<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_sympy</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parser for test logs generated with Sympy framework</span>
 
@@ -12993,8 +12995,7 @@ Returns:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/log_parsers/python.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
 <span class="normal">234</span>
@@ -13014,7 +13015,8 @@ Returns:
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_matplotlib</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="normal">251</span>
+<span class="normal">252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_log_matplotlib</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parser for test logs generated with PyTest framework</span>
 
