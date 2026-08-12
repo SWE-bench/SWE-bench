@@ -1007,6 +1007,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#result-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Caching
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dataset-options" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1445,6 +1456,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#result-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Caching
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dataset-options" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1656,6 +1678,14 @@
 </tbody>
 </table>
 <p>Most users should use the default <code>env</code> level, which provides a good balance between speed and storage usage.</p>
+<h2 id="result-caching">Result Caching</h2>
+<p>The evaluation harness caches evaluation results by <code>run_id</code> and <code>instance_id</code>. This means:</p>
+<ul>
+<li>If you run the same instance with the same <code>run_id</code> multiple times, the harness will reuse the cached results from the first run</li>
+<li><strong>The cache does not consider the prediction diff content</strong> - even if you provide a different prediction diff for the same <code>run_id</code> and <code>instance_id</code>, the harness will return the cached results without re-evaluating</li>
+<li>To re-evaluate an instance with a different prediction diff, you must use a different <code>run_id</code></li>
+</ul>
+<p>This caching behavior is designed to speed up repeated evaluations, but it's important to be aware that changing the prediction diff alone will not trigger a re-evaluation.</p>
 <h2 id="dataset-options">Dataset Options</h2>
 <p>The harness supports evaluation on various SWE-bench datasets:</p>
 <ul>

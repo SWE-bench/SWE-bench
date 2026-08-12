@@ -812,6 +812,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#result-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#cleaning-up-resources" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1429,6 +1440,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#result-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#cleaning-up-resources" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1571,6 +1593,9 @@ sb<span class="w"> </span>submit<span class="w"> </span>--predictions<span class
 <span class="w">    </span>--cache_level<span class="w"> </span>env<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># Options: none, base, env, instance</span>
 <span class="w">    </span>--max_workers<span class="w"> </span><span class="m">8</span>
 </code></pre></div>
+<h3 id="result-caching">Result Caching</h3>
+<p>The evaluation harness caches results by <code>run_id</code> and <code>instance_id</code>. This means that if you run the same instance with the same <code>run_id</code> multiple times, even with different prediction diffs, the harness will reuse the cached results from the first run and will not re-evaluate the instance. </p>
+<p><strong>Important</strong>: If you want to re-evaluate an instance with a different prediction diff, you must use a different <code>run_id</code> to ensure the new prediction is evaluated.</p>
 <h3 id="cleaning-up-resources">Cleaning Up Resources</h3>
 <p>To automatically clean up resources after evaluation, use the <code>--clean</code> parameter:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span><span class="se">\</span>
