@@ -7467,7 +7467,13 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
-<span class="normal">111</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_logs_eval</span><span class="p">(</span><span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span> <span class="n">log_fp</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_logs_eval</span><span class="p">(</span><span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span> <span class="n">log_fp</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Retrieve evaluation results for a task instance from its corresponding log file</span>
 
@@ -7502,8 +7508,14 @@ Performs this forcefully if the container cannot be stopped with the standard do
             <span class="k">return</span> <span class="p">{},</span> <span class="kc">False</span>
 
         <span class="c1"># Get status map of evaluation results</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">START_TEST_OUTPUT</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">END_TEST_OUTPUT</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">log_parser</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">),</span> <span class="kc">True</span>
+        <span class="n">sliced</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">START_TEST_OUTPUT</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">END_TEST_OUTPUT</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">status_map</span> <span class="o">=</span> <span class="n">log_parser</span><span class="p">(</span><span class="n">sliced</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">status_map</span><span class="p">:</span>
+            <span class="c1"># Some runners emit results outside the markers (stdout/stderr ordering</span>
+            <span class="c1"># differs, e.g. on Modal), so fall back to the whole log rather than</span>
+            <span class="c1"># reporting a run with no results at all.</span>
+            <span class="n">status_map</span> <span class="o">=</span> <span class="n">log_parser</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status_map</span><span class="p">,</span> <span class="kc">True</span>
 </code></pre></div></td></tr></tbody></table></div>
             </details>
     </div>
@@ -7609,13 +7621,7 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">120</span>
 <span class="normal">121</span>
 <span class="normal">122</span>
 <span class="normal">123</span>
@@ -7715,7 +7721,13 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="normal">217</span>
 <span class="normal">218</span>
 <span class="normal">219</span>
-<span class="normal">220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_tests_report</span><span class="p">(</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_tests_report</span><span class="p">(</span>
     <span class="n">eval_status_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">gold_results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">calculate_to_fail</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -7846,14 +7858,14 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_fail_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_fail_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute fail-to-pass metric. Accepts single report as argument.</span>
 <span class="sd">    """</span>
@@ -7885,15 +7897,15 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_pass_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_pass_to_pass</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute pass-to-pass metric. Accepts single report as argument.</span>
 <span class="sd">    """</span>
@@ -7935,13 +7947,7 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
@@ -7952,7 +7958,13 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="normal">258</span>
 <span class="normal">259</span>
 <span class="normal">260</span>
-<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_resolution_status</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_resolution_status</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Determine resolved status of an evaluation instance</span>
 
@@ -8076,13 +8088,7 @@ and evaluation log.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/grading.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">270</span>
 <span class="normal">271</span>
 <span class="normal">272</span>
 <span class="normal">273</span>
@@ -8132,7 +8138,13 @@ and evaluation log.</p>
 <span class="normal">317</span>
 <span class="normal">318</span>
 <span class="normal">319</span>
-<span class="normal">320</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_report</span><span class="p">(</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_report</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">prediction</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">test_log_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
