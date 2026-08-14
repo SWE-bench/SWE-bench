@@ -751,8 +751,6 @@
       
         
       
-        
-      
     
     
     
@@ -946,17 +944,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#swebench-dataset-versions-instances_path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        swebench dataset versions INSTANCES_PATH
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1038,34 +1025,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../versioning/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Versioning
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1082,8 +1041,6 @@
   
     
     
-      
-        
       
         
       
@@ -1175,34 +1132,6 @@
     
   
     Inference
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/versioning/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Versioning
   
 
     
@@ -1341,17 +1270,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#swebench-dataset-versions-instances_path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        swebench dataset versions INSTANCES_PATH
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1473,12 +1391,8 @@ swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class=
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>collect<span class="w"> </span>scikit-learn/scikit-learn
 swebench<span class="w"> </span>dataset<span class="w"> </span>collect<span class="w"> </span>psf/requests<span class="w"> </span>--max-pulls<span class="w"> </span><span class="m">200</span><span class="w"> </span>--cutoff-date<span class="w"> </span><span class="m">20230101</span>
 </code></pre></div>
-<h3 id="swebench-dataset-versions-instances_path"><code>swebench dataset versions INSTANCES_PATH</code></h3>
-<p>Attach a version to each candidate instance. Install specs are keyed by version,
-so instances without one cannot be built.</p>
-<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>versions<span class="w"> </span>tasks/scikit-learn-task-instances.jsonl
-swebench<span class="w"> </span>dataset<span class="w"> </span>versions<span class="w"> </span>tasks/foo.jsonl<span class="w"> </span>--retrieval-method<span class="w"> </span>build<span class="w"> </span>--testbed<span class="w"> </span>/tmp/tb
-</code></pre></div>
+<p>Versioning candidate instances is no longer part of this CLI. That tooling lives with
+the task data, at <a href="https://github.com/SWE-bench/swe-bench-dockerfiles/tree/main/src/versioning">swe-bench-dockerfiles/src/versioning</a>.</p>
 <h2 id="older-invocations">Older invocations</h2>
 <p>Every module is still runnable directly, with the same arguments as before:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span>--dataset_name<span class="w"> </span>...<span class="w"> </span>--predictions_path<span class="w"> </span>...

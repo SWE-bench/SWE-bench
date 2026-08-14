@@ -21,10 +21,6 @@
          <lastmod>2026-08-14</lastmod>
     </url>
     <url>
-         <loc>https://swe-bench.com/api/versioning/</loc>
-         <lastmod>2026-08-14</lastmod>
-    </url>
-    <url>
          <loc>https://swe-bench.com/assets/collection/</loc>
          <lastmod>2026-08-14</lastmod>
     </url>
@@ -78,10 +74,6 @@
     </url>
     <url>
          <loc>https://swe-bench.com/reference/inference/</loc>
-         <lastmod>2026-08-14</lastmod>
-    </url>
-    <url>
-         <loc>https://swe-bench.com/reference/versioning/</loc>
          <lastmod>2026-08-14</lastmod>
     </url>
 </urlset>
