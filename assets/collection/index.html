@@ -1178,14 +1178,14 @@ Supply the <em>repository name(s)</em> and <em>logging folders</em> as arguments
 To create an appropriate execution environment for task instances from a new repository, you must do the following steps:
 * Assign a repository-specific <em>version</em> (i.e. <code>1.2</code>) to every task instance.
 * Specify repository+version-specific installation commands in the matching task data repository
-  (<code>swe-bench-dockerfiles</code>, <code>swe-bench-multilingual-dockerfiles</code>, <code>swe-bench-multimodal-dockerfiles</code>),
+  (<code>swe-bench-tasks</code>, <code>swe-bench-multilingual-tasks</code>, <code>swe-bench-multimodal-tasks</code>),
   under <code>src/sb_dockerfile_gen/</code>. These used to live in <code>harness/constants.py</code>, which no longer holds them.</p>
 <h3 id="part-a-versioning">Part A: Versioning</h3>
 <p>Determining a version for each task instance can be accomplished in a number of ways, depending on the availability + feasability with respect to each repository.
 * Scrape from code: A version is explicitly specified in the codebase (in <code>__init__.py</code> or <code>_version.py</code> for PyPI packages).
 * Scrape from web: Repositories with websites (i.e. <a href="https://xarray.dev/">xarray.dev</a>) have a "Releases" or "What's New" page (i.e. <a href="https://docs.xarray.dev/en/stable/whats-new.html">release page</a> for xarray). This can be scraped for information.
 * Build from code: Sometimes, version-related files (i.e. <code>_version.py</code>) are purposely omitted by a developer (check <code>.gitignore</code> to verify). In this case, per task instance you can build the repository source code locally and extract the version number from the built codebase.</p>
-<p>Versioning tooling now lives with the task data, at <a href="https://github.com/SWE-bench/swe-bench-dockerfiles/tree/main/src/versioning">swe-bench-dockerfiles/src/versioning</a>.</p>
+<p>Versioning tooling now lives with the task data, at <a href="https://github.com/SWE-bench/swe-bench-tasks/tree/main/src/versioning">swe-bench-tasks/src/versioning</a>.</p>
 <h3 id="part-b-installation-configurations">Part B: Installation Configurations</h3>
 <p>Per repository, you must provide installation instructions per version. In <code>constants.py</code>...
 1. In <code>MAP_VERSION_TO_INSTALL</code>, declare a <code>&lt;repo owner/name&gt;: MAP_VERSION_TO_INSTALL_&lt;repo name&gt;</code> key/value pair.

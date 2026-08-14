@@ -1383,8 +1383,8 @@ push the result to HuggingFace.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class="w"> </span>multimodal<span class="w"> </span>-s<span class="w"> </span><span class="nb">test</span>
 swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class="w"> </span>verified<span class="w"> </span>--task-repos<span class="w"> </span>~/code
 </code></pre></div>
-<p>It expects the <code>swe-bench-dockerfiles</code>, <code>swe-bench-multilingual-dockerfiles</code> and
-<code>swe-bench-multimodal-dockerfiles</code> checkouts, found via <code>--task-repos</code> or
+<p>It expects the <code>swe-bench-tasks</code>, <code>swe-bench-multilingual-tasks</code> and
+<code>swe-bench-multimodal-tasks</code> checkouts, found via <code>--task-repos</code> or
 <code>SWEBENCH_TASK_REPOS</code>.</p>
 <h3 id="swebench-dataset-collect-repos"><code>swebench dataset collect REPOS...</code></h3>
 <p>Scrape pull requests from GitHub into candidate task instances.</p>
@@ -1392,7 +1392,7 @@ swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class=
 swebench<span class="w"> </span>dataset<span class="w"> </span>collect<span class="w"> </span>psf/requests<span class="w"> </span>--max-pulls<span class="w"> </span><span class="m">200</span><span class="w"> </span>--cutoff-date<span class="w"> </span><span class="m">20230101</span>
 </code></pre></div>
 <p>Versioning candidate instances is no longer part of this CLI. That tooling lives with
-the task data, at <a href="https://github.com/SWE-bench/swe-bench-dockerfiles/tree/main/src/versioning">swe-bench-dockerfiles/src/versioning</a>.</p>
+the task data, at <a href="https://github.com/SWE-bench/swe-bench-tasks/tree/main/src/versioning">swe-bench-tasks/src/versioning</a>.</p>
 <h2 id="older-invocations">Older invocations</h2>
 <p>Every module is still runnable directly, with the same arguments as before:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span>--dataset_name<span class="w"> </span>...<span class="w"> </span>--predictions_path<span class="w"> </span>...
