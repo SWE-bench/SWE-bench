@@ -1378,14 +1378,14 @@ partially-pushed image set in seconds rather than one instance at a time.</p>
 <h3 id="swebench-dataset-build-dataset"><code>swebench dataset build DATASET</code></h3>
 <p>Regenerate a dataset's parquet. This joins the public columns from HuggingFace
 with the <code>eval_script</code>, <code>log_parser</code>, <code>eval_type</code> and <code>image</code> fields produced by
-the dockerfile repositories' generators. Run it after changing a generator, then
+the task data repositories' generators. Run it after changing a generator, then
 push the result to HuggingFace.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class="w"> </span>multimodal<span class="w"> </span>-s<span class="w"> </span><span class="nb">test</span>
-swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class="w"> </span>verified<span class="w"> </span>--dockerfile-repos<span class="w"> </span>~/code
+swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class="w"> </span>verified<span class="w"> </span>--task-repos<span class="w"> </span>~/code
 </code></pre></div>
 <p>It expects the <code>swe-bench-dockerfiles</code>, <code>swe-bench-multilingual-dockerfiles</code> and
-<code>swe-bench-multimodal-dockerfiles</code> checkouts, found via <code>--dockerfile-repos</code> or
-<code>SWEBENCH_DOCKERFILE_REPOS</code>.</p>
+<code>swe-bench-multimodal-dockerfiles</code> checkouts, found via <code>--task-repos</code> or
+<code>SWEBENCH_TASK_REPOS</code>.</p>
 <h3 id="swebench-dataset-collect-repos"><code>swebench dataset collect REPOS...</code></h3>
 <p>Scrape pull requests from GitHub into candidate task instances.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>collect<span class="w"> </span>scikit-learn/scikit-learn
