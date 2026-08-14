@@ -1300,7 +1300,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </code></pre></div>
 <h2 id="running-a-basic-evaluation">Running a Basic Evaluation</h2>
 <p>To evaluate an LLM's performance on SWE-bench:</p>
-<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>lite<span class="w"> </span>-p<span class="w"> </span>&lt;path_to_predictions&gt;<span class="w"> </span>--run-id<span class="w"> </span>&lt;run_id&gt;<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>verified<span class="w"> </span>-p<span class="w"> </span>&lt;path_to_predictions&gt;<span class="w"> </span>--run-id<span class="w"> </span>&lt;run_id&gt;<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
 
 <span class="c1"># reference patches</span>
 swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>lite<span class="w"> </span>--gold<span class="w"> </span>-i<span class="w"> </span>sympy__sympy-20590<span class="w"> </span>--run-id<span class="w"> </span>validate-gold

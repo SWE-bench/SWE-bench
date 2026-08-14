@@ -3200,6 +3200,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swebench.harness.run_evaluation.load_instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;load_instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swebench.harness.run_evaluation.get_dataset_from_preds" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5682,6 +5693,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;run_instances
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench.harness.run_evaluation.load_instances" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;load_instances
       
     </span>
   </a>
@@ -17606,8 +17628,7 @@ Also reports on images and containers that may still running if client is provid
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 69</span>
-<span class="normal"> 70</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 70</span>
 <span class="normal"> 71</span>
 <span class="normal"> 72</span>
 <span class="normal"> 73</span>
@@ -17684,7 +17705,9 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
-<span class="normal">147</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_container</span><span class="p">(</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_container</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">,</span>
     <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -17742,6 +17765,7 @@ Also reports on images and containers that may still running if client is provid
             <span class="k">if</span> <span class="s2">"409"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"Conflict"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
                 <span class="c1"># Ghost container — use a unique suffix</span>
                 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
                 <span class="n">container_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Retrying with unique name: </span><span class="si">{</span><span class="n">container_name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">container</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
@@ -17750,9 +17774,9 @@ Also reports on images and containers that may still running if client is provid
                     <span class="n">user</span><span class="o">=</span><span class="n">CONTAINER_USER</span><span class="p">,</span>
                     <span class="n">detach</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">command</span><span class="o">=</span><span class="s2">"tail -f /dev/null"</span><span class="p">,</span>
-                <span class="c1"># Docker's default seccomp profile only permits CLONE_NEWUSER with</span>
-                <span class="c1"># CAP_SYS_ADMIN, which browser sandboxes need (e.g. openlayers karma)</span>
-                <span class="n">cap_add</span><span class="o">=</span><span class="p">[</span><span class="s2">"SYS_ADMIN"</span><span class="p">],</span>
+                    <span class="c1"># Docker's default seccomp profile only permits CLONE_NEWUSER with</span>
+                    <span class="c1"># CAP_SYS_ADMIN, which browser sandboxes need (e.g. openlayers karma)</span>
+                    <span class="n">cap_add</span><span class="o">=</span><span class="p">[</span><span class="s2">"SYS_ADMIN"</span><span class="p">],</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span>
@@ -17777,7 +17801,7 @@ Also reports on images and containers that may still running if client is provid
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_instance</span><span class="p">(</span><span class="n">test_spec</span><span class="p">:</span> <span class="n"><span title="swebench.types.TestSpec">TestSpec</span></span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n"><span title="docker.DockerClient">DockerClient</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">skip_patch</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">assets_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_instance</span><span class="p">(</span><span class="n">test_spec</span><span class="p">:</span> <span class="n"><span title="swebench.types.TestSpec">TestSpec</span></span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n"><span title="docker.DockerClient">DockerClient</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">skip_patch</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -17914,10 +17938,7 @@ Also reports on images and containers that may still running if client is provid
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span>
@@ -18112,7 +18133,12 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
-<span class="normal">422</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instance</span><span class="p">(</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instance</span><span class="p">(</span>
     <span class="n">test_spec</span><span class="p">:</span> <span class="n">TestSpec</span><span class="p">,</span>
     <span class="n">pred</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">,</span>
@@ -18120,7 +18146,7 @@ Also reports on images and containers that may still running if client is provid
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">rewrite_reports</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">skip_patch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">assets_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">task_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a single instance with the given prediction.</span>
@@ -18178,7 +18204,9 @@ Also reports on images and containers that may still running if client is provid
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"Intermediate patch for </span><span class="si">{</span><span class="n">instance_id</span><span class="si">}</span><span class="s2"> written to </span><span class="si">{</span><span class="n">patch_file</span><span class="si">}</span><span class="s2">, now applying to container..."</span>
             <span class="p">)</span>
-            <span class="n">copy_to_container</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">patch_file</span><span class="p">,</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">CONTAINER_PATCH_FILE</span><span class="p">))</span>
+            <span class="n">copy_to_container</span><span class="p">(</span>
+                <span class="n">container</span><span class="p">,</span> <span class="n">patch_file</span><span class="p">,</span> <span class="n">PurePosixPath</span><span class="p">(</span><span class="n">CONTAINER_PATCH_FILE</span><span class="p">)</span>
+            <span class="p">)</span>
 
             <span class="c1"># Attempt to apply patch to container</span>
             <span class="n">applied_patch</span> <span class="o">=</span> <span class="kc">False</span>
@@ -18237,7 +18265,7 @@ Also reports on images and containers that may still running if client is provid
         <span class="c1"># them as urls in image_assets; without this the tests run against a</span>
         <span class="c1"># missing baseline and error out.</span>
         <span class="n">restore_cmds</span> <span class="o">=</span> <span class="n">_stage_image_assets</span><span class="p">(</span>
-            <span class="n">container</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">,</span> <span class="n">log_dir</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">assets_dir</span>
+            <span class="n">container</span><span class="p">,</span> <span class="n">test_spec</span><span class="p">,</span> <span class="n">log_dir</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">task_repo</span>
         <span class="p">)</span>
 
         <span class="n">eval_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">log_dir</span> <span class="o">/</span> <span class="s2">"eval.sh"</span><span class="p">)</span>
@@ -18325,7 +18353,7 @@ Also reports on images and containers that may still running if client is provid
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_instances</span><span class="p">(</span><span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">instances</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">skip_patch</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">assets_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run_instances</span><span class="p">(</span><span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">instances</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">skip_patch</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -18447,12 +18475,7 @@ Expects instances to have pre-built images.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
 <span class="normal">433</span>
@@ -18491,7 +18514,12 @@ Expects instances to have pre-built images.</p>
 <span class="normal">466</span>
 <span class="normal">467</span>
 <span class="normal">468</span>
-<span class="normal">469</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances</span><span class="p">(</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances</span><span class="p">(</span>
     <span class="n">predictions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">instances</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">max_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -18499,7 +18527,7 @@ Expects instances to have pre-built images.</p>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">rewrite_reports</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">skip_patch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">assets_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">task_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run all instances for the given predictions in parallel.</span>
@@ -18528,7 +18556,7 @@ Expects instances to have pre-built images.</p>
                 <span class="n">timeout</span><span class="p">,</span>
                 <span class="n">rewrite_reports</span><span class="p">,</span>
                 <span class="n">skip_patch</span><span class="p">,</span>
-                <span class="n">assets_dir</span><span class="p">,</span>
+                <span class="n">task_repo</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
@@ -18545,12 +18573,49 @@ Expects instances to have pre-built images.</p>
 <div class="doc doc-object doc-function">
 
 
+<h5 id="swebench.harness.run_evaluation.load_instances" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">load_instances</span>
+
+
+</h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_instances</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Instances come from the task repo when one is given, else from the dataset.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_instances</span><span class="p">(</span>
+    <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Instances come from the task repo when one is given, else from the dataset."""</span>
+    <span class="k">if</span> <span class="n">task_repo</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">load_task_repo</span><span class="p">(</span><span class="n">task_repo</span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">load_swebench_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">)</span>
+</code></pre></div></td></tr></tbody></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h5 id="swebench.harness.run_evaluation.get_dataset_from_preds" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">get_dataset_from_preds</span>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_dataset_from_preds</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">exclude_completed</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_dataset_from_preds</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">exclude_completed</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -18562,21 +18627,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span>
@@ -18659,7 +18710,22 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">566</span>
 <span class="normal">567</span>
 <span class="normal">568</span>
-<span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_from_preds</span><span class="p">(</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_from_preds</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -18667,6 +18733,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
     <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">rewrite_reports</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">exclude_completed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">task_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return only instances that have predictions and are in the dataset.</span>
@@ -18674,7 +18741,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="sd">    If exclude_completed is True, only return instances that have not been run yet.</span>
 <span class="sd">    """</span>
     <span class="c1"># load dataset</span>
-    <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_swebench_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_instances</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">)</span>
     <span class="n">dataset_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">[</span><span class="s2">"instance_id"</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">}</span>
 
     <span class="k">if</span> <span class="n">instance_ids</span><span class="p">:</span>
@@ -18771,7 +18838,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">open_file_limit</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">modal</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">report_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">'.'</span><span class="p">,</span> <span class="n">assets_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">open_file_limit</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">modal</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">report_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">'.'</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -18781,24 +18848,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">623</span>
-<span class="normal">624</span>
-<span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">640</span>
 <span class="normal">641</span>
 <span class="normal">642</span>
 <span class="normal">643</span>
@@ -18856,7 +18906,29 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">695</span>
 <span class="normal">696</span>
 <span class="normal">697</span>
-<span class="normal">698</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span>
+<span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -18868,7 +18940,6 @@ If exclude_completed is True, only return instances that have not been run yet.<
     <span class="n">rewrite_reports</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">modal</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">report_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
-    <span class="n">assets_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">task_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -18893,9 +18964,15 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
     <span class="c1"># get dataset from predictions</span>
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">get_dataset_from_preds</span><span class="p">(</span>
-        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">rewrite_reports</span>
+        <span class="n">dataset_name</span><span class="p">,</span>
+        <span class="n">split</span><span class="p">,</span>
+        <span class="n">instance_ids</span><span class="p">,</span>
+        <span class="n">predictions</span><span class="p">,</span>
+        <span class="n">run_id</span><span class="p">,</span>
+        <span class="n">rewrite_reports</span><span class="p">,</span>
+        <span class="n">task_repo</span><span class="o">=</span><span class="n">task_repo</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">full_dataset</span> <span class="o">=</span> <span class="n">load_swebench_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">)</span>
+    <span class="n">full_dataset</span> <span class="o">=</span> <span class="n">load_instances</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">modal</span><span class="p">:</span>
         <span class="c1"># run instances on Modal</span>
@@ -18927,7 +19004,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
             <span class="n">run_id</span><span class="p">,</span>
             <span class="n">timeout</span><span class="p">,</span>
             <span class="n">rewrite_reports</span><span class="o">=</span><span class="n">rewrite_reports</span><span class="p">,</span>
-            <span class="n">assets_dir</span><span class="o">=</span><span class="n">assets_dir</span><span class="p">,</span>
+            <span class="n">task_repo</span><span class="o">=</span><span class="n">task_repo</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="c1"># make final report</span>
