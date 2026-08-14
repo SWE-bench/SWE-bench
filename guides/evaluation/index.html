@@ -847,6 +847,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Understanding Evaluation Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-the-counts-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the counts mean
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-ran-successfully-can-disagree-with-the-error-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why "ran successfully" can disagree with the error count
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1475,6 +1503,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Understanding Evaluation Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-the-counts-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the counts mean
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-ran-successfully-can-disagree-with-the-error-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why "ran successfully" can disagree with the error count
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1603,20 +1659,104 @@ sb<span class="w"> </span>submit<span class="w"> </span>--predictions<span class
 <span class="w">    </span>--clean<span class="w"> </span>True
 </code></pre></div>
 <h2 id="understanding-evaluation-results">Understanding Evaluation Results</h2>
-<p>The evaluation results are stored in the <code>evaluation_results</code> directory, with subdirectories for each run. Each run produces:</p>
-<ul>
-<li><code>results.json</code>: Overall evaluation metrics</li>
-<li><code>instance_results.jsonl</code>: Detailed results for each instance</li>
-<li><code>run_logs/</code>: Logs for each evaluation instance</li>
-</ul>
-<p>Key metrics include:</p>
-<ul>
-<li><strong>Total instances</strong>: Number of instances in the dataset</li>
-<li><strong>Instances submitted</strong>: Number of instances the model attempted</li>
-<li><strong>Instances completed</strong>: Number of instances that completed evaluation</li>
-<li><strong>Instances resolved</strong>: Number of instances where the patch fixed the issue</li>
-<li><strong>Resolution rate</strong>: Percentage of submitted instances successfully resolved</li>
-</ul>
+<p>A run writes two things.</p>
+<p>A summary file in the directory you ran from, named <code>&lt;model&gt;.&lt;run_id&gt;.json</code>. Pass <code>--report_dir</code> to put it somewhere else.</p>
+<p>A folder per instance, at <code>logs/run_evaluation/&lt;run_id&gt;/&lt;model&gt;/&lt;instance_id&gt;/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>report.json</code></td>
+<td>The result for that one instance</td>
+</tr>
+<tr>
+<td><code>test_output.txt</code></td>
+<td>Everything the tests printed</td>
+</tr>
+<tr>
+<td><code>run_instance.log</code></td>
+<td>What the harness did, and why it stopped if it failed</td>
+</tr>
+<tr>
+<td><code>eval.sh</code></td>
+<td>The script that ran the tests</td>
+</tr>
+<tr>
+<td><code>patch.diff</code></td>
+<td>The patch that was applied</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-the-counts-mean">What the counts mean</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total instances</td>
+<td>Tasks in the dataset you chose</td>
+</tr>
+<tr>
+<td>Instances submitted</td>
+<td>Predictions you gave it</td>
+</tr>
+<tr>
+<td>Instances completed</td>
+<td>Instances that produced a <code>report.json</code></td>
+</tr>
+<tr>
+<td>Instances incomplete</td>
+<td>In the dataset, but you gave no prediction for them</td>
+</tr>
+<tr>
+<td>Instances resolved</td>
+<td>The patch made the required tests pass</td>
+</tr>
+<tr>
+<td>Instances unresolved</td>
+<td>The tests ran, but did not pass</td>
+</tr>
+<tr>
+<td>Instances with empty patches</td>
+<td>The prediction was empty, so nothing ran</td>
+</tr>
+<tr>
+<td>Instances with errors</td>
+<td>No result could be produced at all</td>
+</tr>
+<tr>
+<td>Instances with likely infrastructure failures</td>
+<td>Failed for an environment reason, such as a browser that never started</td>
+</tr>
+<tr>
+<td>Instances with ambiguous failures</td>
+<td>Failed for a reason that could be the environment or the patch</td>
+</tr>
+<tr>
+<td>Unstopped containers, Unremoved images</td>
+<td>Docker leftovers, not results</td>
+</tr>
+</tbody>
+</table>
+<p>Resolved plus unresolved is how many were actually graded. The two failure lines are
+counted inside unresolved and errors as well, so they never remove anything from the total.</p>
+<h3 id="why-ran-successfully-can-disagree-with-the-error-count">Why "ran successfully" can disagree with the error count</h3>
+<p>While a run is going you see a line like <code>40 ran successfully, 0 failed</code>. That counts
+crashes in the harness. A failed evaluation is not a crash: the harness catches the
+problem, writes it to the log, and carries on.</p>
+<p><code>Instances with errors</code> counts something else: instances with no <code>report.json</code>. The usual
+causes are a patch that did not apply, a container that did not start, or a run that timed out.</p>
+<p>So <code>0 failed</code> together with <code>Instances with errors: 1</code> means nothing crashed, and one
+instance could not be graded. Read that instance's <code>run_instance.log</code> to see why.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>If you encounter issues during evaluation:</p>
 <ol>
