@@ -18771,7 +18771,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">open_file_limit</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">modal</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">report_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">'.'</span><span class="p">,</span> <span class="n">assets_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">open_file_limit</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">modal</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">report_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">'.'</span><span class="p">,</span> <span class="n">assets_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dockerfile_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -18781,58 +18781,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/run_evaluation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span>
-<span class="normal">593</span>
-<span class="normal">594</span>
-<span class="normal">595</span>
-<span class="normal">596</span>
-<span class="normal">597</span>
-<span class="normal">598</span>
-<span class="normal">599</span>
-<span class="normal">600</span>
-<span class="normal">601</span>
-<span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">623</span>
 <span class="normal">624</span>
 <span class="normal">625</span>
 <span class="normal">626</span>
@@ -18851,7 +18800,63 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">639</span>
 <span class="normal">640</span>
 <span class="normal">641</span>
-<span class="normal">642</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -18864,6 +18869,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
     <span class="n">modal</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">report_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
     <span class="n">assets_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dockerfile_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run evaluation harness for the given dataset and predictions.</span>
@@ -18909,6 +18915,10 @@ If exclude_completed is True, only return instances that have not been run yet.<
         <span class="nb">print</span><span class="p">(</span><span class="s2">"No instances to run."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dockerfile_repo</span><span class="p">:</span>
+            <span class="n">_build_before_eval</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">dockerfile_repo</span><span class="p">,</span> <span class="n">max_workers</span><span class="p">,</span> <span class="n">client</span>
+            <span class="p">)</span>
         <span class="c1"># run instances (images assumed to be pre-built)</span>
         <span class="n">run_instances</span><span class="p">(</span>
             <span class="n">predictions</span><span class="p">,</span>
