@@ -1443,8 +1443,10 @@ partially-pushed image set in seconds rather than one instance at a time.
 <p>A task repo holds one directory per instance:</p>
 <div class="highlight"><pre><span></span><code>sweb.yaml                    the dataset this repo publishes, and its splits
 tasks/&lt;instance_id&gt;/
-    task.yaml                metadata, including which split the task is in
+    task.yaml                short metadata, including which split the task is in
+    tests.json               the tests that decide whether a patch resolved it
     problem_statement.md     the issue text shown to a model
+    hints.md                 discussion from the issue, absent when there is none
     gold.patch               the reference fix
     test.patch               the tests that grade it
     eval.sh                  the script the harness runs
