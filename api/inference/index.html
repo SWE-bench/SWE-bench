@@ -16116,7 +16116,8 @@ max_cost (float): The maximum cost to spend on inference.</p>
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
-<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">anthropic_inference</span><span class="p">(</span>
+<span class="normal">414</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">anthropic_inference</span><span class="p">(</span>
     <span class="n">test_dataset</span><span class="p">,</span>
     <span class="n">model_name_or_path</span><span class="p">,</span>
     <span class="n">output_file</span><span class="p">,</span>
@@ -16143,8 +16144,9 @@ max_cost (float): The maximum cost to spend on inference.</p>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using Anthropic key </span><span class="si">{</span><span class="s1">'*'</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">api_key</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">api_key</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">:]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">anthropic</span> <span class="o">=</span> <span class="n">Anthropic</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
     <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">claude_tokenize</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">"text"</span><span class="p">],</span> <span class="n">anthropic</span><span class="p">)</span>
-        <span class="o">&lt;=</span> <span class="n">MODEL_LIMITS</span><span class="p">[</span><span class="n">model_name_or_path</span><span class="p">],</span>
+        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">claude_tokenize</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">"text"</span><span class="p">],</span> <span class="n">anthropic</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">MODEL_LIMITS</span><span class="p">[</span><span class="n">model_name_or_path</span><span class="p">]</span>
+        <span class="p">),</span>
         <span class="n">desc</span><span class="o">=</span><span class="s2">"Filtering"</span><span class="p">,</span>
         <span class="n">load_from_cache_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span>
@@ -16279,8 +16281,7 @@ max_cost (float): The maximum cost to spend on inference.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/inference/run_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">417</span>
-<span class="normal">418</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">418</span>
 <span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
@@ -16312,7 +16313,8 @@ max_cost (float): The maximum cost to spend on inference.</p>
 <span class="normal">447</span>
 <span class="normal">448</span>
 <span class="normal">449</span>
-<span class="normal">450</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_model_args</span><span class="p">(</span><span class="n">model_args</span><span class="p">):</span>
+<span class="normal">450</span>
+<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_model_args</span><span class="p">(</span><span class="n">model_args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parses a string of model arguments and returns a dictionary of keyword arguments.</span>
 
@@ -16368,8 +16370,7 @@ max_cost (float): The maximum cost to spend on inference.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/inference/run_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">453</span>
-<span class="normal">454</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">454</span>
 <span class="normal">455</span>
 <span class="normal">456</span>
 <span class="normal">457</span>
@@ -16434,7 +16435,8 @@ max_cost (float): The maximum cost to spend on inference.</p>
 <span class="normal">516</span>
 <span class="normal">517</span>
 <span class="normal">518</span>
-<span class="normal">519</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+<span class="normal">519</span>
+<span class="normal">520</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name_or_path</span><span class="p">,</span>
     <span class="n">split</span><span class="p">,</span>
     <span class="n">model_name_or_path</span><span class="p">,</span>
@@ -19053,8 +19055,7 @@ specified directory.</p>
 <span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">usage_to_dict</span><span class="p">(</span>
+<span class="normal">52</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">usage_to_dict</span><span class="p">(</span>
     <span class="n">usage</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">input_tokens_field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -19073,9 +19074,8 @@ specified directory.</p>
     <span class="k">if</span> <span class="n">output_tokens</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">result</span><span class="p">[</span><span class="s2">"output_tokens"</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_tokens</span>
 
-    <span class="n">token_details</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">_usage_value</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"prompt_tokens_details"</span><span class="p">)</span>
-        <span class="ow">or</span> <span class="n">_usage_value</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens_details"</span><span class="p">)</span>
+    <span class="n">token_details</span> <span class="o">=</span> <span class="n">_usage_value</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"prompt_tokens_details"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_usage_value</span><span class="p">(</span>
+        <span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens_details"</span>
     <span class="p">)</span>
     <span class="n">cached_input_tokens</span> <span class="o">=</span> <span class="n">_usage_value</span><span class="p">(</span><span class="n">token_details</span><span class="p">,</span> <span class="s2">"cached_tokens"</span><span class="p">)</span>
     <span class="n">cache_creation_input_tokens</span> <span class="o">=</span> <span class="n">_usage_value</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"cache_creation_input_tokens"</span><span class="p">)</span>

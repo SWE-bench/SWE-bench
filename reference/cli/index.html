@@ -1426,14 +1426,14 @@ swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class=
 </code></pre></div>
 <h2 id="images">Images</h2>
 <p>Images are built from a task repo: each task carries its own Dockerfile, and its
-<code>task.json</code> names the image the dataset will tell the harness to pull. Narrow
+<code>task.yaml</code> names the image the dataset will tell the harness to pull. Narrow
 with <code>-i</code>, which can name a task in an unpublished split.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>images<span class="w"> </span>build<span class="w"> </span>~/swe-bench-tasks<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
 swebench<span class="w"> </span>images<span class="w"> </span>build<span class="w"> </span>~/swe-bench-multimodal-tasks<span class="w"> </span>-i<span class="w"> </span>carbon-design-system__carbon-10188
 swebench<span class="w"> </span>images<span class="w"> </span>build<span class="w"> </span>~/swe-bench-tasks<span class="w"> </span>--dry-run
 
 swebench<span class="w"> </span>images<span class="w"> </span>check<span class="w"> </span>~/swe-bench-tasks<span class="w">    </span><span class="c1"># which images are missing from the registry</span>
-swebench<span class="w"> </span>images<span class="w"> </span>push<span class="w">  </span>~/swe-bench-tasks<span class="w">    </span><span class="c1"># publish them, under the names task.json declares</span>
+swebench<span class="w"> </span>images<span class="w"> </span>push<span class="w">  </span>~/swe-bench-tasks<span class="w">    </span><span class="c1"># publish them, under the names task.yaml declares</span>
 swebench<span class="w"> </span>images<span class="w"> </span>clean<span class="w"> </span>--run-id<span class="w"> </span>my-run<span class="w">      </span><span class="c1"># remove leftover containers</span>
 </code></pre></div>
 <p><code>images check</code> is worth running before a long evaluation: it catches a stale or
@@ -1441,9 +1441,9 @@ partially-pushed image set in seconds rather than one instance at a time.
 <code>images push --dry-run</code> prints the exact <code>docker push</code> commands and stops.</p>
 <h2 id="datasets">Datasets</h2>
 <p>A task repo holds one directory per instance:</p>
-<div class="highlight"><pre><span></span><code>config.json                  the dataset this repo publishes, and its splits
+<div class="highlight"><pre><span></span><code>sweb.yaml                    the dataset this repo publishes, and its splits
 tasks/&lt;instance_id&gt;/
-    task.json                metadata, including which split the task is in
+    task.yaml                metadata, including which split the task is in
     problem_statement.md     the issue text shown to a model
     gold.patch               the reference fix
     test.patch               the tests that grade it
@@ -1455,13 +1455,13 @@ tasks/&lt;instance_id&gt;/
 dataset, so a new dataset can be developed entirely locally.</p>
 <h3 id="swebench-dataset-check-task_repo"><code>swebench dataset check TASK_REPO</code></h3>
 <p>Check that a task repo is well formed: every task has its files, its metadata,
-and a split registered in <code>config.json</code>. This runs automatically before building
+and a split registered in <code>sweb.yaml</code>. This runs automatically before building
 or publishing, so a malformed tree is never published.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>check<span class="w"> </span>~/swe-bench-tasks
 swebench<span class="w"> </span>dataset<span class="w"> </span>check<span class="w"> </span>~/swe-bench-tasks<span class="w"> </span>--fix<span class="w">   </span><span class="c1"># write back what the tree implies</span>
 </code></pre></div>
 <p><code>--fix</code> only writes what can be derived from the tree itself: the split list in
-<code>config.json</code>, and image names that follow the naming convention. It never
+<code>sweb.yaml</code>, and image names that follow the naming convention. It never
 invents data it cannot see.</p>
 <h3 id="swebench-dataset-build-task_repo"><code>swebench dataset build TASK_REPO</code></h3>
 <p>Compile the repo into one parquet per split.</p>
@@ -1473,7 +1473,7 @@ swebench<span class="w"> </span>dataset<span class="w"> </span>build<span class=
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>diff<span class="w"> </span>~/swe-bench-multilingual-tasks
 </code></pre></div>
 <h3 id="swebench-dataset-push-task_repo"><code>swebench dataset push TASK_REPO</code></h3>
-<p>Overwrite the HuggingFace dataset named in <code>config.json</code>.</p>
+<p>Overwrite the HuggingFace dataset named in <code>sweb.yaml</code>.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>dataset<span class="w"> </span>push<span class="w"> </span>~/swe-bench-tasks<span class="w"> </span>--dry-run
 swebench<span class="w"> </span>dataset<span class="w"> </span>push<span class="w"> </span>~/swe-bench-tasks
 </code></pre></div>
