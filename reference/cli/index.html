@@ -1421,7 +1421,10 @@ repeatable, <code>-j/--workers</code> sets parallelism, <code>-t/--timeout</code
 <p>Recompute verdicts from a finished run's saved logs, without starting
 containers. Useful after a log-parser fix, since the test output is already on
 disk.</p>
-<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w"> </span>-d<span class="w"> </span>verified
+<p>The dataset comes from the run itself, recorded at evaluation time in
+<code>logs/run_evaluation/&lt;run_id&gt;/run.json</code>. Pass <code>-d</code> for runs made before that was
+added, or to grade against a different dataset on purpose.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w">                     </span><span class="c1"># dataset taken from the run itself</span>
 swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w"> </span>-d<span class="w"> </span>multimodal<span class="w"> </span>-i<span class="w"> </span>grommet__grommet-6282
 </code></pre></div>
 <h2 id="images">Images</h2>
