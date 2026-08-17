@@ -14629,9 +14629,7 @@ This function selects the appropriate log parser based on the instance id.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/modal_eval/run_evaluation_modal.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
 <span class="normal">405</span>
@@ -14697,7 +14695,9 @@ This function selects the appropriate log parser based on the instance id.</p>
 <span class="normal">465</span>
 <span class="normal">466</span>
 <span class="normal">467</span>
-<span class="normal">468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances_modal</span><span class="p">(</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances_modal</span><span class="p">(</span>
     <span class="n">predictions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">instances</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">full_dataset</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -15950,7 +15950,9 @@ Raises an exception if credentials are not configured.</p>
 <span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
-<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">function</span><span class="p">(</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">function</span><span class="p">(</span>
     <span class="n">image</span><span class="o">=</span><span class="n">swebench_image</span><span class="o">.</span><span class="n">add_local_file</span><span class="p">(</span>
         <span class="n">LOCAL_SANDBOX_ENTRYPOINT_PATH</span><span class="p">,</span>
         <span class="n">REMOTE_SANDBOX_ENTRYPOINT_PATH</span><span class="p">,</span>
@@ -16039,8 +16041,10 @@ Raises an exception if credentials are not configured.</p>
         <span class="c1"># pylint hack</span>
         <span class="k">if</span> <span class="s2">"pylint"</span> <span class="ow">in</span> <span class="n">test_spec</span><span class="o">.</span><span class="n">instance_id</span><span class="p">:</span>
             <span class="n">run_command</span> <span class="o">+=</span> <span class="s2">" &amp;&amp; PYTHONPATH="</span>
-        <span class="c1"># increase recursion limit for testing</span>
-        <span class="n">run_command</span> <span class="o">+=</span> <span class="s2">" &amp;&amp; python3 -c 'import sys; sys.setrecursionlimit(10000)'"</span>
+        <span class="c1"># a `python3 -c 'sys.setrecursionlimit(...)'` step used to sit here, meaning to</span>
+        <span class="c1"># give the tests more stack. It set the limit in its own process and exited, so</span>
+        <span class="c1"># the eval script below never saw it -- it only looked like the local runs</span>
+        <span class="c1"># differed from Modal. Removed rather than left as decoration.</span>
         <span class="c1"># run eval script</span>
         <span class="n">run_command</span> <span class="o">+=</span> <span class="s2">" &amp;&amp; /bin/bash /root/eval.sh"</span>
         <span class="n">test_output</span><span class="p">,</span> <span class="n">returncode</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">run_command</span><span class="p">)</span>
@@ -16221,9 +16225,7 @@ Raises an exception if credentials are not configured.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/modal_eval/run_evaluation_modal.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
 <span class="normal">405</span>
@@ -16289,7 +16291,9 @@ Raises an exception if credentials are not configured.</p>
 <span class="normal">465</span>
 <span class="normal">466</span>
 <span class="normal">467</span>
-<span class="normal">468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances_modal</span><span class="p">(</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_instances_modal</span><span class="p">(</span>
     <span class="n">predictions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">instances</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">full_dataset</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -19162,7 +19166,17 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">760</span>
 <span class="normal">761</span>
 <span class="normal">762</span>
-<span class="normal">763</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -19183,6 +19197,16 @@ If exclude_completed is True, only return instances that have not been run yet.<
         <span class="nb">print</span><span class="p">(</span>
             <span class="s2">"ℹ️ Running local evaluation for the test split of SWE-bench Multimodal. "</span>
             <span class="s2">"You may also use sb-cli (https://github.com/swe-bench/sb-cli/) to submit predictions to the hosted evaluation."</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Modal builds its own images remotely, so a task repo's Dockerfiles would be</span>
+    <span class="c1"># ignored while its tests were used -- the run would report on a tree it never</span>
+    <span class="c1"># built. Refused here, before any work, rather than silently proving the wrong thing.</span>
+    <span class="k">if</span> <span class="n">modal</span> <span class="ow">and</span> <span class="n">task_repo</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"--modal cannot build from a task repo: it builds images remotely, so the "</span>
+            <span class="s2">"repo's Dockerfiles would be ignored while its tests were used. Drop "</span>
+            <span class="s2">"--task-repo to run on Modal, or drop --modal to build the repo."</span>
         <span class="p">)</span>
 
     <span class="c1"># set open file limit</span>
