@@ -93,6 +93,7 @@ Other commands:
 swebench images build verified -j 8           # build/pull images ahead of time
 swebench images check multilingual            # verify images exist on the registry
 swebench images clean --run-id <run_id>       # remove leftover containers
+swebench publish <run_id> -b <user/bucket> --report <report.json> -d verified --task-id swe_bench_%_resolved   # upload results to an HF bucket
 swebench --help                               # all commands
 ```
 
