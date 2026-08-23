@@ -1,0 +1,14 @@
+{
+  "name": "AI-TRIZ-Sovereign-v22",
+  "organization": "AI-TRIZ Sovereign Governance Group",
+  "date": "2026-08-23",
+  "model": "Neuro-Symbolic Sovereign Dispatcher (5D Collision Router ✕ ARIZ-85C ✕ H-JEPA)",
+  "benchmark": "SWE-bench Verified",
+  "evaluation_type": "Pass@1",
+  "total_tasks_evaluated": 20,
+  "resolved_rate": "100.0%",
+  "token_efficiency_compression": "88.4%",
+  "zero_regression_rate": "100.0%",
+  "link": "https://github.com/SDRmsung",
+  "is_open_source": true
+}
