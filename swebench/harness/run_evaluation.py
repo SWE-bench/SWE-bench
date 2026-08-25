@@ -61,6 +61,29 @@ GIT_APPLY_CMDS = [
 DOCKER_CLIENT_TIMEOUT = int(os.environ.get("SWEBENCH_DOCKER_TIMEOUT", "1800"))
 DOCKER_CLIENT_POOL_SIZE = int(os.environ.get("SWEBENCH_DOCKER_POOL_SIZE", "128"))
 
+PROXY_ENV_KEYS = (
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "FTP_PROXY",
+    "ALL_PROXY",
+    "http_proxy",
+    "https_proxy",
+    "ftp_proxy",
+    "all_proxy",
+    "NO_PROXY",
+    "no_proxy",
+)
+
+
+def _proxy_environment() -> dict:
+    """
+    Forward proxy settings from the host process into evaluation containers so
+    network-dependent test suites (e.g. requests, which talks to httpbin.org)
+    can reach the internet through the host's proxy. Returns an empty dict when
+    the host has no proxy variables set.
+    """
+    return {k: v for k, v in os.environ.items() if k in PROXY_ENV_KEYS}
+
 
 def _docker_client() -> docker.DockerClient:
     return docker.from_env(
@@ -119,6 +142,7 @@ def create_container(
                 user=CONTAINER_USER,
                 detach=True,
                 command="tail -f /dev/null",
+                environment=_proxy_environment(),
                 # Docker's default seccomp profile only permits CLONE_NEWUSER with
                 # CAP_SYS_ADMIN, which browser sandboxes need (e.g. openlayers karma)
                 cap_add=["SYS_ADMIN"],
@@ -136,6 +160,7 @@ def create_container(
                     user=CONTAINER_USER,
                     detach=True,
                     command="tail -f /dev/null",
+                    environment=_proxy_environment(),
                     # Docker's default seccomp profile only permits CLONE_NEWUSER with
                     # CAP_SYS_ADMIN, which browser sandboxes need (e.g. openlayers karma)
                     cap_add=["SYS_ADMIN"],
