@@ -60,16 +60,22 @@ Finally, to build SWE-bench from source, follow these steps:
 git clone git@github.com:SWE-bench/SWE-bench.git
 cd SWE-bench
 pip install -e .
+
+# Required for local image builds with the v5 CLI. This path is only an example.
+git clone --depth 1 https://github.com/SWE-bench/swe-bench-tasks.git ./swe-bench-tasks
+swebench dataset check ./swe-bench-tasks
 ```
+You can replace this path with any local checkout location.
 
 Test your installation by running:
 ```bash
-swebench eval verified --gold -i sympy__sympy-20590 --run-id validate-gold
+swebench eval verified --gold \
+    -i sympy__sympy-20590 \
+    --run-id validate-gold \
+    --task-repo ./swe-bench-tasks
 ```
 > [!NOTE]
-> If using a MacOS M-series or other ARM-based systems, add `--namespace ''` to the above script.
-> By default, the evaluation script pulls images (built for Linux) from [DockerHub](https://hub.docker.com/u/swebench).
-> Adding `--namespace ''` will cause evaluation images to be built locally instead.
+> The current v5 CLI builds images from a task repo. On an M-series Mac or another ARM-based system, use `--task-repo` so the images are built locally with Docker Buildx.
 
 ## 💽 Usage
 Evaluate patch predictions with the following command:
