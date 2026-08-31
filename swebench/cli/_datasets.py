@@ -4,6 +4,7 @@
 # local path, passes through untouched.
 DATASET_ALIASES = {
     "full": "SWE-bench/SWE-bench",
+    "lite": "SWE-bench/SWE-bench_Lite",
     "verified": "SWE-bench/SWE-bench_Verified",
     "multilingual": "SWE-bench/SWE-bench_Multilingual",
     "multimodal": "SWE-bench/SWE-bench_Multimodal",

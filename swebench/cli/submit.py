@@ -26,6 +26,82 @@ submit_app = typer.Typer(
 )
 
 
+@submit_app.command("package")
+def package_command(
+    run_id: str = typer.Argument(..., help="Run id of a finished `swebench eval`"),
+    split: str = typer.Option(
+        ...,
+        "-s",
+        "--split",
+        help="Leaderboard split: lite | verified | test | multilingual | multimodal",
+    ),
+    out: str = typer.Option(
+        "submission", "-o", "--out", help="Directory to build into"
+    ),
+    model: Optional[str] = typer.Option(
+        None,
+        "-m",
+        "--model",
+        help="Model dir inside the run (auto-detected if only one)",
+    ),
+    predictions: Optional[str] = typer.Option(
+        None,
+        "-p",
+        "--predictions",
+        help="Predictions .json/.jsonl; rebuilt from patches if omitted",
+    ),
+    trajs: Optional[str] = typer.Option(
+        None, "--trajs", help="Directory of reasoning traces to include"
+    ),
+    submission_id: Optional[str] = typer.Option(
+        None, "--id", help="Submission folder name (default: <date>_<model>)"
+    ),
+):
+    """Build a leaderboard submission from an evaluated run.
+
+    Writes two trees: `submission-repo/` for your own public GitHub repo (predictions,
+    logs, trajectories) and `entry/` for the PR to SWE-bench/experiments. Resolution is
+    re-derived from each instance's test output, never read from the run's report.
+
+    [yellow][bold]Examples:[/bold][/yellow]
+
+        swebench submit package my-run -s verified
+
+        swebench submit package my-run -s verified --trajs ./output -o ./sub
+    """
+    from pathlib import Path as _Path
+
+    from swebench.submit.package import PackageError, package_run
+
+    try:
+        result = package_run(
+            run_id,
+            split,
+            _Path(out),
+            model=model,
+            predictions=_Path(predictions) if predictions else None,
+            trajs=_Path(trajs) if trajs else None,
+            sub_id=submission_id,
+        )
+    except PackageError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+
+    typer.echo(
+        f"{result.submission_id}: {len(result.resolved)} resolved, "
+        f"{len(result.no_generation)} without a patch, {len(result.no_logs)} without logs"
+    )
+    typer.echo(
+        f"  {result.out_dir / 'submission-repo'}  -> push to your own public repo"
+    )
+    typer.echo(
+        f"  {result.out_dir / 'entry'}            -> PR to SWE-bench/experiments"
+    )
+    typer.echo(
+        "Next: fill in the TODOs in entry/metadata.yaml, then `swebench submit publish`."
+    )
+
+
 @submit_app.command("hf")
 def hf_command(
     run_id: str = typer.Argument(
