@@ -2406,6 +2406,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#swebench.inference.run_api.call_litellm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;call_litellm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench.inference.run_api.litellm_inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;litellm_inference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swebench.inference.run_api.parse_model_args" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4123,6 +4145,28 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;anthropic_inference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench.inference.run_api.call_litellm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;call_litellm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench.inference.run_api.litellm_inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;litellm_inference
       
     </span>
   </a>
@@ -16227,6 +16271,313 @@ max_cost (float): The maximum cost to spend on inference.</p>
 <div class="doc doc-object doc-function">
 
 
+<h5 id="swebench.inference.run_api.call_litellm" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">call_litellm</span>
+
+
+</h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">call_litellm</span><span class="p">(</span><span class="n">model_name_or_path</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">top_p</span><span class="p">,</span> <span class="o">**</span><span class="n">model_args</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Calls any provider through LiteLLM's unified (OpenAI-shaped) API.</p>
+        <p>model_name_or_path (str): The LiteLLM model string (e.g. "gpt-4o",
+    "anthropic/claude-3-5-sonnet-20240620", "gemini/gemini-2.5-flash").
+inputs (str): The inputs to generate completions for.
+temperature (float): The temperature to use.
+top_p (float): The top_p to use.
+**model_args (dict): A dictionary of model arguments.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>swebench/inference/run_api.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@retry</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">wait_random_exponential</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">600</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop_after_attempt</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">call_litellm</span><span class="p">(</span><span class="n">model_name_or_path</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">top_p</span><span class="p">,</span> <span class="o">**</span><span class="n">model_args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Calls any provider through LiteLLM's unified (OpenAI-shaped) API.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">    model_name_or_path (str): The LiteLLM model string (e.g. "gpt-4o",</span>
+<span class="sd">        "anthropic/claude-3-5-sonnet-20240620", "gemini/gemini-2.5-flash").</span>
+<span class="sd">    inputs (str): The inputs to generate completions for.</span>
+<span class="sd">    temperature (float): The temperature to use.</span>
+<span class="sd">    top_p (float): The top_p to use.</span>
+<span class="sd">    **model_args (dict): A dictionary of model arguments.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">litellm</span>
+
+    <span class="n">system_messages</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">user_message</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">litellm</span><span class="o">.</span><span class="n">completion</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model_name_or_path</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+                <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">system_messages</span><span class="p">},</span>
+                <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">user_message</span><span class="p">},</span>
+            <span class="p">],</span>
+            <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+            <span class="n">top_p</span><span class="o">=</span><span class="n">top_p</span><span class="p">,</span>
+            <span class="c1"># Silently drop kwargs a given provider doesn't accept so the same</span>
+            <span class="c1"># model_args work across OpenAI, Anthropic, Gemini, Bedrock, etc.</span>
+            <span class="n">drop_params</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">model_args</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">input_tokens</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">prompt_tokens</span>
+        <span class="n">output_tokens</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">completion_tokens</span>
+        <span class="c1"># Let missing pricing metadata fail loudly: treating an unknown model as</span>
+        <span class="c1"># free would undercount spend and could bypass max_cost.</span>
+        <span class="n">cost</span> <span class="o">=</span> <span class="n">litellm</span><span class="o">.</span><span class="n">completion_cost</span><span class="p">(</span><span class="n">completion_response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"input_tokens=</span><span class="si">{</span><span class="n">input_tokens</span><span class="si">}</span><span class="s2">, output_tokens=</span><span class="si">{</span><span class="n">output_tokens</span><span class="si">}</span><span class="s2">, cost=</span><span class="si">{</span><span class="n">cost</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="n">cost</span>
+    <span class="k">except</span> <span class="n">litellm</span><span class="o">.</span><span class="n">ContextWindowExceededError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Context length exceeded"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div></td></tr></tbody></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="swebench.inference.run_api.litellm_inference" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">litellm_inference</span>
+
+
+</h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">litellm_inference</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">model_name_or_path</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">model_args</span><span class="p">,</span> <span class="n">existing_ids</span><span class="p">,</span> <span class="n">max_cost</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Runs inference on a dataset using any provider via LiteLLM.</p>
+<p>Args:
+test_dataset (datasets.Dataset): The dataset to run inference on.
+model_name_or_path (str): The LiteLLM model string to use.
+output_file (str): The path to the output file.
+model_args (dict): A dictionary of model arguments.
+existing_ids (set): A set of ids that have already been processed.
+max_cost (float): The maximum cost to spend on inference.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>swebench/inference/run_api.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">litellm_inference</span><span class="p">(</span>
+    <span class="n">test_dataset</span><span class="p">,</span>
+    <span class="n">model_name_or_path</span><span class="p">,</span>
+    <span class="n">output_file</span><span class="p">,</span>
+    <span class="n">model_args</span><span class="p">,</span>
+    <span class="n">existing_ids</span><span class="p">,</span>
+    <span class="n">max_cost</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Runs inference on a dataset using any provider via LiteLLM.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">    test_dataset (datasets.Dataset): The dataset to run inference on.</span>
+<span class="sd">    model_name_or_path (str): The LiteLLM model string to use.</span>
+<span class="sd">    output_file (str): The path to the output file.</span>
+<span class="sd">    model_args (dict): A dictionary of model arguments.</span>
+<span class="sd">    existing_ids (set): A set of ids that have already been processed.</span>
+<span class="sd">    max_cost (float): The maximum cost to spend on inference.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">litellm</span>
+
+    <span class="c1"># Determine the context window from LiteLLM's model registry so we can drop</span>
+    <span class="c1"># over-long instances like the OpenAI/Anthropic paths do. If the model is</span>
+    <span class="c1"># unknown to LiteLLM, skip filtering rather than guessing.</span>
+    <span class="n">max_input_tokens</span> <span class="o">=</span> <span class="n">model_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"max_input_tokens"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">max_input_tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">litellm</span><span class="o">.</span><span class="n">get_model_info</span><span class="p">(</span><span class="n">model_name_or_path</span><span class="p">)</span>
+            <span class="n">max_input_tokens</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"max_input_tokens"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"max_tokens"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">max_input_tokens</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">max_input_tokens</span><span class="p">:</span>
+        <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">litellm</span><span class="o">.</span><span class="n">token_counter</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_name_or_path</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="s2">"text"</span><span class="p">])</span>
+                <span class="o">&lt;=</span> <span class="n">max_input_tokens</span>
+            <span class="p">),</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">"Filtering"</span><span class="p">,</span>
+            <span class="n">load_from_cache_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Could not determine context window for </span><span class="si">{</span><span class="n">model_name_or_path</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="s2">"skipping length-based filtering. Pass max_input_tokens=N in "</span>
+            <span class="s2">"--model_args to enable it."</span>
+        <span class="p">)</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">model_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"temperature"</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">top_p</span> <span class="o">=</span> <span class="n">model_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"top_p"</span><span class="p">,</span> <span class="mf">0.95</span> <span class="k">if</span> <span class="n">temperature</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using temperature=</span><span class="si">{</span><span class="n">temperature</span><span class="si">}</span><span class="s2">, top_p=</span><span class="si">{</span><span class="n">top_p</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">basic_args</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"model_name_or_path"</span><span class="p">:</span> <span class="n">model_name_or_path</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Filtered to </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> instances"</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">"a+"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">datum</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Inference for </span><span class="si">{</span><span class="n">model_name_or_path</span><span class="si">}</span><span class="s2">"</span><span class="p">):</span>
+            <span class="n">instance_id</span> <span class="o">=</span> <span class="n">datum</span><span class="p">[</span><span class="s2">"instance_id"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">instance_id</span> <span class="ow">in</span> <span class="n">existing_ids</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"instance_id"</span><span class="p">:</span> <span class="n">instance_id</span><span class="p">}</span>
+            <span class="n">output_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">basic_args</span><span class="p">)</span>
+            <span class="n">output_dict</span><span class="p">[</span><span class="s2">"text"</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">datum</span><span class="p">[</span><span class="s1">'text'</span><span class="p">]</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">"</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">call_litellm</span><span class="p">(</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="s2">"model_name_or_path"</span><span class="p">],</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="s2">"text"</span><span class="p">],</span>
+                <span class="n">temperature</span><span class="p">,</span>
+                <span class="n">top_p</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">model_args</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">cost</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="n">completion</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
+            <span class="n">total_cost</span> <span class="o">+=</span> <span class="n">cost</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total Cost: </span><span class="si">{</span><span class="n">total_cost</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">output_dict</span><span class="p">[</span><span class="s2">"full_output"</span><span class="p">]</span> <span class="o">=</span> <span class="n">completion</span>
+            <span class="n">output_dict</span><span class="p">[</span><span class="s2">"model_patch"</span><span class="p">]</span> <span class="o">=</span> <span class="n">extract_diff</span><span class="p">(</span><span class="n">completion</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">output_dict</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_cost</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">total_cost</span> <span class="o">&gt;=</span> <span class="n">max_cost</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Reached max cost </span><span class="si">{</span><span class="n">max_cost</span><span class="si">}</span><span class="s2">, exiting"</span><span class="p">)</span>
+                <span class="k">break</span>
+</code></pre></div></td></tr></tbody></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h5 id="swebench.inference.run_api.parse_model_args" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">parse_model_args</span>
 
@@ -16295,40 +16646,40 @@ max_cost (float): The maximum cost to spend on inference.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/inference/run_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_model_args</span><span class="p">(</span><span class="n">model_args</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_model_args</span><span class="p">(</span><span class="n">model_args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parses a string of model arguments and returns a dictionary of keyword arguments.</span>
 
@@ -16384,71 +16735,76 @@ max_cost (float): The maximum cost to spend on inference.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/inference/run_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span>
-<span class="normal">486</span>
-<span class="normal">487</span>
-<span class="normal">488</span>
-<span class="normal">489</span>
-<span class="normal">490</span>
-<span class="normal">491</span>
-<span class="normal">492</span>
-<span class="normal">493</span>
-<span class="normal">494</span>
-<span class="normal">495</span>
-<span class="normal">496</span>
-<span class="normal">497</span>
-<span class="normal">498</span>
-<span class="normal">499</span>
-<span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span>
-<span class="normal">530</span>
-<span class="normal">531</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name_or_path</span><span class="p">,</span>
     <span class="n">split</span><span class="p">,</span>
     <span class="n">model_name_or_path</span><span class="p">,</span>
@@ -16508,7 +16864,12 @@ max_cost (float): The maximum cost to spend on inference.</p>
         <span class="s2">"existing_ids"</span><span class="p">:</span> <span class="n">existing_ids</span><span class="p">,</span>
         <span class="s2">"max_cost"</span><span class="p">:</span> <span class="n">max_cost</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="k">if</span> <span class="n">model_name_or_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"claude"</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">model_name_or_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"litellm/"</span><span class="p">):</span>
+        <span class="c1"># Strip the routing prefix; LiteLLM expects the bare model string</span>
+        <span class="c1"># (e.g. "anthropic/claude-3-5-sonnet-20240620", "gemini/gemini-2.5-flash").</span>
+        <span class="n">inference_args</span><span class="p">[</span><span class="s2">"model_name_or_path"</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_name_or_path</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"litellm/"</span><span class="p">)</span> <span class="p">:]</span>
+        <span class="n">litellm_inference</span><span class="p">(</span><span class="o">**</span><span class="n">inference_args</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">model_name_or_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"claude"</span><span class="p">):</span>
         <span class="n">anthropic_inference</span><span class="p">(</span><span class="o">**</span><span class="n">inference_args</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">openai_inference</span><span class="p">(</span><span class="o">**</span><span class="n">inference_args</span><span class="p">)</span>
