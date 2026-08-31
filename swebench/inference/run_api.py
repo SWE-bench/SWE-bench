@@ -43,6 +43,8 @@ MODEL_LIMITS = {
     "gpt-4-0613": 8_192,
     "gpt-4-1106-preview": 128_000,
     "gpt-4-0125-preview": 128_000,
+    "deepseek-chat": 64_000,
+    "deepseek-reasoner": 64_000,
 }
 
 # The cost per token for each model input.
@@ -62,6 +64,8 @@ MODEL_COST_PER_INPUT = {
     "gpt-4-32k": 0.00006,
     "gpt-4-1106-preview": 0.00001,
     "gpt-4-0125-preview": 0.00001,
+    "deepseek-chat": 0.00000027,
+    "deepseek-reasoner": 0.00000055,
 }
 
 # The cost per token for each model output.
@@ -81,6 +85,8 @@ MODEL_COST_PER_OUTPUT = {
     "gpt-4-32k": 0.00012,
     "gpt-4-1106-preview": 0.00003,
     "gpt-4-0125-preview": 0.00003,
+    "deepseek-chat": 0.0000011,
+    "deepseek-reasoner": 0.00000219,
 }
 
 # used for azure
@@ -101,6 +107,8 @@ def calc_cost(model_name, input_tokens, output_tokens):
     Returns:
     float: The cost of the response.
     """
+    # Index directly so missing pricing metadata fails loudly instead of silently
+    # treating an unknown model as free and undercounting inference costs.
     cost = (
         MODEL_COST_PER_INPUT[model_name] * input_tokens
         + MODEL_COST_PER_OUTPUT[model_name] * output_tokens
@@ -191,7 +199,10 @@ def openai_inference(
     existing_ids (set): A set of ids that have already been processed.
     max_cost (float): The maximum cost to spend on inference.
     """
-    encoding = tiktoken.encoding_for_model(model_name_or_path)
+    try:
+        encoding = tiktoken.encoding_for_model(model_name_or_path)
+    except KeyError:
+        encoding = tiktoken.get_encoding("cl100k_base")
     test_dataset = test_dataset.filter(
         lambda x: gpt_tokenize(x["text"], encoding) <= MODEL_LIMITS[model_name_or_path],
         desc="Filtering",
@@ -203,6 +214,8 @@ def openai_inference(
             "Must provide an api key. Expected in OPENAI_API_KEY environment variable."
         )
     openai.api_key = openai_key
+    if model_name_or_path.startswith("deepseek"):
+        openai.base_url = "https://api.deepseek.com"
     print(f"Using OpenAI key {'*' * max(0, len(openai_key) - 5) + openai_key[-5:]}")
     use_azure = model_args.pop("use_azure", False)
     if use_azure:
@@ -513,10 +526,8 @@ def main(
     }
     if model_name_or_path.startswith("claude"):
         anthropic_inference(**inference_args)
-    elif model_name_or_path.startswith("gpt"):
-        openai_inference(**inference_args)
     else:
-        raise ValueError(f"Invalid model name or path {model_name_or_path}")
+        openai_inference(**inference_args)
     logger.info("Done!")
 
 
@@ -538,7 +549,6 @@ if __name__ == "__main__":
         "--model_name_or_path",
         type=str,
         help="Name of API model. Update MODEL* constants in this file to add new models.",
-        choices=sorted(list(MODEL_LIMITS.keys())),
     )
     parser.add_argument(
         "--shard_id",
