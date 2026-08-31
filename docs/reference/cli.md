@@ -14,6 +14,31 @@ Installing the package provides a `swebench` command. Every command takes
 
 ## Evaluate
 
+### `swebench infer DATASET`
+
+Generate predictions with [mini-SWE-agent](https://mini-swe-agent.com), writing
+`preds.json` plus one trajectory per instance.
+
+A thin wrapper around `mini-extra swebench`: it resolves SWE-bench's dataset aliases
+(so `infer` and `eval` read the same dataset, rather than mini's older
+`princeton-nlp/*` mirrors) and passes mini's bundled config explicitly, because mini
+drops its own default as soon as any `-c` is given. Unrecognized arguments are
+forwarded to mini, so `--filter`, `--slice` and the rest work as documented there.
+
+```bash
+swebench infer verified -m gpt-5 -o preds -w 8
+swebench infer verified -c model.yaml -w 12 -o output
+swebench infer lite -m gpt-5 --dry-run -- --filter "astropy.*"
+```
+
+If mini-SWE-agent lives in a different environment than `swebench`, point at it with
+`--python /path/to/venv/bin/python`.
+
+API keys are mini's business, not this command's -- export whatever the provider reads
+before running. Note that `api_key: os.environ/VAR` inside a model config is **not**
+resolved by litellm outside its proxy: it is sent as that literal string. Set the real
+environment variable instead (for an OpenAI-compatible endpoint, `OPENAI_API_KEY`).
+
 ### `swebench eval DATASET`
 
 Run the reference patches or a model's predictions.

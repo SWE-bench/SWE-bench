@@ -98,6 +98,7 @@ swebench report <run_id> -d verified          # re-grade saved logs, no containe
 Other commands:
 
 ```bash
+swebench infer verified -m gpt-5 -o preds -w 8        # generate predictions with mini-SWE-agent
 swebench images build verified -j 8           # build/pull images ahead of time
 swebench images check multilingual            # verify images exist on the registry
 swebench images clean --run-id <run_id>       # remove leftover containers

@@ -15,6 +15,7 @@ app = typer.Typer(
 
 [yellow][not dim][bold]Examples:[/bold][/not dim][/yellow]
 
+    swebench infer verified -m gpt-5 -o preds -w 8
     swebench eval verified --gold
     swebench eval verified -p preds.jsonl --run-id gpt5 -j 16
     swebench eval multimodal --gold -i carbon-design-system__carbon-10188
@@ -49,8 +50,15 @@ def main():
 from swebench.cli.dataset import dataset_app  # noqa: E402
 from swebench.cli.evaluate import eval_command, report_command  # noqa: E402
 from swebench.cli.images import images_app  # noqa: E402
+from swebench.cli.infer import infer_command  # noqa: E402
 from swebench.cli.submit import submit_app  # noqa: E402
 
+app.command(
+    "infer",
+    rich_help_panel=_PANEL_EVAL,
+    # unknown args are forwarded to mini-SWE-agent rather than rejected here
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)(infer_command)
 app.command("eval", rich_help_panel=_PANEL_EVAL)(eval_command)
 app.command("report", rich_help_panel=_PANEL_EVAL)(report_command)
 app.add_typer(images_app, name="images", rich_help_panel=_PANEL_IMAGES)
