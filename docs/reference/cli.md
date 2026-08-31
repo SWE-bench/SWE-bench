@@ -75,6 +75,60 @@ the SWE-bench leaderboard (via
 [`SWE-bench/experiments`](https://github.com/SWE-bench/experiments)) and
 HuggingFace's community eval-results system.
 
+The leaderboard flow is three steps, plus a check anyone can run:
+
+```bash
+swebench submit package my-run -s verified --trajs ./output -o ./sub
+swebench submit publish ./sub                  # your own public repo
+swebench submit register ./sub -s verified     # PR to experiments
+swebench submit verify evaluation/verified/<id> -s verified
+```
+
+### `swebench submit package RUN_ID`
+
+Builds two trees from an evaluated run:
+
+```
+sub/submission-repo/     -> your own public GitHub repo
+  all_preds.jsonl
+  logs/<iid>/{patch.diff,report.json,test_output.txt.gz}
+  trajs/<iid>.*
+sub/entry/               -> the PR to SWE-bench/experiments
+  metadata.yaml  README.md  results/*.json
+```
+
+`logs/` mirrors the layout the S3 bucket has always held, so existing log consumers
+work unchanged against a repo. Resolution is **re-derived** from each instance's
+`test_output.txt`, never read from the run's own `report.json`.
+
+Test output is gzipped, and anything still over 50MB is refused with the instance
+named -- GitHub rejects files above 100MB, and finding out locally beats finding out
+at `git push`.
+
+### `swebench submit publish OUT`
+
+Commits `submission-repo/` and pushes it to a repo under your own account (`--owner` to
+place it elsewhere, `--remote` to push to one you already made, `--dry-run` to see the
+plan). The resulting URL is written into `entry/metadata.yaml` as `assets.repo` /
+`assets.logs` / `assets.trajs` -- the same field that used to carry
+`s3://swe-bench-submissions/...`, so nothing downstream changes.
+
+### `swebench submit register OUT`
+
+Forks `SWE-bench/experiments`, adds `evaluation/<split>/<id>/`, and opens the PR with
+the submission checklist in the body. It refuses to open while any `TODO` remains in
+`metadata.yaml` or `README.md`, naming each one (`--allow-todos` to override).
+
+### `swebench submit verify ENTRY`
+
+Clones the repo named in the entry's `assets.repo`, re-grades every instance from its
+recorded test output, and reports each instance whose verdict disagrees with the
+entry's `results.json`. No Docker and no re-execution -- the recorded log is the
+evidence. Claiming an instance while shipping no log for it fails the check.
+
+Because artifacts are self-hosted rather than in a maintainer-owned bucket, anyone can
+run this on any submission.
+
 ### `swebench submit hf RUN_ID`
 
 Upload a run's report (and optionally its predictions) to a HuggingFace bucket,
