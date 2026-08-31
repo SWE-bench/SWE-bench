@@ -43,15 +43,30 @@ swebench report my-run                     # dataset taken from the run itself
 swebench report my-run -d multimodal -i grommet__grommet-6282
 ```
 
-### `swebench publish RUN_ID`
+## Submit
 
-Upload a run's report (and predictions) to a Hugging Face bucket, and write a
-`.eval_results/*.yaml` entry scored against it
+Submission commands live under `swebench submit`. Two destinations:
+the SWE-bench leaderboard (via
+[`SWE-bench/experiments`](https://github.com/SWE-bench/experiments)) and
+HuggingFace's community eval-results system.
+
+### `swebench submit hf RUN_ID`
+
+Upload a run's report (and optionally its predictions) to a HuggingFace bucket,
+and write a `.eval_results/*.yaml` entry scored against it
 ([format](https://huggingface.co/docs/hub/eval-results)).
 
+The score comes from the report's own `resolved_instances` / `total_instances`,
+and the entry's `source.url` points at the uploaded report. Buckets are created
+private unless you pass `--public`; a private bucket means that URL is not
+readable by anyone else, so `--public` is what you want for a shared entry.
+
 ```bash
-swebench publish my-run -b myuser/swebench-runs --report gpt5.my-run.json -d verified --task-id swe_bench_%_resolved
+swebench submit hf my-run -b myuser/swebench-runs --report gpt5.my-run.json -d verified --public
+swebench submit hf my-run -b myuser/runs --report r.json -d verified --dry-run
 ```
+
+Requires the `submit` extra (`pip install swebench[submit]`) for bucket support.
 
 ## Images
 

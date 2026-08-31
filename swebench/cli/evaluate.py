@@ -1,7 +1,5 @@
-"""`swebench eval`, `swebench report`, and `swebench publish`."""
+"""`swebench eval` and `swebench report`."""
 
-import json
-from pathlib import Path
 from typing import Optional
 
 import typer
@@ -136,30 +134,3 @@ def report_command(
         # or the dataset's copy silently overrides them and the verdict changes
         task_repo=recorded.get("task_repo"),
     )
-
-
-def publish_command(
-    run_id: str = typer.Argument(...),
-    bucket: str = typer.Option(..., "-b", "--bucket"),
-    report: str = typer.Option(..., "--report"),
-    dataset: str = typer.Option(..., "-d", "--dataset"),
-    task_id: str = typer.Option(..., "--task-id"),
-    predictions: Optional[str] = typer.Option(None, "-p", "--predictions"),
-    out: str = typer.Option(".eval_results/result.yaml", "--out"),
-    dry_run: bool = typer.Option(False, "--dry-run"),
-):
-    from swebench.harness.publish_results import upload_run, write_eval_result
-
-    files = [report] + ([predictions] if predictions else [])
-    plan = upload_run(bucket, run_id, files, dry_run=dry_run)
-    typer.echo(json.dumps(plan, indent=2))
-    if dry_run:
-        return
-
-    report_data = json.loads(Path(report).read_text())
-    value = 100 * report_data["resolved_instances"] / report_data["total_instances"]
-    source_url = f"https://huggingface.co/buckets/{bucket}/resolve/{plan['files'][0]}"
-    out_path = write_eval_result(
-        resolve_dataset(dataset), task_id, value, source_url, out
-    )
-    typer.echo(f"wrote {out_path}")

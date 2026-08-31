@@ -3910,6 +3910,9 @@ inference = [
     { name = "transformers" },
     { name = "triton" },
 ]
+submit = [
+    { name = "huggingface-hub" },
+]
 test = [
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -3926,6 +3929,7 @@ requires-dist = [
     { name = "flash-attn", marker = "extra == 'inference'", specifier = ">=2.0.0" },
     { name = "ghapi", specifier = "<2" },
     { name = "gitpython" },
+    { name = "huggingface-hub", marker = "extra == 'submit'", specifier = ">=1.20" },
     { name = "jedi", marker = "extra == 'datasets'" },
     { name = "jedi", marker = "extra == 'inference'" },
     { name = "litellm", marker = "extra == 'datasets'", specifier = ">=1.85.0,<2.0" },
@@ -3965,7 +3969,7 @@ requires-dist = [
     { name = "typer" },
     { name = "unidiff" },
 ]
-provides-extras = ["datasets", "inference", "test", "docs"]
+provides-extras = ["datasets", "inference", "submit", "test", "docs"]
 
 [[package]]
 name = "sympy"

@@ -7,6 +7,7 @@ import typer
 _PANEL_EVAL = "Evaluate"
 _PANEL_IMAGES = "Images"
 _PANEL_DATA = "Datasets"
+_PANEL_SUBMIT = "Submit"
 
 app = typer.Typer(
     name="swebench",
@@ -18,7 +19,7 @@ app = typer.Typer(
     swebench eval verified -p preds.jsonl --run-id gpt5 -j 16
     swebench eval multimodal --gold -i carbon-design-system__carbon-10188
     swebench report my-run -d verified
-    swebench publish gpt5 -b myuser/swebench-runs -p preds.jsonl --model-id openai/gpt-5
+    swebench submit hf my-run -b me/swebench-runs --report r.json -d verified
     swebench images build verified -j 8
     swebench images check multilingual
     swebench images clean --run-id my-run
@@ -46,15 +47,12 @@ def main():
 
 
 from swebench.cli.dataset import dataset_app  # noqa: E402
-from swebench.cli.evaluate import (  # noqa: E402
-    eval_command,
-    publish_command,
-    report_command,
-)
+from swebench.cli.evaluate import eval_command, report_command  # noqa: E402
 from swebench.cli.images import images_app  # noqa: E402
+from swebench.cli.submit import submit_app  # noqa: E402
 
 app.command("eval", rich_help_panel=_PANEL_EVAL)(eval_command)
 app.command("report", rich_help_panel=_PANEL_EVAL)(report_command)
-app.command("publish", rich_help_panel=_PANEL_EVAL)(publish_command)
 app.add_typer(images_app, name="images", rich_help_panel=_PANEL_IMAGES)
 app.add_typer(dataset_app, name="dataset", rich_help_panel=_PANEL_DATA)
+app.add_typer(submit_app, name="submit", rich_help_panel=_PANEL_SUBMIT)
