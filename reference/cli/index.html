@@ -894,11 +894,28 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#swebench-publish-run_id" class="md-nav__link">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench publish RUN_ID
+        Submit
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Submit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-hf-run_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit hf RUN_ID
       
     </span>
   </a>
@@ -1264,11 +1281,28 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#swebench-publish-run_id" class="md-nav__link">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench publish RUN_ID
+        Submit
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Submit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-hf-run_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit hf RUN_ID
       
     </span>
   </a>
@@ -1449,12 +1483,23 @@ added, or to grade against a different dataset on purpose.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w">                     </span><span class="c1"># dataset taken from the run itself</span>
 swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w"> </span>-d<span class="w"> </span>multimodal<span class="w"> </span>-i<span class="w"> </span>grommet__grommet-6282
 </code></pre></div>
-<h3 id="swebench-publish-run_id"><code>swebench publish RUN_ID</code></h3>
-<p>Upload a run's report (and predictions) to a Hugging Face bucket, and write a
-<code>.eval_results/*.yaml</code> entry scored against it
+<h2 id="submit">Submit</h2>
+<p>Submission commands live under <code>swebench submit</code>. Two destinations:
+the SWE-bench leaderboard (via
+<a href="https://github.com/SWE-bench/experiments"><code>SWE-bench/experiments</code></a>) and
+HuggingFace's community eval-results system.</p>
+<h3 id="swebench-submit-hf-run_id"><code>swebench submit hf RUN_ID</code></h3>
+<p>Upload a run's report (and optionally its predictions) to a HuggingFace bucket,
+and write a <code>.eval_results/*.yaml</code> entry scored against it
 (<a href="https://huggingface.co/docs/hub/eval-results">format</a>).</p>
-<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>publish<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/swebench-runs<span class="w"> </span>--report<span class="w"> </span>gpt5.my-run.json<span class="w"> </span>-d<span class="w"> </span>verified<span class="w"> </span>--task-id<span class="w"> </span>swe_bench_%_resolved
+<p>The score comes from the report's own <code>resolved_instances</code> / <code>total_instances</code>,
+and the entry's <code>source.url</code> points at the uploaded report. Buckets are created
+private unless you pass <code>--public</code>; a private bucket means that URL is not
+readable by anyone else, so <code>--public</code> is what you want for a shared entry.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/swebench-runs<span class="w"> </span>--report<span class="w"> </span>gpt5.my-run.json<span class="w"> </span>-d<span class="w"> </span>verified<span class="w"> </span>--public
+swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/runs<span class="w"> </span>--report<span class="w"> </span>r.json<span class="w"> </span>-d<span class="w"> </span>verified<span class="w"> </span>--dry-run
 </code></pre></div>
+<p>Requires the <code>submit</code> extra (<code>pip install swebench[submit]</code>) for bucket support.</p>
 <h2 id="images">Images</h2>
 <p>Images are built from a task repo: each task carries its own Dockerfile, and its
 <code>task.yaml</code> names the image the dataset will tell the harness to pull. Narrow
