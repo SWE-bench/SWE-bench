@@ -107,9 +107,11 @@ def calc_cost(model_name, input_tokens, output_tokens):
     Returns:
     float: The cost of the response.
     """
+    # Index directly so missing pricing metadata fails loudly instead of silently
+    # treating an unknown model as free and undercounting inference costs.
     cost = (
-        MODEL_COST_PER_INPUT.get(model_name, 0) * input_tokens
-        + MODEL_COST_PER_OUTPUT.get(model_name, 0) * output_tokens
+        MODEL_COST_PER_INPUT[model_name] * input_tokens
+        + MODEL_COST_PER_OUTPUT[model_name] * output_tokens
     )
     logger.info(
         f"input_tokens={input_tokens}, output_tokens={output_tokens}, cost={cost:.2f}"
