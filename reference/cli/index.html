@@ -873,6 +873,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#swebench-infer-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench infer DATASET
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swebench-eval-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1260,6 +1271,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#swebench-infer-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench infer DATASET
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swebench-eval-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1464,6 +1486,24 @@
 </tbody>
 </table>
 <h2 id="evaluate">Evaluate</h2>
+<h3 id="swebench-infer-dataset"><code>swebench infer DATASET</code></h3>
+<p>Generate predictions with <a href="https://mini-swe-agent.com">mini-SWE-agent</a>, writing
+<code>preds.json</code> plus one trajectory per instance.</p>
+<p>A thin wrapper around <code>mini-extra swebench</code>: it resolves SWE-bench's dataset aliases
+(so <code>infer</code> and <code>eval</code> read the same dataset, rather than mini's older
+<code>princeton-nlp/*</code> mirrors) and passes mini's bundled config explicitly, because mini
+drops its own default as soon as any <code>-c</code> is given. Unrecognized arguments are
+forwarded to mini, so <code>--filter</code>, <code>--slice</code> and the rest work as documented there.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>infer<span class="w"> </span>verified<span class="w"> </span>-m<span class="w"> </span>gpt-5<span class="w"> </span>-o<span class="w"> </span>preds<span class="w"> </span>-w<span class="w"> </span><span class="m">8</span>
+swebench<span class="w"> </span>infer<span class="w"> </span>verified<span class="w"> </span>-c<span class="w"> </span>model.yaml<span class="w"> </span>-w<span class="w"> </span><span class="m">12</span><span class="w"> </span>-o<span class="w"> </span>output
+swebench<span class="w"> </span>infer<span class="w"> </span>lite<span class="w"> </span>-m<span class="w"> </span>gpt-5<span class="w"> </span>--dry-run<span class="w"> </span>--<span class="w"> </span>--filter<span class="w"> </span><span class="s2">"astropy.*"</span>
+</code></pre></div>
+<p>If mini-SWE-agent lives in a different environment than <code>swebench</code>, point at it with
+<code>--python /path/to/venv/bin/python</code>.</p>
+<p>API keys are mini's business, not this command's -- export whatever the provider reads
+before running. Note that <code>api_key: os.environ/VAR</code> inside a model config is <strong>not</strong>
+resolved by litellm outside its proxy: it is sent as that literal string. Set the real
+environment variable instead (for an OpenAI-compatible endpoint, <code>OPENAI_API_KEY</code>).</p>
 <h3 id="swebench-eval-dataset"><code>swebench eval DATASET</code></h3>
 <p>Run the reference patches or a model's predictions.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>verified<span class="w"> </span>--gold
