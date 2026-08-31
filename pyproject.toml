@@ -27,6 +27,7 @@ dependencies = [
     "docker",
     "ghapi<2",  # 2.x is async: every call returns a coroutine
     "GitPython",
+    "huggingface_hub>=1.20",
     "modal",
     "pre-commit",
     "python-dotenv",
