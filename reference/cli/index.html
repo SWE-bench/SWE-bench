@@ -923,6 +923,50 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#swebench-submit-package-run_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit package RUN_ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-publish-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit publish OUT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-register-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit register OUT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-verify-entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit verify ENTRY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swebench-submit-hf-run_id" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1321,6 +1365,50 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#swebench-submit-package-run_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit package RUN_ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-publish-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit publish OUT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-register-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit register OUT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swebench-submit-verify-entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        swebench submit verify ENTRY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#swebench-submit-hf-run_id" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1528,6 +1616,44 @@ swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class=
 the SWE-bench leaderboard (via
 <a href="https://github.com/SWE-bench/experiments"><code>SWE-bench/experiments</code></a>) and
 HuggingFace's community eval-results system.</p>
+<p>The leaderboard flow is three steps, plus a check anyone can run:</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>package<span class="w"> </span>my-run<span class="w"> </span>-s<span class="w"> </span>verified<span class="w"> </span>--trajs<span class="w"> </span>./output<span class="w"> </span>-o<span class="w"> </span>./sub
+swebench<span class="w"> </span>submit<span class="w"> </span>publish<span class="w"> </span>./sub<span class="w">                  </span><span class="c1"># your own public repo</span>
+swebench<span class="w"> </span>submit<span class="w"> </span>register<span class="w"> </span>./sub<span class="w"> </span>-s<span class="w"> </span>verified<span class="w">     </span><span class="c1"># PR to experiments</span>
+swebench<span class="w"> </span>submit<span class="w"> </span>verify<span class="w"> </span>evaluation/verified/&lt;id&gt;<span class="w"> </span>-s<span class="w"> </span>verified
+</code></pre></div>
+<h3 id="swebench-submit-package-run_id"><code>swebench submit package RUN_ID</code></h3>
+<p>Builds two trees from an evaluated run:</p>
+<div class="highlight"><pre><span></span><code>sub/submission-repo/     -&gt; your own public GitHub repo
+  all_preds.jsonl
+  logs/&lt;iid&gt;/{patch.diff,report.json,test_output.txt.gz}
+  trajs/&lt;iid&gt;.*
+sub/entry/               -&gt; the PR to SWE-bench/experiments
+  metadata.yaml  README.md  results/*.json
+</code></pre></div>
+<p><code>logs/</code> mirrors the layout the S3 bucket has always held, so existing log consumers
+work unchanged against a repo. Resolution is <strong>re-derived</strong> from each instance's
+<code>test_output.txt</code>, never read from the run's own <code>report.json</code>.</p>
+<p>Test output is gzipped, and anything still over 50MB is refused with the instance
+named -- GitHub rejects files above 100MB, and finding out locally beats finding out
+at <code>git push</code>.</p>
+<h3 id="swebench-submit-publish-out"><code>swebench submit publish OUT</code></h3>
+<p>Commits <code>submission-repo/</code> and pushes it to a repo under your own account (<code>--owner</code> to
+place it elsewhere, <code>--remote</code> to push to one you already made, <code>--dry-run</code> to see the
+plan). The resulting URL is written into <code>entry/metadata.yaml</code> as <code>assets.repo</code> /
+<code>assets.logs</code> / <code>assets.trajs</code> -- the same field that used to carry
+<code>s3://swe-bench-submissions/...</code>, so nothing downstream changes.</p>
+<h3 id="swebench-submit-register-out"><code>swebench submit register OUT</code></h3>
+<p>Forks <code>SWE-bench/experiments</code>, adds <code>evaluation/&lt;split&gt;/&lt;id&gt;/</code>, and opens the PR with
+the submission checklist in the body. It refuses to open while any <code>TODO</code> remains in
+<code>metadata.yaml</code> or <code>README.md</code>, naming each one (<code>--allow-todos</code> to override).</p>
+<h3 id="swebench-submit-verify-entry"><code>swebench submit verify ENTRY</code></h3>
+<p>Clones the repo named in the entry's <code>assets.repo</code>, re-grades every instance from its
+recorded test output, and reports each instance whose verdict disagrees with the
+entry's <code>results.json</code>. No Docker and no re-execution -- the recorded log is the
+evidence. Claiming an instance while shipping no log for it fails the check.</p>
+<p>Because artifacts are self-hosted rather than in a maintainer-owned bucket, anyone can
+run this on any submission.</p>
 <h3 id="swebench-submit-hf-run_id"><code>swebench submit hf RUN_ID</code></h3>
 <p>Upload a run's report (and optionally its predictions) to a HuggingFace bucket,
 and write a <code>.eval_results/*.yaml</code> entry scored against it
