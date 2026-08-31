@@ -27,6 +27,7 @@ dependencies = [
     "docker",
     "ghapi<2",  # 2.x is async: every call returns a coroutine
     "GitPython",
+    "huggingface_hub>=1.20",
     "modal",
     "pre-commit",
     "python-dotenv",
@@ -64,11 +65,6 @@ inference = [
     "triton",
     "flash_attn>=2.0.0",
     "requests",
-]
-submit = [
-    # bucket support (HfApi.create_bucket / batch_bucket_files) landed in 1.20;
-    # `datasets` already pulls huggingface_hub in, so this only pins the floor
-    "huggingface_hub>=1.20",
 ]
 test = [
     "pytest",

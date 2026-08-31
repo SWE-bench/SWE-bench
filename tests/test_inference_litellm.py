@@ -34,6 +34,10 @@ class _ContextWindowExceededError(Exception):
 _fake_litellm.ContextWindowExceededError = _ContextWindowExceededError
 sys.modules["litellm"] = _fake_litellm
 
+# run_api also imports tiktoken at module scope, which ships in the optional
+# `datasets`/`inference` extras -- skip rather than fail collection without them
+pytest.importorskip("tiktoken")
+
 from swebench.inference import run_api  # noqa: E402
 
 
