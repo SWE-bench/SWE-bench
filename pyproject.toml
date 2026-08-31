@@ -102,3 +102,9 @@ namespaces = false
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+# Only ever collect from tests/. Without this a bare `pytest` also walks logs/, where
+# the harness writes test_output.txt files -- these match pytest's default
+# --doctest-glob of `test*.txt`, and the eval's ">>>>> Test Exit Code" markers then
+# fail doctest parsing as malformed prompts.
+testpaths = ["tests"]
+norecursedirs = ["logs", "build", "dist", ".venv", "*.egg-info"]
