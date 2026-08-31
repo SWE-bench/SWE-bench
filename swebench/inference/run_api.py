@@ -428,6 +428,134 @@ def anthropic_inference(
                 break
 
 
+@retry(wait=wait_random_exponential(min=30, max=600), stop=stop_after_attempt(3))
+def call_litellm(model_name_or_path, inputs, temperature, top_p, **model_args):
+    """
+    Calls any provider through LiteLLM's unified (OpenAI-shaped) API.
+
+    Args:
+    model_name_or_path (str): The LiteLLM model string (e.g. "gpt-4o",
+        "anthropic/claude-3-5-sonnet-20240620", "gemini/gemini-2.5-flash").
+    inputs (str): The inputs to generate completions for.
+    temperature (float): The temperature to use.
+    top_p (float): The top_p to use.
+    **model_args (dict): A dictionary of model arguments.
+    """
+    import litellm
+
+    system_messages = inputs.split("\n", 1)[0]
+    user_message = inputs.split("\n", 1)[1]
+    try:
+        response = litellm.completion(
+            model=model_name_or_path,
+            messages=[
+                {"role": "system", "content": system_messages},
+                {"role": "user", "content": user_message},
+            ],
+            temperature=temperature,
+            top_p=top_p,
+            # Silently drop kwargs a given provider doesn't accept so the same
+            # model_args work across OpenAI, Anthropic, Gemini, Bedrock, etc.
+            drop_params=True,
+            **model_args,
+        )
+        input_tokens = response.usage.prompt_tokens
+        output_tokens = response.usage.completion_tokens
+        # Let missing pricing metadata fail loudly: treating an unknown model as
+        # free would undercount spend and could bypass max_cost.
+        cost = litellm.completion_cost(completion_response=response)
+        logger.info(
+            f"input_tokens={input_tokens}, output_tokens={output_tokens}, cost={cost:.2f}"
+        )
+        return response, cost
+    except litellm.ContextWindowExceededError:
+        print("Context length exceeded")
+        return None
+
+
+def litellm_inference(
+    test_dataset,
+    model_name_or_path,
+    output_file,
+    model_args,
+    existing_ids,
+    max_cost,
+):
+    """
+    Runs inference on a dataset using any provider via LiteLLM.
+
+    Args:
+    test_dataset (datasets.Dataset): The dataset to run inference on.
+    model_name_or_path (str): The LiteLLM model string to use.
+    output_file (str): The path to the output file.
+    model_args (dict): A dictionary of model arguments.
+    existing_ids (set): A set of ids that have already been processed.
+    max_cost (float): The maximum cost to spend on inference.
+    """
+    import litellm
+
+    # Determine the context window from LiteLLM's model registry so we can drop
+    # over-long instances like the OpenAI/Anthropic paths do. If the model is
+    # unknown to LiteLLM, skip filtering rather than guessing.
+    max_input_tokens = model_args.pop("max_input_tokens", None)
+    if max_input_tokens is None:
+        try:
+            info = litellm.get_model_info(model_name_or_path)
+            max_input_tokens = info.get("max_input_tokens") or info.get("max_tokens")
+        except Exception:
+            max_input_tokens = None
+    if max_input_tokens:
+        test_dataset = test_dataset.filter(
+            lambda x: (
+                litellm.token_counter(model=model_name_or_path, text=x["text"])
+                <= max_input_tokens
+            ),
+            desc="Filtering",
+            load_from_cache_file=False,
+        )
+    else:
+        logger.warning(
+            f"Could not determine context window for {model_name_or_path}; "
+            "skipping length-based filtering. Pass max_input_tokens=N in "
+            "--model_args to enable it."
+        )
+    temperature = model_args.pop("temperature", 0.2)
+    top_p = model_args.pop("top_p", 0.95 if temperature > 0 else 1)
+    print(f"Using temperature={temperature}, top_p={top_p}")
+    basic_args = {
+        "model_name_or_path": model_name_or_path,
+    }
+    total_cost = 0
+    print(f"Filtered to {len(test_dataset)} instances")
+    with open(output_file, "a+") as f:
+        for datum in tqdm(test_dataset, desc=f"Inference for {model_name_or_path}"):
+            instance_id = datum["instance_id"]
+            if instance_id in existing_ids:
+                continue
+            output_dict = {"instance_id": instance_id}
+            output_dict.update(basic_args)
+            output_dict["text"] = f"{datum['text']}\n\n"
+            result = call_litellm(
+                output_dict["model_name_or_path"],
+                output_dict["text"],
+                temperature,
+                top_p,
+                **model_args,
+            )
+            if result is None:
+                continue
+            response, cost = result
+            completion = response.choices[0].message.content
+            total_cost += cost
+            print(f"Total Cost: {total_cost:.2f}")
+            output_dict["full_output"] = completion
+            output_dict["model_patch"] = extract_diff(completion)
+            print(json.dumps(output_dict), file=f, flush=True)
+            if max_cost is not None and total_cost >= max_cost:
+                print(f"Reached max cost {max_cost}, exiting")
+                break
+
+
 def parse_model_args(model_args):
     """
     Parses a string of model arguments and returns a dictionary of keyword arguments.
@@ -524,7 +652,12 @@ def main(
         "existing_ids": existing_ids,
         "max_cost": max_cost,
     }
-    if model_name_or_path.startswith("claude"):
+    if model_name_or_path.startswith("litellm/"):
+        # Strip the routing prefix; LiteLLM expects the bare model string
+        # (e.g. "anthropic/claude-3-5-sonnet-20240620", "gemini/gemini-2.5-flash").
+        inference_args["model_name_or_path"] = model_name_or_path[len("litellm/") :]
+        litellm_inference(**inference_args)
+    elif model_name_or_path.startswith("claude"):
         anthropic_inference(**inference_args)
     else:
         openai_inference(**inference_args)
@@ -548,7 +681,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_name_or_path",
         type=str,
-        help="Name of API model. Update MODEL* constants in this file to add new models.",
+        help=(
+            "Name of API model. Update MODEL* constants in this file to add new "
+            "OpenAI/Anthropic models, or prefix any LiteLLM model with 'litellm/' "
+            "to route through LiteLLM (e.g. 'litellm/gemini/gemini-2.5-flash'). "
+            f"Built-in choices: {sorted(MODEL_LIMITS.keys())}"
+        ),
     )
     parser.add_argument(
         "--shard_id",
