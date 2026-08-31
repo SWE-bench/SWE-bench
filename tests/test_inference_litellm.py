@@ -11,6 +11,8 @@ import types
 from types import SimpleNamespace
 from unittest import mock
 
+import pytest
+
 # --- install a fake `litellm` before importing run_api -----------------------
 _fake_litellm = types.ModuleType("litellm")
 _fake_litellm.completion = mock.MagicMock(name="litellm.completion")
@@ -91,6 +93,18 @@ def test_call_litellm_returns_none_on_context_window():
 
     result = run_api.call_litellm("gpt-4o", "sys\nuser", 0.0, 1.0)
     assert result is None
+
+
+def test_call_litellm_raises_when_pricing_is_missing():
+    _fake_litellm.completion.reset_mock(return_value=True, side_effect=True)
+    _fake_litellm.completion.return_value = _response()
+    _fake_litellm.completion_cost.side_effect = ValueError("pricing unavailable")
+
+    try:
+        with pytest.raises(ValueError, match="pricing unavailable"):
+            run_api.call_litellm.__wrapped__("gpt-4o", "sys\nuser", 0.0, 1.0)
+    finally:
+        _fake_litellm.completion_cost.side_effect = None
 
 
 def test_litellm_inference_writes_output(tmp_path):

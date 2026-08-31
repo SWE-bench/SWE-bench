@@ -461,12 +461,9 @@ def call_litellm(model_name_or_path, inputs, temperature, top_p, **model_args):
         )
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens
-        # LiteLLM prices the call from its own model registry; fall back to 0
-        # for models it doesn't have cost data for rather than crashing.
-        try:
-            cost = litellm.completion_cost(completion_response=response)
-        except Exception:
-            cost = 0.0
+        # Let missing pricing metadata fail loudly: treating an unknown model as
+        # free would undercount spend and could bypass max_cost.
+        cost = litellm.completion_cost(completion_response=response)
         logger.info(
             f"input_tokens={input_tokens}, output_tokens={output_tokens}, cost={cost:.2f}"
         )
