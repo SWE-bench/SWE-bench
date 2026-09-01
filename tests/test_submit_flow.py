@@ -378,3 +378,48 @@ def test_resolvers_name_where_they_looked(tmp_path):
     (tmp_path / "empty").mkdir()
     with pytest.raises(PackageError, match="submission/entry/"):
         resolve_submission_dir(tmp_path / "empty")
+
+
+def test_register_always_forks(monkeypatch, packaged):
+    """Submitters are outside the org, so the flow is always fork -> cross-repo PR."""
+    calls = []
+    monkeypatch.setattr(reg, "has_gh", lambda: True)
+    monkeypatch.setattr(reg, "gh_login", lambda: "someone")
+    monkeypatch.setattr(reg, "gh", lambda cwd, *a, **k: calls.append(a) or "")
+    monkeypatch.setattr(reg, "git", lambda cwd, *a, **k: "")
+    monkeypatch.setattr(reg, "init_commit", lambda *a, **k: None)
+    monkeypatch.setattr(reg, "write_entry", lambda *a, **k: None)
+
+    reg.register(packaged / "entry", "verified", "20260901_myagent")
+    assert [c[1] for c in calls if c[0] == "repo"] == ["fork"]
+
+    pr = next(c for c in calls if c[0] == "pr")
+    # owner-qualified head: gh cannot resolve a cross-repo head on its own
+    assert "someone:submission/verified/20260901_myagent" in pr
+
+
+def test_register_reports_each_step(monkeypatch, packaged):
+    steps = []
+    monkeypatch.setattr(reg, "has_gh", lambda: True)
+    monkeypatch.setattr(reg, "gh_login", lambda: "someone")
+    monkeypatch.setattr(reg, "gh", lambda cwd, *a, **k: "")
+    monkeypatch.setattr(reg, "git", lambda cwd, *a, **k: "")
+    monkeypatch.setattr(reg, "init_commit", lambda *a, **k: None)
+    monkeypatch.setattr(reg, "write_entry", lambda *a, **k: None)
+
+    reg.register(
+        packaged / "entry", "verified", "20260901_myagent", on_step=steps.append
+    )
+    joined = " | ".join(steps)
+    for expected in ("forking", "branching", "adding", "pushing", "pull request"):
+        assert expected in joined
+
+
+def test_publish_reports_each_step(packaged, tmp_path):
+    remote = tmp_path / "remote.git"
+    git(tmp_path, "init", "-q", "--bare", str(remote))
+    steps = []
+    pub.publish(packaged, remote=str(remote), on_step=steps.append)
+    joined = " | ".join(steps)
+    assert "committing" in joined and "MB" in joined
+    assert "pushing" in joined and "assets" in joined

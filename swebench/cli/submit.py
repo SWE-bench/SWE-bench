@@ -19,9 +19,30 @@ submit_app = typer.Typer(
     no_args_is_help=True,
     help="""Prepare and publish a run's results.
 
-[yellow][not dim][bold]Examples:[/bold][/not dim][/yellow]
+[yellow][not dim][bold]Create a leaderboard submission:[/bold][/not dim][/yellow]
 
-    swebench submit hf my-run -b me/swebench-runs
+  [bold]1.[/bold] Generate predictions
+    swebench infer verified -c model.yaml --run-id demo
+
+  [bold]2.[/bold] Evaluate them
+    swebench eval verified -p logs/inference/demo/preds.json --run-id demo
+
+  [bold]3.[/bold] Build the submission
+    swebench submit package logs/evaluation/demo --trajs logs/inference/demo
+
+  [bold]4.[/bold] Fill in the entry's metadata.yaml and README.md, and add a logo
+
+  [bold]5.[/bold] Push the artifacts to a public repo of your own
+    swebench submit publish logs/evaluation/demo -r <owner>/<name>
+
+  [bold]6.[/bold] Check it reproduces, the way a reviewer would
+    swebench submit verify logs/evaluation/demo
+
+  [bold]7.[/bold] Open the pull request
+    swebench submit register logs/evaluation/demo
+
+[not dim]Every step after the first takes the same run directory. To publish to a
+HuggingFace bucket instead, use [bold]swebench submit hf[/bold].[/not dim]
 """,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
@@ -195,7 +216,12 @@ def publish_command(
         )
     try:
         result = publish(
-            out_dir, owner=owner, repo=repo, private=private, remote=remote
+            out_dir,
+            owner=owner,
+            repo=repo,
+            private=private,
+            remote=remote,
+            on_step=lambda msg: typer.echo(f"  {msg}"),
         )
     except PublishError as exc:
         typer.echo(f"error: {exc}", err=True)
@@ -288,7 +314,12 @@ def register_command(
             typer.echo("\nDry run -- nothing forked, pushed, or opened.")
             return
         result = register(
-            entry_dir, split, sub_id, registry=target, allow_todos=allow_todos
+            entry_dir,
+            split,
+            sub_id,
+            registry=target,
+            allow_todos=allow_todos,
+            on_step=lambda msg: typer.echo(f"  {msg}"),
         )
     except RegisterError as exc:
         typer.echo(f"error: {exc}", err=True)

@@ -14,11 +14,19 @@ import shutil
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 import yaml
 
-from swebench.submit._git import GitError, gh, git, has_gh, init_commit, slug
+from swebench.submit._git import (
+    GitError,
+    gh,
+    gh_login,
+    git,
+    has_gh,
+    init_commit,
+    slug,
+)
 
 REGISTRY_DEFAULT = "https://github.com/SWE-bench/experiments"
 
@@ -156,8 +164,17 @@ def register(
     *,
     registry: str = REGISTRY_DEFAULT,
     allow_todos: bool = False,
+    on_step: Optional[Callable[[str], None]] = None,
 ) -> RegisterResult:
-    """Fork the registry, commit the entry on a branch, and open the PR."""
+    """Fork the registry, commit the entry on a branch, and open the PR.
+
+    Always through a fork: submitters are outside the org, and a fork works whether or
+    not you happen to have write access.
+
+    ``on_step`` receives a line per step; cloning the registry and pushing take long
+    enough that silence looks like a hang.
+    """
+    say = on_step or (lambda _msg: None)
     entry_dir = Path(entry_dir)
     if not allow_todos and (todos := unfilled_todos(entry_dir)):
         raise RegisterError(
@@ -180,36 +197,33 @@ def register(
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp) / "experiments"
         try:
-            gh(
-                Path(tmp),
-                "repo",
-                "fork",
-                slug(registry),
-                "--clone",
-                "--fork-name=experiments",
-                "--",
-                str(root),
-            )
-        except GitError:
-            # already forked, or fork-name taken: clone the fork directly
-            try:
-                gh(Path(tmp), "repo", "clone", slug(registry), str(root))
-            except GitError as exc:
-                raise RegisterError(
-                    f"could not obtain a clone of {registry}: {exc}"
-                ) from exc
+            say(f"forking and cloning {slug(registry)}")
+            gh(Path(tmp), "repo", "fork", slug(registry), "--clone", "--", str(root))
+        except GitError as exc:
+            raise RegisterError(
+                f"could not obtain a clone of {registry}: {exc}"
+            ) from exc
 
+        say(f"branching {plan.branch}")
         git(root, "checkout", "-q", "-b", plan.branch)
+        say(f"adding evaluation/{split}/{submission_id}/ ({len(plan.files)} files)")
         write_entry(plan, entry_dir, root)
         init_commit(root, plan.title)
         try:
+            say("pushing")
             git(root, "push", "-q", "-u", "origin", plan.branch)
+            # Owner-qualified so gh never has to resolve the head itself, which is
+            # what fails non-interactively for a cross-repo PR.
+            head = f"{gh_login()}:{plan.branch}"
+            say(f"opening pull request against {slug(registry)}")
             pr_url = gh(
                 root,
                 "pr",
                 "create",
                 "--repo",
                 slug(registry),
+                "--head",
+                head,
                 "--title",
                 plan.title,
                 "--body",
@@ -218,7 +232,10 @@ def register(
         except GitError as exc:
             return RegisterResult(
                 plan=plan,
-                next_steps=f"entry committed on branch {plan.branch}, but: {exc}",
+                next_steps=(
+                    f"entry committed on branch {plan.branch}, but opening the PR "
+                    f"failed: {exc}"
+                ),
             )
 
     return RegisterResult(plan=plan, pr_url=pr_url.splitlines()[-1] if pr_url else None)

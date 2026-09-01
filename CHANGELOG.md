@@ -10,6 +10,8 @@ Breaking changes:
 * The run report is written to `logs/evaluation/<run_id>/results.json` instead of
   `<model>.<run_id>.json` in the current directory. `--report_dir` / `--report-dir` is
   gone: the report always sits with the run's other artifacts.
+* `RUN_VALIDATION_LOG_DIR` is gone. Nothing read it, and the `run_validation.sh` the
+  collection docs mention does not exist in this repository.
 * Evaluation logs are written to `logs/evaluation/<run_id>` instead of
   `logs/run_evaluation/<run_id>`. Move an existing directory to keep past runs
   readable by `swebench report` and `swebench submit package`:

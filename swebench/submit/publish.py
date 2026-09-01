@@ -9,7 +9,7 @@ downstream keeps working.
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 import yaml
 
@@ -92,6 +92,7 @@ def publish(
     private: bool = False,
     remote: str = "",
     submission_id: Optional[str] = None,
+    on_step: Optional[Callable[[str], None]] = None,
 ) -> PublishResult:
     """Commit ``out_dir/submission-repo`` and push it to a GitHub repo.
 
@@ -99,7 +100,11 @@ def publish(
     pushes to one that already exists, and an existing ``origin`` is reused. Creating a
     public repo is not something to do off a guessed name, so with none of the three
     this raises rather than picking for you.
+
+    ``on_step`` receives a line per step; committing and pushing hundreds of megabytes
+    takes long enough that silence looks like a hang.
     """
+    say = on_step or (lambda _msg: None)
     out_dir = Path(out_dir)
     repo_dir = out_dir / "submission-repo"
     entry_dir = out_dir / "entry"
@@ -110,6 +115,19 @@ def publish(
         )
 
     name = repo or plan_repo_name(out_dir, submission_id)
+    n_files = sum(
+        1 for p in repo_dir.rglob("*") if p.is_file() and ".git" not in p.parts
+    )
+    size_mb = (
+        sum(
+            p.stat().st_size
+            for p in repo_dir.rglob("*")
+            if p.is_file() and ".git" not in p.parts
+        )
+        / 1024
+        / 1024
+    )
+    say(f"committing {n_files} files ({size_mb:.0f} MB)")
     init_commit(repo_dir, f"{name}: SWE-bench submission artifacts")
     commit = head(repo_dir)
     has_trajs = (repo_dir / "trajs").is_dir()
@@ -123,9 +141,11 @@ def publish(
 
     try:
         if existing:
+            say(f"pushing to {existing}")
             git(repo_dir, "push", "-u", "origin", "HEAD")
             url = existing
         elif remote:
+            say(f"pushing to {remote}")
             git(repo_dir, "remote", "add", "origin", remote)
             git(repo_dir, "push", "-u", "origin", "HEAD")
             url = to_https(remote)
@@ -142,6 +162,7 @@ def publish(
         else:
             target = f"{owner}/{repo}" if owner and "/" not in repo else repo
             visibility = "--private" if private else "--public"
+            say(f"creating {target} ({'private' if private else 'public'}) and pushing")
             gh(repo_dir, "repo", "create", target, visibility, "--source=.", "--push")
             slug_path = target if "/" in target else f"{gh_login() or ''}/{target}"
             url = origin(repo_dir) or to_https(f"https://github.com/{slug_path}")
@@ -149,5 +170,6 @@ def publish(
     except GitError as exc:
         raise PublishError(str(exc)) from exc
 
+    say("recording assets in entry/metadata.yaml")
     write_assets(entry_dir, url, commit, has_trajs)
     return PublishResult(repo_url=url, commit=commit)

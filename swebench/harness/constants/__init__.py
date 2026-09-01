@@ -25,7 +25,6 @@ class EvalType(Enum):
 # Constants - Log Directories
 INFERENCE_LOG_DIR = Path("logs/inference")
 RUN_EVALUATION_LOG_DIR = Path("logs/evaluation")
-RUN_VALIDATION_LOG_DIR = Path("logs/run_validation")
 
 # Constants - Test Types, Statuses, Commands
 FAIL_TO_PASS = "FAIL_TO_PASS"
