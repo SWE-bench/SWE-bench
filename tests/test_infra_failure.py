@@ -81,9 +81,7 @@ def test_infra_failure_stays_in_the_denominator(monkeypatch, tmp_path):
     predictions, dataset, instance_id = _write_run(
         monkeypatch, tmp_path, "infra-denominator", BROWSER_FAILURE
     )
-    out = make_run_report(
-        predictions, dataset, "infra-denominator", report_dir=str(tmp_path)
-    )
+    out = make_run_report(predictions, dataset, "infra-denominator")
     report = json.loads(out.read_text())
 
     # Flagged as infra...
@@ -100,9 +98,7 @@ def test_resolved_instance_is_never_classified(monkeypatch, tmp_path):
     predictions, dataset, instance_id = _write_run(
         monkeypatch, tmp_path, "infra-resolved", BROWSER_FAILURE, resolved=True
     )
-    out = make_run_report(
-        predictions, dataset, "infra-resolved", report_dir=str(tmp_path)
-    )
+    out = make_run_report(predictions, dataset, "infra-resolved")
     report = json.loads(out.read_text())
 
     assert report["resolved_ids"] == [instance_id]
@@ -114,7 +110,7 @@ def test_error_instances_without_a_report_are_classified(monkeypatch, tmp_path):
     predictions, dataset, instance_id = _write_run(
         monkeypatch, tmp_path, "infra-error", BROWSER_FAILURE, write_report=False
     )
-    out = make_run_report(predictions, dataset, "infra-error", report_dir=str(tmp_path))
+    out = make_run_report(predictions, dataset, "infra-error")
     report = json.loads(out.read_text())
 
     assert report["error_ids"] == [instance_id]
@@ -125,9 +121,7 @@ def test_genuine_failure_is_not_flagged(monkeypatch, tmp_path):
     predictions, dataset, instance_id = _write_run(
         monkeypatch, tmp_path, "infra-genuine", GENUINE_TEST_FAILURE
     )
-    out = make_run_report(
-        predictions, dataset, "infra-genuine", report_dir=str(tmp_path)
-    )
+    out = make_run_report(predictions, dataset, "infra-genuine")
     report = json.loads(out.read_text())
 
     assert report["unresolved_ids"] == [instance_id]

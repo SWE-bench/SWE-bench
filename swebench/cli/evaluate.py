@@ -28,11 +28,6 @@ def eval_command(
         4, "-j", "--workers", help="Instances evaluated in parallel"
     ),
     timeout: int = typer.Option(1800, "-t", "--timeout", help="Per-instance seconds"),
-    report_dir: Optional[str] = typer.Option(
-        None,
-        "--report-dir",
-        help="Where to write results.json (default: the run's log dir)",
-    ),
     task_repo: Optional[str] = typer.Option(
         None,
         "--task-repo",
@@ -78,7 +73,6 @@ def eval_command(
         timeout=timeout,
         rewrite_reports=False,
         modal=modal,
-        report_dir=report_dir,
         task_repo=task_repo,
     )
 
@@ -93,11 +87,6 @@ def report_command(
     ),
     split: Optional[str] = typer.Option(None, "-s", "--split"),
     instance_ids: Optional[list[str]] = typer.Option(None, "-i", "--instance"),
-    report_dir: Optional[str] = typer.Option(
-        None,
-        "--report-dir",
-        help="Where to write results.json (default: the run's log dir)",
-    ),
 ):
     """Re-grade a finished run from its saved logs, without starting containers.
 
@@ -137,7 +126,6 @@ def report_command(
         timeout=1800,
         rewrite_reports=True,
         modal=False,
-        report_dir=report_dir,
         # a run made against a task repo has to be re-graded against the same tests,
         # or the dataset's copy silently overrides them and the verdict changes
         task_repo=recorded.get("task_repo"),

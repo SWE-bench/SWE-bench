@@ -18,7 +18,6 @@ def make_run_report(
     full_dataset: list,
     run_id: str,
     client: Optional[docker.DockerClient] = None,
-    report_dir: Optional[str] = None,
 ) -> Path:
     """
     Make a final evaluation and run report of the instances that have been run.
@@ -29,7 +28,6 @@ def make_run_report(
         full_dataset (list): List of all instances
         run_id (str): Run ID
         client (docker.DockerClient): Docker client (optional)
-        report_dir (str): Where to write results.json (default: the run's log dir)
 
     Returns:
         Path to report file
@@ -168,11 +166,8 @@ def make_run_report(
                 "unremoved_images": list(sorted(unremoved_images)),
             }
         )
-    # The report belongs with the run's other artifacts. Written to the CWD by
-    # default, it landed wherever the command happened to be invoked from.
-    report_dir = (
-        Path(report_dir) if report_dir is not None else RUN_EVALUATION_LOG_DIR / run_id
-    )
+    # The report belongs with the run's other artifacts, and always goes there.
+    report_dir = RUN_EVALUATION_LOG_DIR / run_id
     report_dir.mkdir(parents=True, exist_ok=True)
     report_file = report_dir / "results.json"
     with open(report_file, "w") as f:

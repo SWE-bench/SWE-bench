@@ -23,6 +23,5 @@ def test_modal_with_a_task_repo_is_refused(tmp_path):
             timeout=1800,
             rewrite_reports=False,
             modal=True,
-            report_dir=str(tmp_path),
             task_repo="/nonexistent/tree",
         )

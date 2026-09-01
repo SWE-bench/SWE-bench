@@ -8,6 +8,7 @@ Installing the package provides a `swebench` command. Every command takes
 | alias | dataset |
 |---|---|
 | `full` | `SWE-bench/SWE-bench` |
+| `lite` | `SWE-bench/SWE-bench_Lite` |
 | `verified` | `SWE-bench/SWE-bench_Verified` |
 | `multimodal` | `SWE-bench/SWE-bench_Multimodal` |
 | `multilingual` | `SWE-bench/SWE-bench_Multilingual` |
@@ -16,31 +17,24 @@ Installing the package provides a `swebench` command. Every command takes
 
 ### `swebench infer DATASET`
 
-Generate predictions with [mini-SWE-agent](https://mini-swe-agent.com), writing
-`preds.json` plus one trajectory per instance.
+Generate predictions with [mini-SWE-agent](https://mini-swe-agent.com). Writes
+`preds.json` and one trajectory per instance to `logs/inference/<run_id>`.
 
-A thin wrapper around `mini-extra swebench`: it resolves SWE-bench's dataset aliases
-(so `infer` and `eval` read the same dataset, rather than mini's older
-`princeton-nlp/*` mirrors) and passes mini's bundled config explicitly, because mini
-drops its own default as soon as any `-c` is given. Unrecognized arguments are
-forwarded to mini, so `--filter`, `--slice` and the rest work as documented there.
-
-Predictions and trajectories go to `logs/inference/<run_id>` unless `-o` says
-otherwise, mirroring `swebench eval`'s `logs/evaluation/<run_id>`.
+A thin wrapper around `mini-extra swebench`. It resolves SWE-bench dataset aliases and
+passes mini's bundled config, which mini drops as soon as you give any `-c`. Unknown
+arguments go straight through, so `--filter` and `--slice` work as documented there.
 
 ```bash
 swebench infer verified -m gpt-5 --run-id gpt5 -w 8
 swebench infer verified -c model.yaml --run-id g35flash -w 12
-swebench infer lite -m gpt-5 --dry-run -- --filter "astropy.*"
 ```
 
-If mini-SWE-agent lives in a different environment than `swebench`, point at it with
-`--python /path/to/venv/bin/python`.
+Use `--python /path/to/venv/bin/python` if mini lives in another environment.
 
-API keys are mini's business, not this command's -- export whatever the provider reads
-before running. Note that `api_key: os.environ/VAR` inside a model config is **not**
-resolved by litellm outside its proxy: it is sent as that literal string. Set the real
-environment variable instead (for an OpenAI-compatible endpoint, `OPENAI_API_KEY`).
+Keys are mini's business: export what the provider reads. Note that
+`api_key: os.environ/VAR` in a model config is sent as that literal string, not
+resolved. Set the real variable instead (`OPENAI_API_KEY` for OpenAI-compatible
+endpoints).
 
 ### `swebench eval DATASET`
 
@@ -53,18 +47,21 @@ swebench eval multimodal --gold -i carbon-design-system__carbon-10188
 swebench eval full --gold --modal
 ```
 
-Pass exactly one of `--gold` or `-p/--predictions`. `-i/--instance` is
-repeatable, `-j/--workers` sets parallelism, `-t/--timeout` is per instance.
+Pass exactly one of `--gold` or `-p/--predictions`. `-i/--instance` is repeatable,
+`-j/--workers` sets parallelism, `-t/--timeout` is per instance (1800s).
+
+Artifacts go to `logs/evaluation/<run_id>/`, the summary to its `results.json`.
+That path is relative to where you run the command.
+Re-running a run id skips instances that already have a `report.json`.
 
 ### `swebench report RUN_ID`
 
-Recompute verdicts from a finished run's saved logs, without starting
-containers. Useful after a log-parser fix, since the test output is already on
-disk.
+Recompute verdicts from a finished run's saved logs, without starting containers.
+Useful after a log-parser fix, since the test output is already on disk.
 
 The dataset comes from the run itself, recorded at evaluation time in
-`logs/run_evaluation/<run_id>/run.json`. Pass `-d` for runs made before that was
-added, or to grade against a different dataset on purpose.
+`logs/evaluation/<run_id>/run.json`. Pass `-d` for older runs, or to grade against a
+different dataset on purpose.
 
 ```bash
 swebench report my-run                     # dataset taken from the run itself
@@ -73,85 +70,80 @@ swebench report my-run -d multimodal -i grommet__grommet-6282
 
 ## Submit
 
-Submission commands live under `swebench submit`. Two destinations:
-the SWE-bench leaderboard (via
-[`SWE-bench/experiments`](https://github.com/SWE-bench/experiments)) and
-HuggingFace's community eval-results system.
+`swebench submit` has two destinations: the SWE-bench leaderboard (via
+[`SWE-bench/experiments`](https://github.com/SWE-bench/experiments)) and HuggingFace's
+eval-results system.
 
-The leaderboard flow is three steps, plus a check anyone can run:
+Each leaderboard step reads what the last one recorded, so you only name the run:
 
 ```bash
-swebench submit package my-run -s verified --trajs ./output -o ./sub
-swebench submit publish ./sub                  # your own public repo
-swebench submit register ./sub -s verified     # PR to experiments
-swebench submit verify evaluation/verified/<id> -s verified
+swebench submit package logs/evaluation/my-run --trajs ./output
+swebench submit publish logs/evaluation/my-run/submission
+swebench submit register logs/evaluation/my-run/submission
+swebench submit verify evaluation/verified/<id>
 ```
 
-### `swebench submit package RUN_ID`
+### `swebench submit package RUN_PATH`
 
-Builds two trees from an evaluated run:
+Takes a run's log directory, or the model directory inside it. Writes two trees to
+`<run>/submission/`, plus a `submission.json` that the later steps read:
 
 ```
-sub/submission-repo/     -> your own public GitHub repo
+submission-repo/     -> your own public GitHub repo
   all_preds.jsonl
   logs/<iid>/{patch.diff,report.json,test_output.txt.gz}
   trajs/<iid>.*
-sub/entry/               -> the PR to SWE-bench/experiments
+entry/               -> the PR to SWE-bench/experiments
   metadata.yaml  README.md  results/*.json
 ```
 
-`logs/` mirrors the layout the S3 bucket has always held, so existing log consumers
-work unchanged against a repo. Resolution is **re-derived** from each instance's
-`test_output.txt`, never read from the run's own `report.json`.
+`logs/` matches the layout the S3 bucket has always used, so existing log consumers
+work against a repo. Verdicts are **re-derived** from each `test_output.txt`, never
+read from the run's own `report.json`.
 
-Test output is gzipped, and anything still over 50MB is refused with the instance
-named -- GitHub rejects files above 100MB, and finding out locally beats finding out
-at `git push`.
+The split comes from the dataset the run recorded. `--trajs` takes your agent's output
+directory; traces are flattened to `trajs/<iid>.*`, and files not named after an
+instance are skipped. Test output is gzipped, and anything still over 50MB is refused
+with the instance named. Also: `-s`, `-o`, `--id`, `--model`, `-p/--predictions`.
 
-### `swebench submit publish OUT`
+### `swebench submit publish SUBMISSION_PATH`
 
-Commits `submission-repo/` and pushes it to a repo under your own account (`--owner` to
-place it elsewhere, `--remote` to push to one you already made, `--dry-run` to see the
-plan). The resulting URL is written into `entry/metadata.yaml` as `assets.repo` /
-`assets.logs` / `assets.trajs` -- the same field that used to carry
-`s3://swe-bench-submissions/...`, so nothing downstream changes.
+Commits `submission-repo/` and pushes it. Name the destination: `-r/--repo
+<owner>/<name>` creates it, `--remote <url>` pushes to one you made already. Writes the
+URL into
+`entry/metadata.yaml` as `assets.repo` / `assets.logs` / `assets.trajs` -- the field
+that used to hold `s3://swe-bench-submissions/...`.
 
-### `swebench submit register OUT`
+### `swebench submit register SUBMISSION_PATH`
 
 Forks `SWE-bench/experiments`, adds `evaluation/<split>/<id>/`, and opens the PR with
-the submission checklist in the body. It refuses to open while any `TODO` remains in
-`metadata.yaml` or `README.md`, naming each one (`--allow-todos` to override).
+the checklist in the body. It refuses while any `TODO` remains in `metadata.yaml` or
+`README.md`, naming each one. Split and id come from `submission.json`. Also: `-s`,
+`--id`, `--registry`, `--allow-todos`, `--dry-run`.
 
-### `swebench submit verify ENTRY`
+### `swebench submit verify ENTRY_PATH`
 
 Clones the repo named in the entry's `assets.repo`, re-grades every instance from its
-recorded test output, and reports each instance whose verdict disagrees with the
-entry's `results.json`. No Docker and no re-execution -- the recorded log is the
-evidence. Claiming an instance while shipping no log for it fails the check.
+recorded test output, and reports any verdict that disagrees with `results.json`. No
+Docker and no re-execution. Claiming an instance while shipping no log for it fails.
 
-Because artifacts are self-hosted rather than in a maintainer-owned bucket, anyone can
-run this on any submission.
+The split is inferred from the path. `--logs` checks a local `logs/` tree instead of
+cloning. Anyone can run this, since artifacts are self-hosted.
 
 ### `swebench submit hf RUN_ID`
 
-Upload a run's report (and optionally its predictions) to a HuggingFace bucket,
-and write a `.eval_results/*.yaml` entry scored against it
-([format](https://huggingface.co/docs/hub/eval-results)).
-
-The score comes from the report's own `resolved_instances` / `total_instances`,
-and the entry's `source.url` points at the uploaded report. Buckets are created
-private unless you pass `--public`; a private bucket means that URL is not
-readable by anyone else, so `--public` is what you want for a shared entry.
-
-The report and the dataset are read from the run itself, so only the bucket has to be
-named. `--report` and `-d` override them.
+Uploads a run's report to a HuggingFace bucket and writes a `.eval_results/*.yaml`
+entry ([format](https://huggingface.co/docs/hub/eval-results)). The report and the
+dataset come from the run, so only the bucket has to be named.
 
 ```bash
 swebench submit hf my-run -b myuser/swebench-runs --public
 swebench submit hf my-run -b myuser/runs --dry-run
 ```
 
-Requires the `submit` extra (`pip install swebench[submit]`) for bucket support.
+The score is the report's `resolved_instances` / `total_instances`. Buckets are private
+unless you pass `--public`, and a private bucket leaves the entry's URL unreadable to
+anyone else. Needs the `submit` extra (`pip install swebench[submit]`).
 
 ## Images
 
@@ -259,7 +251,8 @@ python -m swebench.harness.run_evaluation --dataset_name ... --predictions_path 
 python -m swebench.image_builder.prepare_images --dataset_name ...
 ```
 
-The inference utilities are not exposed through `swebench` and are run this way:
+`swebench infer` covers agent-based inference via mini-SWE-agent. The older
+completion-based utilities have no `swebench` subcommand and are run directly:
 
 ```bash
 python -m swebench.inference.run_api --help

@@ -8,6 +8,7 @@ Two destinations, one namespace:
 """
 
 import json
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -28,15 +29,25 @@ submit_app = typer.Typer(
 
 @submit_app.command("package")
 def package_command(
-    run_id: str = typer.Argument(..., help="Run id of a finished `swebench eval`"),
-    split: str = typer.Option(
+    run_path: Path = typer.Argument(
         ...,
+        metavar="RUN_PATH",
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        help="A finished run's log directory, e.g. logs/evaluation/<run_id>",
+    ),
+    split: Optional[str] = typer.Option(
+        None,
         "-s",
         "--split",
-        help="Leaderboard split: lite | verified | test | multilingual | multimodal",
+        help="Leaderboard split; taken from the run's recorded dataset if omitted",
     ),
-    out: str = typer.Option(
-        "submission", "-o", "--out", help="Directory to build into"
+    out: Optional[str] = typer.Option(
+        None,
+        "-o",
+        "--out",
+        help="Directory to build into (default: <run>/submission)",
     ),
     model: Optional[str] = typer.Option(
         None,
@@ -59,15 +70,16 @@ def package_command(
 ):
     """Build a leaderboard submission from an evaluated run.
 
-    Writes two trees: `submission-repo/` for your own public GitHub repo (predictions,
-    logs, trajectories) and `entry/` for the PR to SWE-bench/experiments. Resolution is
-    re-derived from each instance's test output, never read from the run's report.
+    Writes two trees under `<run>/submission/`: `submission-repo/` for your own public
+    GitHub repo (predictions, logs, trajectories) and `entry/` for the PR to
+    SWE-bench/experiments. The split comes from the dataset the run recorded. Resolution
+    is re-derived from each instance's test output, never read from the run's report.
 
     [yellow][bold]Examples:[/bold][/yellow]
 
-        swebench submit package my-run -s verified
+        swebench submit package logs/evaluation/my-run
 
-        swebench submit package my-run -s verified --trajs ./output -o ./sub
+        swebench submit package logs/evaluation/my-run --trajs ./output -o ./sub
     """
     from pathlib import Path as _Path
 
@@ -75,9 +87,9 @@ def package_command(
 
     try:
         result = package_run(
-            run_id,
+            run_path,
             split,
-            _Path(out),
+            _Path(out) if out else None,
             model=model,
             predictions=_Path(predictions) if predictions else None,
             trajs=_Path(trajs) if trajs else None,
@@ -90,6 +102,7 @@ def package_command(
     typer.echo(
         f"{result.submission_id}: {len(result.resolved)} resolved, "
         f"{len(result.no_generation)} without a patch, {len(result.no_logs)} without logs"
+        + (f", {result.n_trajs} trajectories" if trajs else "")
     )
     typer.echo(
         f"  {result.out_dir / 'submission-repo'}  -> push to your own public repo"
@@ -104,12 +117,18 @@ def package_command(
 
 @submit_app.command("publish")
 def publish_command(
-    out: str = typer.Argument("submission", help="Directory `package` built"),
+    out: Path = typer.Argument(
+        ...,
+        metavar="SUBMISSION_PATH",
+        exists=True,
+        file_okay=False,
+        help="Directory `package` built, e.g. logs/evaluation/<run_id>/submission",
+    ),
     owner: str = typer.Option(
         "", "--owner", help="GitHub org/user (default: your account)"
     ),
     repo: str = typer.Option(
-        "", "--repo", help="Repository name (default: the submission id)"
+        "", "-r", "--repo", help="Repository to create, as <owner>/<name> or <name>"
     ),
     private: bool = typer.Option(
         False,
@@ -125,31 +144,36 @@ def publish_command(
 ):
     """Push your submission's artifacts to your own public GitHub repo.
 
-    Commits `submission-repo/`, pushes it, then writes the resulting URL into
-    `entry/metadata.yaml` under `assets` -- the field that used to hold an s3:// path.
+    Name the destination with `--repo <owner>/<name>` to create it, or `--remote <url>`
+    to push to a repo you already made. Commits `submission-repo/`, pushes it, then
+    writes the resulting URL into `entry/metadata.yaml` under `assets` -- the field that
+    used to hold an s3:// path.
 
     [yellow][bold]Examples:[/bold][/yellow]
 
-        swebench submit publish ./submission --dry-run
+        swebench submit publish logs/evaluation/my-run/submission -r my-org/my-run --dry-run
 
-        swebench submit publish ./submission --owner my-org
+        swebench submit publish logs/evaluation/my-run/submission -r my-org/my-run
     """
-    from pathlib import Path as _Path
-
     from swebench.submit._git import has_gh
     from swebench.submit.publish import PublishError, plan_repo_name, publish
 
-    out_dir = _Path(out)
+    out_dir = out
     if dry_run:
-        name = repo or plan_repo_name(out_dir)
-        target = f"{owner}/{name}" if owner else name
-        how = (
-            f"push to existing remote {remote}"
-            if remote
-            else f"`gh repo create {target}` ({'private' if private else 'public'}) and push"
-            if has_gh()
-            else "commit locally only -- no gh and no --remote"
-        )
+        if remote:
+            how = f"push to existing remote {remote}"
+        elif repo:
+            target = f"{owner}/{repo}" if owner and "/" not in repo else repo
+            how = (
+                f"`gh repo create {target}` ({'private' if private else 'public'}) and push"
+                if has_gh()
+                else f"cannot create {target} -- `gh` is not installed"
+            )
+        else:
+            how = (
+                "nothing -- name a destination with --repo <owner>/<name> or "
+                f"--remote <url>. Suggested name: {plan_repo_name(out_dir)}"
+            )
         typer.echo(f"Would publish {out_dir / 'submission-repo'}:\n  {how}")
         typer.echo("Dry run -- nothing committed, created, or pushed.")
         return
@@ -178,8 +202,19 @@ def publish_command(
 
 @submit_app.command("register")
 def register_command(
-    out: str = typer.Argument("submission", help="Directory `package` built"),
-    split: str = typer.Option(..., "-s", "--split", help="Leaderboard split"),
+    out: Path = typer.Argument(
+        ...,
+        metavar="SUBMISSION_PATH",
+        exists=True,
+        file_okay=False,
+        help="Directory `package` built, e.g. logs/evaluation/<run_id>/submission",
+    ),
+    split: Optional[str] = typer.Option(
+        None,
+        "-s",
+        "--split",
+        help="Leaderboard split; taken from the submission if omitted",
+    ),
     submission_id: Optional[str] = typer.Option(
         None, "--id", help="Folder name in experiments"
     ),
@@ -196,31 +231,32 @@ def register_command(
     """Open the leaderboard PR, adding your entry to SWE-bench/experiments.
 
     Adds `evaluation/<split>/<id>/` -- metadata, README and results only. The heavy
-    artifacts stay in your own repo, which `publish` recorded in `assets`.
+    artifacts stay in your own repo, which `publish` recorded in `assets`. The split and
+    the submission id come from what `package` recorded.
 
     [yellow][bold]Examples:[/bold][/yellow]
 
-        swebench submit register ./submission -s verified --dry-run
+        swebench submit register logs/evaluation/my-run/submission --dry-run
 
-        swebench submit register ./submission -s verified
+        swebench submit register logs/evaluation/my-run/submission
     """
-    from pathlib import Path as _Path
-
     from swebench.submit.publish import plan_repo_name
     from swebench.submit.register import (
         REGISTRY_DEFAULT,
         RegisterError,
         build_plan,
         register,
+        resolve_split,
         unfilled_todos,
     )
 
-    out_dir = _Path(out)
+    out_dir = out
     entry_dir = out_dir / "entry" if (out_dir / "entry").is_dir() else out_dir
     sub_id = submission_id or plan_repo_name(out_dir)
     target = registry or REGISTRY_DEFAULT
 
     try:
+        split = resolve_split(out_dir, split)
         if dry_run:
             plan = build_plan(entry_dir, split, sub_id, target)
             todos = unfilled_todos(entry_dir)
@@ -248,8 +284,19 @@ def register_command(
 
 @submit_app.command("verify")
 def verify_command(
-    entry: str = typer.Argument(..., help="A submission entry directory"),
-    split: str = typer.Option(..., "-s", "--split", help="Leaderboard split"),
+    entry: Path = typer.Argument(
+        ...,
+        metavar="ENTRY_PATH",
+        exists=True,
+        file_okay=False,
+        help="A submission entry directory",
+    ),
+    split: Optional[str] = typer.Option(
+        None,
+        "-s",
+        "--split",
+        help="Leaderboard split; inferred from the path if omitted",
+    ),
     logs: Optional[str] = typer.Option(
         None, "--logs", help="Local logs/ to check instead of cloning the entry's repo"
     ),
@@ -262,16 +309,16 @@ def verify_command(
 
     [yellow][bold]Examples:[/bold][/yellow]
 
-        swebench submit verify evaluation/verified/20260901_myagent -s verified
+        swebench submit verify evaluation/verified/20260901_myagent
 
-        swebench submit verify ./submission/entry -s verified --logs ./submission/submission-repo/logs
+        swebench submit verify logs/evaluation/my-run/submission/entry
     """
     from pathlib import Path as _Path
 
     from swebench.submit.verify import VerifyError, verify
 
     try:
-        result = verify(_Path(entry), split, logs_dir=_Path(logs) if logs else None)
+        result = verify(entry, split, logs_dir=_Path(logs) if logs else None)
     except VerifyError as exc:
         typer.echo(f"error: {exc}", err=True)
         raise typer.Exit(1) from exc

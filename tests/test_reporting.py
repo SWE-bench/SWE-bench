@@ -1,8 +1,7 @@
 """Where make_run_report writes its results.json.
 
-By default it goes into the run's own log directory. `report_dir` overrides that, and
-must be honored (#498): main() used to create the directory but never pass it through,
-so the report was always written relative to the CWD.
+Always the run's own log directory. It used to land relative to the CWD, which meant a
+run report appeared wherever the command happened to be invoked from (#498).
 """
 
 import pytest
@@ -31,19 +30,18 @@ def log_dir(tmp_path, monkeypatch):
     return root
 
 
-def test_report_written_into_report_dir(tmp_path):
+def test_report_is_named_results_json(log_dir):
     predictions, full_dataset = _fixture()
-    out = make_run_report(predictions, full_dataset, "run-a", report_dir=str(tmp_path))
-    assert out.parent == tmp_path
-    assert out.name == "results.json"
+    out = make_run_report(predictions, full_dataset, "run-a")
+    assert out == log_dir / "run-a" / "results.json"
     assert out.exists()
 
 
-def test_report_dir_is_created_if_absent(tmp_path):
+def test_the_log_directory_is_created_if_absent(log_dir):
     predictions, full_dataset = _fixture()
-    nested = tmp_path / "deep" / "nested"
-    out = make_run_report(predictions, full_dataset, "run-b", report_dir=str(nested))
-    assert out.parent == nested and out.exists()
+    assert not log_dir.exists()
+    out = make_run_report(predictions, full_dataset, "run-b")
+    assert out.exists()
 
 
 def test_defaults_into_the_runs_log_directory(log_dir):

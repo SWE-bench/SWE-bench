@@ -175,9 +175,9 @@ The optimal number of workers depends on your system resources. We recommend:
 The harness generates logs in two directories:
 
 - `logs/build_images`: Docker build logs
-- `logs/run_evaluation`: Evaluation run logs
+- `logs/evaluation`: Evaluation run logs
 
-The run summary is written to `<model>.<run_id>.json` in the directory you ran from, and per-instance logs to `logs/run_evaluation/`.
+The run summary is written to `logs/evaluation/<run_id>/results.json`, alongside the per-instance logs.
 
 ## Troubleshooting
 
@@ -185,7 +185,7 @@ If you encounter issues:
 
 1. **Docker Space Issues**: If Docker runs out of disk space, prune unused images and containers with `docker system prune -a`
 2. **Build Failures**: Check the build logs in `logs/build_images` for specific error details
-3. **Evaluation Failures**: Examine logs in `logs/run_evaluation` to diagnose test failures
+3. **Evaluation Failures**: Examine logs in `logs/evaluation` to diagnose test failures
 4. **Resource Constraints**: Reduce `--max_workers` if you experience memory pressure or system slowdowns
 5. Check Docker installation and permissions
 6. Verify sufficient disk space

@@ -136,11 +136,11 @@ python -m swebench.harness.run_evaluation \
 
 ## Understanding Evaluation Results
 
-A run writes two things.
+A run writes two things, both under `logs/evaluation/<run_id>/`.
 
-A summary file in the directory you ran from, named `<model>.<run_id>.json`. Pass `--report_dir` to put it somewhere else.
+A summary, `results.json`.
 
-A folder per instance, at `logs/run_evaluation/<run_id>/<model>/<instance_id>/`:
+A folder per instance, at `logs/evaluation/<run_id>/<model>/<instance_id>/`:
 
 | File | What it holds |
 | --- | --- |

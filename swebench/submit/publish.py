@@ -71,6 +71,11 @@ def plan_repo_name(out_dir: Path, submission_id: Optional[str] = None) -> str:
     """Repo name for a submission: its id, which is already dated and slugged."""
     if submission_id:
         return submission_id
+    from swebench.submit.package import read_submission_meta
+
+    if recorded := read_submission_meta(out_dir).get("submission_id"):
+        return recorded
+    # submissions built before the sidecar, or assembled by hand
     meta = out_dir / "entry" / "metadata.yaml"
     if meta.is_file():
         for line in meta.read_text().splitlines():
@@ -90,9 +95,10 @@ def publish(
 ) -> PublishResult:
     """Commit ``out_dir/submission-repo`` and push it to a GitHub repo.
 
-    With `gh` the repo is created and pushed in one go. Without it, ``--remote`` pushes
-    to an empty repo you made yourself; failing that the commit is left in place and the
-    remaining steps are returned for the caller to print.
+    The destination is always explicit: ``repo`` creates one (via `gh`), ``remote``
+    pushes to one that already exists, and an existing ``origin`` is reused. Creating a
+    public repo is not something to do off a guessed name, so with none of the three
+    this raises rather than picking for you.
     """
     out_dir = Path(out_dir)
     repo_dir = out_dir / "submission-repo"
@@ -109,6 +115,12 @@ def publish(
     has_trajs = (repo_dir / "trajs").is_dir()
 
     existing = origin(repo_dir)
+    if not (existing or remote or repo):
+        raise PublishError(
+            "name a destination: --repo <owner>/<name> to create a repo, or "
+            f"--remote <url> to push to one you already made. Suggested name: {name}"
+        )
+
     try:
         if existing:
             git(repo_dir, "push", "-u", "origin", "HEAD")
@@ -117,27 +129,23 @@ def publish(
             git(repo_dir, "remote", "add", "origin", remote)
             git(repo_dir, "push", "-u", "origin", "HEAD")
             url = to_https(remote)
-        elif has_gh():
-            target = f"{owner}/{name}" if owner else name
-            visibility = "--private" if private else "--public"
-            gh(repo_dir, "repo", "create", target, visibility, "--source=.", "--push")
-            url = origin(repo_dir) or to_https(
-                f"https://github.com/{owner or gh_login() or ''}/{name}"
-            )
-        else:
+        elif not has_gh():
             return PublishResult(
                 repo_url=None,
                 commit=commit,
                 next_steps=(
-                    f"Committed {name} locally. `gh` is not installed, so create an "
-                    "empty public repo yourself and then:\n"
-                    f"    cd {repo_dir}\n"
-                    "    git remote add origin <url>\n"
-                    "    git push -u origin HEAD\n"
-                    "Then re-run publish with --remote <url> to fill in the entry's "
-                    "assets, or add them to entry/metadata.yaml by hand."
+                    f"Committed {name} locally, but `gh` is not installed so {repo} "
+                    "cannot be created from here. Create it yourself, then re-run with "
+                    "--remote <url>."
                 ),
             )
+        else:
+            target = f"{owner}/{repo}" if owner and "/" not in repo else repo
+            visibility = "--private" if private else "--public"
+            gh(repo_dir, "repo", "create", target, visibility, "--source=.", "--push")
+            slug_path = target if "/" in target else f"{gh_login() or ''}/{target}"
+            url = origin(repo_dir) or to_https(f"https://github.com/{slug_path}")
+
     except GitError as exc:
         raise PublishError(str(exc)) from exc
 

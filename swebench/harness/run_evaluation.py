@@ -707,7 +707,6 @@ def main(
     timeout: int,
     rewrite_reports: bool,
     modal: bool,
-    report_dir: str | None = None,
     task_repo: str | None = None,
 ):
     """
@@ -731,11 +730,6 @@ def main(
 
     # set open file limit
     assert len(run_id) > 0, "Run ID must be provided"
-    if report_dir is not None:
-        report_dir = Path(report_dir)
-        if not report_dir.exists():
-            report_dir.mkdir(parents=True)
-
     # load predictions as map of instance_id to prediction
     predictions = get_predictions_from_file(
         predictions_path, dataset_name, split, task_repo, instance_ids
@@ -771,7 +765,7 @@ def main(
 
     if not dataset:
         print("No instances to run.")
-        return make_run_report(predictions, full_dataset, run_id, client, report_dir)
+        return make_run_report(predictions, full_dataset, run_id, client)
     else:
         # a re-grade reads existing logs and starts no container, so building the
         # images it names would cost hours and change nothing
@@ -791,7 +785,7 @@ def main(
         )
 
     # make final report
-    return make_run_report(predictions, full_dataset, run_id, client, report_dir)
+    return make_run_report(predictions, full_dataset, run_id, client)
 
 
 if __name__ == "__main__":
@@ -852,13 +846,6 @@ if __name__ == "__main__":
         default=False,
         help="Doesn't run new instances, only writes reports for instances with existing test outputs",
     )
-    parser.add_argument(
-        "--report_dir",
-        type=str,
-        default=None,
-        help="Directory for results.json (default: the run's log directory)",
-    )
-
     # Modal execution args
     parser.add_argument("--modal", type=str2bool, default=False, help="Run on Modal")
 

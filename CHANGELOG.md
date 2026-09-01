@@ -8,8 +8,8 @@ Prior to version 1.1.0, not all deployed versions are listed, as the PyPI packag
 
 Breaking changes:
 * The run report is written to `logs/evaluation/<run_id>/results.json` instead of
-  `<model>.<run_id>.json` in the current directory. `--report-dir` still overrides the
-  directory.
+  `<model>.<run_id>.json` in the current directory. `--report_dir` / `--report-dir` is
+  gone: the report always sits with the run's other artifacts.
 * Evaluation logs are written to `logs/evaluation/<run_id>` instead of
   `logs/run_evaluation/<run_id>`. Move an existing directory to keep past runs
   readable by `swebench report` and `swebench submit package`:

@@ -102,9 +102,9 @@ python -m swebench.harness.run_evaluation \
     # 使用 --modal true 来在 Modal 上使用
 ```
 
-這個命令將在當前目錄中生成docker構建日誌(`logs/build_images`)和評估日誌(`logs/run_evaluation`)。
+這個命令將在當前目錄中生成docker構建日誌(`logs/build_images`)和評估日誌(`logs/evaluation`)。
 
-最終的評估結果將存儲在`logs/run_evaluation`目錄中。
+最終的評估結果將存儲在`logs/evaluation`目錄中。
 
 要查看評估工具的完整參數列表,請運行:
 ```bash

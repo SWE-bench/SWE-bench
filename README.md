@@ -110,9 +110,10 @@ swebench --help                               # all commands
 > The previous `python -m swebench.harness.run_evaluation ...` form still works
 > and takes the same arguments as before.
 
-This command will generate docker build logs (`logs/build_images`) and evaluation logs (`logs/run_evaluation`) in the current directory.
+This command will generate docker build logs (`logs/build_images`) and evaluation logs
+(`logs/evaluation`) in the current directory.
 
-The final evaluation results will be stored in the `evaluation_results` directory.
+The run summary is written to `logs/evaluation/<run_id>/results.json`.
 
 > [!NOTE]
 > **Result Caching**: The evaluation harness caches results by `run_id` and `instance_id` only. If you run the same instance with the same `run_id` multiple times, even with different prediction diffs, the harness will reuse the cached results from the first run and will not re-evaluate. To re-evaluate an instance with a different prediction diff, you must use a different `run_id`.

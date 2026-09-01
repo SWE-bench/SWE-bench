@@ -69,6 +69,34 @@ def unfilled_todos(entry_dir: Path) -> list[str]:
     return found
 
 
+def resolve_split(out_dir: Path, split: Optional[str] = None) -> str:
+    """The leaderboard split for a submission, from what `package` recorded.
+
+    Falls back to the run the submission was built from, so a hand-assembled
+    submission beside a run directory still resolves.
+    """
+    if split:
+        return split
+    from swebench.submit.package import (
+        SPLIT_DATASETS,
+        read_submission_meta,
+        split_from_run,
+    )
+
+    meta = read_submission_meta(out_dir)
+    if meta.get("split") in SPLIT_DATASETS:
+        return meta["split"]
+    if run_dir := meta.get("run_dir"):
+        if found := split_from_run(Path(run_dir)):
+            return found
+    # <run>/submission/ is the default layout, so the run dir is the parent
+    if found := split_from_run(Path(out_dir).resolve().parent):
+        return found
+    raise RegisterError(
+        f"cannot tell which split {Path(out_dir).resolve()} belongs to -- pass --split"
+    )
+
+
 def read_entry(entry_dir: Path) -> dict:
     path = entry_dir / "metadata.yaml"
     if not path.is_file():

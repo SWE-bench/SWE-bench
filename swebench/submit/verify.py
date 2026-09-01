@@ -86,20 +86,45 @@ def resolve_artifacts(entry_dir: Path, logs_dir: Optional[Path], tmp: Path) -> P
     if not repo_url:
         raise VerifyError(
             f"{entry_dir}/metadata.yaml has no assets.repo, so there is nothing to "
-            "verify against -- pass --logs <dir> to check a local tree instead"
+            "verify against. Pass --logs <dir> to check a local tree instead, or run "
+            "`swebench submit publish` first."
         )
     return clone(repo_url, tmp / "submission-repo") / "logs"
 
 
+def resolve_split(entry_dir: Path, split: Optional[str] = None) -> str:
+    """The split an entry belongs to, from its surroundings.
+
+    Two layouts occur: a packaged submission (``<out>/entry``, with the sidecar one
+    level up) and an entry committed to experiments (``evaluation/<split>/<id>``, where
+    the parent directory names the split).
+    """
+    if split:
+        return split
+    from swebench.submit.package import read_submission_meta, split_from_run
+
+    entry_dir = Path(entry_dir).resolve()
+    meta = read_submission_meta(entry_dir.parent)
+    if meta.get("split") in SPLIT_DATASETS:
+        return meta["split"]
+    if entry_dir.parent.name in SPLIT_DATASETS:
+        return entry_dir.parent.name
+    for candidate in (meta.get("run_dir"), str(entry_dir.parent.parent)):
+        if candidate and (found := split_from_run(Path(candidate))):
+            return found
+    raise VerifyError(f"cannot tell which split {entry_dir} belongs to -- pass --split")
+
+
 def verify(
     entry_dir: Path,
-    split: str,
+    split: Optional[str] = None,
     *,
     logs_dir: Optional[Path] = None,
     model: str = "submission",
 ) -> VerifyResult:
     """Re-derive every instance's verdict and compare it to the entry's results.json."""
     entry_dir = Path(entry_dir)
+    split = resolve_split(entry_dir, split)
     if split not in SPLIT_DATASETS:
         raise VerifyError(
             f"unknown split {split!r}; expected one of {', '.join(sorted(SPLIT_DATASETS))}"
