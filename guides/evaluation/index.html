@@ -1599,9 +1599,9 @@ sb<span class="w"> </span>submit<span class="w"> </span>--predictions<span class
 <span class="w">    </span>--clean<span class="w"> </span>True
 </code></pre></div>
 <h2 id="understanding-evaluation-results">Understanding Evaluation Results</h2>
-<p>A run writes two things.</p>
-<p>A summary file in the directory you ran from, named <code>&lt;model&gt;.&lt;run_id&gt;.json</code>. Pass <code>--report_dir</code> to put it somewhere else.</p>
-<p>A folder per instance, at <code>logs/run_evaluation/&lt;run_id&gt;/&lt;model&gt;/&lt;instance_id&gt;/</code>:</p>
+<p>A run writes two things, both under <code>logs/evaluation/&lt;run_id&gt;/</code>.</p>
+<p>A summary, <code>results.json</code>.</p>
+<p>A folder per instance, at <code>logs/evaluation/&lt;run_id&gt;/&lt;model&gt;/&lt;instance_id&gt;/</code>:</p>
 <table>
 <thead>
 <tr>

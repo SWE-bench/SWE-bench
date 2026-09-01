@@ -1676,15 +1676,15 @@
 <p>The harness generates logs in two directories:</p>
 <ul>
 <li><code>logs/build_images</code>: Docker build logs</li>
-<li><code>logs/run_evaluation</code>: Evaluation run logs</li>
+<li><code>logs/evaluation</code>: Evaluation run logs</li>
 </ul>
-<p>The run summary is written to <code>&lt;model&gt;.&lt;run_id&gt;.json</code> in the directory you ran from, and per-instance logs to <code>logs/run_evaluation/</code>.</p>
+<p>The run summary is written to <code>logs/evaluation/&lt;run_id&gt;/results.json</code>, alongside the per-instance logs.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>If you encounter issues:</p>
 <ol>
 <li><strong>Docker Space Issues</strong>: If Docker runs out of disk space, prune unused images and containers with <code>docker system prune -a</code></li>
 <li><strong>Build Failures</strong>: Check the build logs in <code>logs/build_images</code> for specific error details</li>
-<li><strong>Evaluation Failures</strong>: Examine logs in <code>logs/run_evaluation</code> to diagnose test failures</li>
+<li><strong>Evaluation Failures</strong>: Examine logs in <code>logs/evaluation</code> to diagnose test failures</li>
 <li><strong>Resource Constraints</strong>: Reduce <code>--max_workers</code> if you experience memory pressure or system slowdowns</li>
 <li>Check Docker installation and permissions</li>
 <li>Verify sufficient disk space</li>

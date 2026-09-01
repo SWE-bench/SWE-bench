@@ -923,10 +923,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-package-run_id" class="md-nav__link">
+  <a href="#swebench-submit-package-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit package RUN_ID
+        swebench submit package RUN_PATH
       
     </span>
   </a>
@@ -934,10 +934,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-publish-out" class="md-nav__link">
+  <a href="#swebench-submit-publish-submission_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit publish OUT
+        swebench submit publish SUBMISSION_PATH
       
     </span>
   </a>
@@ -945,10 +945,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-register-out" class="md-nav__link">
+  <a href="#swebench-submit-register-submission_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit register OUT
+        swebench submit register SUBMISSION_PATH
       
     </span>
   </a>
@@ -956,10 +956,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-verify-entry" class="md-nav__link">
+  <a href="#swebench-submit-verify-entry_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit verify ENTRY
+        swebench submit verify ENTRY_PATH
       
     </span>
   </a>
@@ -1365,10 +1365,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-package-run_id" class="md-nav__link">
+  <a href="#swebench-submit-package-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit package RUN_ID
+        swebench submit package RUN_PATH
       
     </span>
   </a>
@@ -1376,10 +1376,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-publish-out" class="md-nav__link">
+  <a href="#swebench-submit-publish-submission_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit publish OUT
+        swebench submit publish SUBMISSION_PATH
       
     </span>
   </a>
@@ -1387,10 +1387,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-register-out" class="md-nav__link">
+  <a href="#swebench-submit-register-submission_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit register OUT
+        swebench submit register SUBMISSION_PATH
       
     </span>
   </a>
@@ -1398,10 +1398,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-verify-entry" class="md-nav__link">
+  <a href="#swebench-submit-verify-entry_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit verify ENTRY
+        swebench submit verify ENTRY_PATH
       
     </span>
   </a>
@@ -1560,6 +1560,10 @@
 <td><code>SWE-bench/SWE-bench</code></td>
 </tr>
 <tr>
+<td><code>lite</code></td>
+<td><code>SWE-bench/SWE-bench_Lite</code></td>
+</tr>
+<tr>
 <td><code>verified</code></td>
 <td><code>SWE-bench/SWE-bench_Verified</code></td>
 </tr>
@@ -1575,25 +1579,19 @@
 </table>
 <h2 id="evaluate">Evaluate</h2>
 <h3 id="swebench-infer-dataset"><code>swebench infer DATASET</code></h3>
-<p>Generate predictions with <a href="https://mini-swe-agent.com">mini-SWE-agent</a>, writing
-<code>preds.json</code> plus one trajectory per instance.</p>
-<p>A thin wrapper around <code>mini-extra swebench</code>: it resolves SWE-bench's dataset aliases
-(so <code>infer</code> and <code>eval</code> read the same dataset, rather than mini's older
-<code>princeton-nlp/*</code> mirrors) and passes mini's bundled config explicitly, because mini
-drops its own default as soon as any <code>-c</code> is given. Unrecognized arguments are
-forwarded to mini, so <code>--filter</code>, <code>--slice</code> and the rest work as documented there.</p>
-<p>Predictions and trajectories go to <code>logs/inference/&lt;run_id&gt;</code> unless <code>-o</code> says
-otherwise, mirroring <code>swebench eval</code>'s <code>logs/evaluation/&lt;run_id&gt;</code>.</p>
+<p>Generate predictions with <a href="https://mini-swe-agent.com">mini-SWE-agent</a>. Writes
+<code>preds.json</code> and one trajectory per instance to <code>logs/inference/&lt;run_id&gt;</code>.</p>
+<p>A thin wrapper around <code>mini-extra swebench</code>. It resolves SWE-bench dataset aliases and
+passes mini's bundled config, which mini drops as soon as you give any <code>-c</code>. Unknown
+arguments go straight through, so <code>--filter</code> and <code>--slice</code> work as documented there.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>infer<span class="w"> </span>verified<span class="w"> </span>-m<span class="w"> </span>gpt-5<span class="w"> </span>--run-id<span class="w"> </span>gpt5<span class="w"> </span>-w<span class="w"> </span><span class="m">8</span>
 swebench<span class="w"> </span>infer<span class="w"> </span>verified<span class="w"> </span>-c<span class="w"> </span>model.yaml<span class="w"> </span>--run-id<span class="w"> </span>g35flash<span class="w"> </span>-w<span class="w"> </span><span class="m">12</span>
-swebench<span class="w"> </span>infer<span class="w"> </span>lite<span class="w"> </span>-m<span class="w"> </span>gpt-5<span class="w"> </span>--dry-run<span class="w"> </span>--<span class="w"> </span>--filter<span class="w"> </span><span class="s2">"astropy.*"</span>
 </code></pre></div>
-<p>If mini-SWE-agent lives in a different environment than <code>swebench</code>, point at it with
-<code>--python /path/to/venv/bin/python</code>.</p>
-<p>API keys are mini's business, not this command's -- export whatever the provider reads
-before running. Note that <code>api_key: os.environ/VAR</code> inside a model config is <strong>not</strong>
-resolved by litellm outside its proxy: it is sent as that literal string. Set the real
-environment variable instead (for an OpenAI-compatible endpoint, <code>OPENAI_API_KEY</code>).</p>
+<p>Use <code>--python /path/to/venv/bin/python</code> if mini lives in another environment.</p>
+<p>Keys are mini's business: export what the provider reads. Note that
+<code>api_key: os.environ/VAR</code> in a model config is sent as that literal string, not
+resolved. Set the real variable instead (<code>OPENAI_API_KEY</code> for OpenAI-compatible
+endpoints).</p>
 <h3 id="swebench-eval-dataset"><code>swebench eval DATASET</code></h3>
 <p>Run the reference patches or a model's predictions.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>verified<span class="w"> </span>--gold
@@ -1601,75 +1599,74 @@ swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </s
 swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>multimodal<span class="w"> </span>--gold<span class="w"> </span>-i<span class="w"> </span>carbon-design-system__carbon-10188
 swebench<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>full<span class="w"> </span>--gold<span class="w"> </span>--modal
 </code></pre></div>
-<p>Pass exactly one of <code>--gold</code> or <code>-p/--predictions</code>. <code>-i/--instance</code> is
-repeatable, <code>-j/--workers</code> sets parallelism, <code>-t/--timeout</code> is per instance.</p>
+<p>Pass exactly one of <code>--gold</code> or <code>-p/--predictions</code>. <code>-i/--instance</code> is repeatable,
+<code>-j/--workers</code> sets parallelism, <code>-t/--timeout</code> is per instance (1800s).</p>
+<p>Artifacts go to <code>logs/evaluation/&lt;run_id&gt;/</code>, the summary to its <code>results.json</code>.
+That path is relative to where you run the command.
+Re-running a run id skips instances that already have a <code>report.json</code>.</p>
 <h3 id="swebench-report-run_id"><code>swebench report RUN_ID</code></h3>
-<p>Recompute verdicts from a finished run's saved logs, without starting
-containers. Useful after a log-parser fix, since the test output is already on
-disk.</p>
+<p>Recompute verdicts from a finished run's saved logs, without starting containers.
+Useful after a log-parser fix, since the test output is already on disk.</p>
 <p>The dataset comes from the run itself, recorded at evaluation time in
-<code>logs/run_evaluation/&lt;run_id&gt;/run.json</code>. Pass <code>-d</code> for runs made before that was
-added, or to grade against a different dataset on purpose.</p>
+<code>logs/evaluation/&lt;run_id&gt;/run.json</code>. Pass <code>-d</code> for older runs, or to grade against a
+different dataset on purpose.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w">                     </span><span class="c1"># dataset taken from the run itself</span>
 swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class="w"> </span>-d<span class="w"> </span>multimodal<span class="w"> </span>-i<span class="w"> </span>grommet__grommet-6282
 </code></pre></div>
 <h2 id="submit">Submit</h2>
-<p>Submission commands live under <code>swebench submit</code>. Two destinations:
-the SWE-bench leaderboard (via
-<a href="https://github.com/SWE-bench/experiments"><code>SWE-bench/experiments</code></a>) and
-HuggingFace's community eval-results system.</p>
-<p>The leaderboard flow is three steps, plus a check anyone can run:</p>
-<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>package<span class="w"> </span>my-run<span class="w"> </span>-s<span class="w"> </span>verified<span class="w"> </span>--trajs<span class="w"> </span>./output<span class="w"> </span>-o<span class="w"> </span>./sub
-swebench<span class="w"> </span>submit<span class="w"> </span>publish<span class="w"> </span>./sub<span class="w">                  </span><span class="c1"># your own public repo</span>
-swebench<span class="w"> </span>submit<span class="w"> </span>register<span class="w"> </span>./sub<span class="w"> </span>-s<span class="w"> </span>verified<span class="w">     </span><span class="c1"># PR to experiments</span>
-swebench<span class="w"> </span>submit<span class="w"> </span>verify<span class="w"> </span>evaluation/verified/&lt;id&gt;<span class="w"> </span>-s<span class="w"> </span>verified
+<p><code>swebench submit</code> has two destinations: the SWE-bench leaderboard (via
+<a href="https://github.com/SWE-bench/experiments"><code>SWE-bench/experiments</code></a>) and HuggingFace's
+eval-results system.</p>
+<p>Each leaderboard step reads what the last one recorded, so you only name the run:</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>package<span class="w"> </span>logs/evaluation/my-run<span class="w"> </span>--trajs<span class="w"> </span>./output
+swebench<span class="w"> </span>submit<span class="w"> </span>publish<span class="w"> </span>logs/evaluation/my-run/submission
+swebench<span class="w"> </span>submit<span class="w"> </span>register<span class="w"> </span>logs/evaluation/my-run/submission
+swebench<span class="w"> </span>submit<span class="w"> </span>verify<span class="w"> </span>evaluation/verified/&lt;id&gt;
 </code></pre></div>
-<h3 id="swebench-submit-package-run_id"><code>swebench submit package RUN_ID</code></h3>
-<p>Builds two trees from an evaluated run:</p>
-<div class="highlight"><pre><span></span><code>sub/submission-repo/     -&gt; your own public GitHub repo
+<h3 id="swebench-submit-package-run_path"><code>swebench submit package RUN_PATH</code></h3>
+<p>Takes a run's log directory, or the model directory inside it. Writes two trees to
+<code>&lt;run&gt;/submission/</code>, plus a <code>submission.json</code> that the later steps read:</p>
+<div class="highlight"><pre><span></span><code>submission-repo/     -&gt; your own public GitHub repo
   all_preds.jsonl
   logs/&lt;iid&gt;/{patch.diff,report.json,test_output.txt.gz}
   trajs/&lt;iid&gt;.*
-sub/entry/               -&gt; the PR to SWE-bench/experiments
+entry/               -&gt; the PR to SWE-bench/experiments
   metadata.yaml  README.md  results/*.json
 </code></pre></div>
-<p><code>logs/</code> mirrors the layout the S3 bucket has always held, so existing log consumers
-work unchanged against a repo. Resolution is <strong>re-derived</strong> from each instance's
-<code>test_output.txt</code>, never read from the run's own <code>report.json</code>.</p>
-<p>Test output is gzipped, and anything still over 50MB is refused with the instance
-named -- GitHub rejects files above 100MB, and finding out locally beats finding out
-at <code>git push</code>.</p>
-<h3 id="swebench-submit-publish-out"><code>swebench submit publish OUT</code></h3>
-<p>Commits <code>submission-repo/</code> and pushes it to a repo under your own account (<code>--owner</code> to
-place it elsewhere, <code>--remote</code> to push to one you already made, <code>--dry-run</code> to see the
-plan). The resulting URL is written into <code>entry/metadata.yaml</code> as <code>assets.repo</code> /
-<code>assets.logs</code> / <code>assets.trajs</code> -- the same field that used to carry
-<code>s3://swe-bench-submissions/...</code>, so nothing downstream changes.</p>
-<h3 id="swebench-submit-register-out"><code>swebench submit register OUT</code></h3>
+<p><code>logs/</code> matches the layout the S3 bucket has always used, so existing log consumers
+work against a repo. Verdicts are <strong>re-derived</strong> from each <code>test_output.txt</code>, never
+read from the run's own <code>report.json</code>.</p>
+<p>The split comes from the dataset the run recorded. <code>--trajs</code> takes your agent's output
+directory; traces are flattened to <code>trajs/&lt;iid&gt;.*</code>, and files not named after an
+instance are skipped. Test output is gzipped, and anything still over 50MB is refused
+with the instance named. Also: <code>-s</code>, <code>-o</code>, <code>--id</code>, <code>--model</code>, <code>-p/--predictions</code>.</p>
+<h3 id="swebench-submit-publish-submission_path"><code>swebench submit publish SUBMISSION_PATH</code></h3>
+<p>Commits <code>submission-repo/</code> and pushes it. Name the destination: <code>-r/--repo
+&lt;owner&gt;/&lt;name&gt;</code> creates it, <code>--remote &lt;url&gt;</code> pushes to one you made already. Writes the
+URL into
+<code>entry/metadata.yaml</code> as <code>assets.repo</code> / <code>assets.logs</code> / <code>assets.trajs</code> -- the field
+that used to hold <code>s3://swe-bench-submissions/...</code>.</p>
+<h3 id="swebench-submit-register-submission_path"><code>swebench submit register SUBMISSION_PATH</code></h3>
 <p>Forks <code>SWE-bench/experiments</code>, adds <code>evaluation/&lt;split&gt;/&lt;id&gt;/</code>, and opens the PR with
-the submission checklist in the body. It refuses to open while any <code>TODO</code> remains in
-<code>metadata.yaml</code> or <code>README.md</code>, naming each one (<code>--allow-todos</code> to override).</p>
-<h3 id="swebench-submit-verify-entry"><code>swebench submit verify ENTRY</code></h3>
+the checklist in the body. It refuses while any <code>TODO</code> remains in <code>metadata.yaml</code> or
+<code>README.md</code>, naming each one. Split and id come from <code>submission.json</code>. Also: <code>-s</code>,
+<code>--id</code>, <code>--registry</code>, <code>--allow-todos</code>, <code>--dry-run</code>.</p>
+<h3 id="swebench-submit-verify-entry_path"><code>swebench submit verify ENTRY_PATH</code></h3>
 <p>Clones the repo named in the entry's <code>assets.repo</code>, re-grades every instance from its
-recorded test output, and reports each instance whose verdict disagrees with the
-entry's <code>results.json</code>. No Docker and no re-execution -- the recorded log is the
-evidence. Claiming an instance while shipping no log for it fails the check.</p>
-<p>Because artifacts are self-hosted rather than in a maintainer-owned bucket, anyone can
-run this on any submission.</p>
+recorded test output, and reports any verdict that disagrees with <code>results.json</code>. No
+Docker and no re-execution. Claiming an instance while shipping no log for it fails.</p>
+<p>The split is inferred from the path. <code>--logs</code> checks a local <code>logs/</code> tree instead of
+cloning. Anyone can run this, since artifacts are self-hosted.</p>
 <h3 id="swebench-submit-hf-run_id"><code>swebench submit hf RUN_ID</code></h3>
-<p>Upload a run's report (and optionally its predictions) to a HuggingFace bucket,
-and write a <code>.eval_results/*.yaml</code> entry scored against it
-(<a href="https://huggingface.co/docs/hub/eval-results">format</a>).</p>
-<p>The score comes from the report's own <code>resolved_instances</code> / <code>total_instances</code>,
-and the entry's <code>source.url</code> points at the uploaded report. Buckets are created
-private unless you pass <code>--public</code>; a private bucket means that URL is not
-readable by anyone else, so <code>--public</code> is what you want for a shared entry.</p>
-<p>The report and the dataset are read from the run itself, so only the bucket has to be
-named. <code>--report</code> and <code>-d</code> override them.</p>
+<p>Uploads a run's report to a HuggingFace bucket and writes a <code>.eval_results/*.yaml</code>
+entry (<a href="https://huggingface.co/docs/hub/eval-results">format</a>). The report and the
+dataset come from the run, so only the bucket has to be named.</p>
 <div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/swebench-runs<span class="w"> </span>--public
 swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/runs<span class="w"> </span>--dry-run
 </code></pre></div>
-<p>Requires the <code>submit</code> extra (<code>pip install swebench[submit]</code>) for bucket support.</p>
+<p>The score is the report's <code>resolved_instances</code> / <code>total_instances</code>. Buckets are private
+unless you pass <code>--public</code>, and a private bucket leaves the entry's URL unreadable to
+anyone else. Needs the <code>submit</code> extra (<code>pip install swebench[submit]</code>).</p>
 <h2 id="images">Images</h2>
 <p>Images are built from a task repo: each task carries its own Dockerfile, and its
 <code>task.yaml</code> names the image the dataset will tell the harness to pull. Narrow
@@ -1739,7 +1736,8 @@ the task data, at <a href="https://github.com/SWE-bench/swe-bench-tasks/tree/mai
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.harness.run_evaluation<span class="w"> </span>--dataset_name<span class="w"> </span>...<span class="w"> </span>--predictions_path<span class="w"> </span>...
 python<span class="w"> </span>-m<span class="w"> </span>swebench.image_builder.prepare_images<span class="w"> </span>--dataset_name<span class="w"> </span>...
 </code></pre></div>
-<p>The inference utilities are not exposed through <code>swebench</code> and are run this way:</p>
+<p><code>swebench infer</code> covers agent-based inference via mini-SWE-agent. The older
+completion-based utilities have no <code>swebench</code> subcommand and are run directly:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>swebench.inference.run_api<span class="w"> </span>--help
 </code></pre></div>
 

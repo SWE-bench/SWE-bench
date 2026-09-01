@@ -17102,7 +17102,7 @@ Raises an exception if credentials are not configured.</p>
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="docker.DockerClient">DockerClient</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pathlib.Path">Path</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n"><span title="typing.Optional">Optional</span></span><span class="p">[</span><span class="n"><span title="docker.DockerClient">DockerClient</span></span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pathlib.Path">Path</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -17180,22 +17180,6 @@ Also reports on images and containers that may still running if client is provid
             <td>
               <div class="doc-md-description">
                 <p>Docker client (optional)</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>report_dir</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Where to write results.json (default: the run's log dir)</p>
               </div>
             </td>
             <td>
@@ -17391,17 +17375,11 @@ Also reports on images and containers that may still running if client is provid
 <span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_run_report</span><span class="p">(</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_run_report</span><span class="p">(</span>
     <span class="n">predictions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">full_dataset</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">docker</span><span class="o">.</span><span class="n">DockerClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">report_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Make a final evaluation and run report of the instances that have been run.</span>
@@ -17412,7 +17390,6 @@ Also reports on images and containers that may still running if client is provid
 <span class="sd">        full_dataset (list): List of all instances</span>
 <span class="sd">        run_id (str): Run ID</span>
 <span class="sd">        client (docker.DockerClient): Docker client (optional)</span>
-<span class="sd">        report_dir (str): Where to write results.json (default: the run's log dir)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Path to report file</span>
@@ -17551,11 +17528,8 @@ Also reports on images and containers that may still running if client is provid
                 <span class="s2">"unremoved_images"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unremoved_images</span><span class="p">)),</span>
             <span class="p">}</span>
         <span class="p">)</span>
-    <span class="c1"># The report belongs with the run's other artifacts. Written to the CWD by</span>
-    <span class="c1"># default, it landed wherever the command happened to be invoked from.</span>
-    <span class="n">report_dir</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">Path</span><span class="p">(</span><span class="n">report_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">report_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">RUN_EVALUATION_LOG_DIR</span> <span class="o">/</span> <span class="n">run_id</span>
-    <span class="p">)</span>
+    <span class="c1"># The report belongs with the run's other artifacts, and always goes there.</span>
+    <span class="n">report_dir</span> <span class="o">=</span> <span class="n">RUN_EVALUATION_LOG_DIR</span> <span class="o">/</span> <span class="n">run_id</span>
     <span class="n">report_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">report_file</span> <span class="o">=</span> <span class="n">report_dir</span> <span class="o">/</span> <span class="s2">"results.json"</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_file</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -19184,7 +19158,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
 
 </h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">open_file_limit</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">modal</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">report_dir</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">main</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">instance_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">,</span> <span class="n">predictions_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">max_workers</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">open_file_limit</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">rewrite_reports</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">modal</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span> <span class="n">task_repo</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -19283,13 +19257,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 <span class="normal">785</span>
 <span class="normal">786</span>
 <span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
-<span class="normal">794</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+<span class="normal">788</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
     <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">split</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">instance_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -19300,7 +19268,6 @@ If exclude_completed is True, only return instances that have not been run yet.<
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">rewrite_reports</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">modal</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">report_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">task_repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -19324,11 +19291,6 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
     <span class="c1"># set open file limit</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"Run ID must be provided"</span>
-    <span class="k">if</span> <span class="n">report_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">report_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">report_dir</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">report_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="n">report_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
     <span class="c1"># load predictions as map of instance_id to prediction</span>
     <span class="n">predictions</span> <span class="o">=</span> <span class="n">get_predictions_from_file</span><span class="p">(</span>
         <span class="n">predictions_path</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">task_repo</span><span class="p">,</span> <span class="n">instance_ids</span>
@@ -19364,7 +19326,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"No instances to run."</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># a re-grade reads existing logs and starts no container, so building the</span>
         <span class="c1"># images it names would cost hours and change nothing</span>
@@ -19384,7 +19346,7 @@ If exclude_completed is True, only return instances that have not been run yet.<
         <span class="p">)</span>
 
     <span class="c1"># make final report</span>
-    <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">make_run_report</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">full_dataset</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
 </code></pre></div></td></tr></tbody></table></div>
             </details>
     </div>
