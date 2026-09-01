@@ -20,7 +20,7 @@ app = typer.Typer(
     swebench eval verified -p preds.jsonl --run-id gpt5 -j 16
     swebench eval multimodal --gold -i carbon-design-system__carbon-10188
     swebench report my-run -d verified
-    swebench submit hf my-run -b me/swebench-runs --report r.json -d verified
+    swebench submit hf my-run -b me/swebench-runs
     swebench images build verified -j 8
     swebench images check multilingual
     swebench images clean --run-id my-run

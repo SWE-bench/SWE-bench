@@ -707,7 +707,7 @@ def main(
     timeout: int,
     rewrite_reports: bool,
     modal: bool,
-    report_dir: str = ".",
+    report_dir: str | None = None,
     task_repo: str | None = None,
 ):
     """
@@ -853,7 +853,10 @@ if __name__ == "__main__":
         help="Doesn't run new instances, only writes reports for instances with existing test outputs",
     )
     parser.add_argument(
-        "--report_dir", type=str, default=".", help="Directory to write reports to"
+        "--report_dir",
+        type=str,
+        default=None,
+        help="Directory for results.json (default: the run's log directory)",
     )
 
     # Modal execution args

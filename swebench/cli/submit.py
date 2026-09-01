@@ -20,7 +20,7 @@ submit_app = typer.Typer(
 
 [yellow][not dim][bold]Examples:[/bold][/not dim][/yellow]
 
-    swebench submit hf my-run -b me/swebench-runs --report gpt5.my-run.json -d verified
+    swebench submit hf my-run -b me/swebench-runs
 """,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
@@ -302,12 +302,17 @@ def hf_command(
     bucket: str = typer.Option(
         ..., "-b", "--bucket", help="HuggingFace bucket, as 'namespace/name'"
     ),
-    report: str = typer.Option(..., "--report", help="Path to the run's report .json"),
-    dataset: str = typer.Option(
-        ...,
+    report: Optional[str] = typer.Option(
+        None,
+        "--report",
+        help="Path to the run's results.json (default: the run's own log directory)",
+    ),
+    dataset: Optional[str] = typer.Option(
+        None,
         "-d",
         "--dataset",
-        help=f"Dataset the run scored against. Aliases: {alias_help()}",
+        help=f"Dataset the run scored against; taken from the run if omitted. "
+        f"Aliases: {alias_help()}",
     ),
     task_id: str = typer.Option(
         "swe_bench_%_resolved", "--task-id", help="eval-results task id"
@@ -332,15 +337,21 @@ def hf_command(
 ):
     """Upload a run to a HuggingFace bucket and write an eval-results entry.
 
-    The entry is scored from the report's own resolved/total counts and points at the
-    uploaded report ([link=https://huggingface.co/docs/hub/eval-results]format[/link]).
+    The report and the dataset both come from the run itself, so only the bucket has to
+    be named. The entry is scored from the report's resolved/total counts and points at
+    the uploaded report
+    ([link=https://huggingface.co/docs/hub/eval-results]format[/link]).
 
     [yellow][bold]Examples:[/bold][/yellow]
 
-        swebench submit hf my-run -b me/swebench-runs --report gpt5.my-run.json -d verified
+        swebench submit hf my-run -b me/swebench-runs
 
-        swebench submit hf my-run -b me/runs --report r.json -d verified --dry-run
+        swebench submit hf my-run -b me/runs --dry-run
     """
+    from pathlib import Path as _Path
+
+    from swebench.harness.constants import RUN_EVALUATION_LOG_DIR
+    from swebench.harness.run_evaluation import read_run_metadata
     from swebench.submit.hf import (
         file_url,
         read_report,
@@ -349,12 +360,32 @@ def hf_command(
         write_eval_result,
     )
 
+    report_path = (
+        _Path(report) if report else RUN_EVALUATION_LOG_DIR / run_id / "results.json"
+    )
+    if not report_path.is_file():
+        typer.echo(
+            f"error: no report at {report_path.resolve()}. Run `swebench eval` first, "
+            "or pass --report.",
+            err=True,
+        )
+        raise typer.Exit(1)
+
+    if dataset is None:
+        recorded = read_run_metadata(run_id) or {}
+        if not recorded.get("dataset"):
+            typer.echo(
+                f"error: run {run_id!r} did not record which dataset it used, so pass -d.",
+                err=True,
+            )
+            raise typer.Exit(1)
+        dataset = recorded["dataset"]
+
     # Read and score the report before touching the network, so a malformed report fails
     # before a bucket has been created.
-    report_data = read_report(report)
-    value = resolved_percent(report_data)
+    value = resolved_percent(read_report(report_path))
 
-    files = [report] + ([predictions] if predictions else [])
+    files = [str(report_path)] + ([predictions] if predictions else [])
     plan = upload_run(bucket, run_id, files, private=not public, dry_run=dry_run)
     typer.echo(json.dumps(plan, indent=2))
 

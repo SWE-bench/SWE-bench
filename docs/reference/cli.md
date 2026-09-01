@@ -143,9 +143,12 @@ and the entry's `source.url` points at the uploaded report. Buckets are created
 private unless you pass `--public`; a private bucket means that URL is not
 readable by anyone else, so `--public` is what you want for a shared entry.
 
+The report and the dataset are read from the run itself, so only the bucket has to be
+named. `--report` and `-d` override them.
+
 ```bash
-swebench submit hf my-run -b myuser/swebench-runs --report gpt5.my-run.json -d verified --public
-swebench submit hf my-run -b myuser/runs --report r.json -d verified --dry-run
+swebench submit hf my-run -b myuser/swebench-runs --public
+swebench submit hf my-run -b myuser/runs --dry-run
 ```
 
 Requires the `submit` extra (`pip install swebench[submit]`) for bucket support.

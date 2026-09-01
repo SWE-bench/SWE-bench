@@ -1,10 +1,13 @@
-"""`report_dir` must be honored by make_run_report (#498).
+"""Where make_run_report writes its results.json.
 
-`main()` created the directory but never passed it through, so the final report
-was always written relative to the CWD -- which silently overwrites committed
-report files like gold.validate-gold.json when run from a checkout.
+By default it goes into the run's own log directory. `report_dir` overrides that, and
+must be honored (#498): main() used to create the directory but never pass it through,
+so the report was always written relative to the CWD.
 """
 
+import pytest
+
+from swebench.harness import reporting
 from swebench.harness.reporting import make_run_report
 
 
@@ -20,11 +23,19 @@ def _fixture():
     return predictions, full_dataset
 
 
+@pytest.fixture
+def log_dir(tmp_path, monkeypatch):
+    """RUN_EVALUATION_LOG_DIR is CWD-relative; point it somewhere disposable."""
+    root = tmp_path / "logs" / "evaluation"
+    monkeypatch.setattr(reporting, "RUN_EVALUATION_LOG_DIR", root)
+    return root
+
+
 def test_report_written_into_report_dir(tmp_path):
     predictions, full_dataset = _fixture()
     out = make_run_report(predictions, full_dataset, "run-a", report_dir=str(tmp_path))
     assert out.parent == tmp_path
-    assert out.name == "gold.run-a.json"
+    assert out.name == "results.json"
     assert out.exists()
 
 
@@ -35,8 +46,25 @@ def test_report_dir_is_created_if_absent(tmp_path):
     assert out.parent == nested and out.exists()
 
 
-def test_defaults_to_cwd(tmp_path, monkeypatch):
+def test_defaults_into_the_runs_log_directory(log_dir):
     predictions, full_dataset = _fixture()
-    monkeypatch.chdir(tmp_path)
     out = make_run_report(predictions, full_dataset, "run-c")
-    assert out.exists() and out.resolve().parent == tmp_path.resolve()
+    assert out == log_dir / "run-c" / "results.json"
+    assert out.exists()
+
+
+def test_two_runs_do_not_collide(log_dir):
+    predictions, full_dataset = _fixture()
+    a = make_run_report(predictions, full_dataset, "run-a")
+    b = make_run_report(predictions, full_dataset, "run-b")
+    assert a != b and a.exists() and b.exists()
+
+
+def test_default_does_not_write_into_the_cwd(log_dir, tmp_path, monkeypatch):
+    # the old default dropped gold.<run_id>.json wherever the command was invoked
+    cwd = tmp_path / "cwd"
+    cwd.mkdir()
+    monkeypatch.chdir(cwd)
+    predictions, full_dataset = _fixture()
+    make_run_report(predictions, full_dataset, "run-d")
+    assert list(cwd.iterdir()) == []
