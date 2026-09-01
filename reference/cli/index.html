@@ -934,10 +934,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-publish-submission_path" class="md-nav__link">
+  <a href="#swebench-submit-publish-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit publish SUBMISSION_PATH
+        swebench submit publish RUN_PATH
       
     </span>
   </a>
@@ -945,10 +945,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-register-submission_path" class="md-nav__link">
+  <a href="#swebench-submit-register-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit register SUBMISSION_PATH
+        swebench submit register RUN_PATH
       
     </span>
   </a>
@@ -956,10 +956,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-verify-entry_path" class="md-nav__link">
+  <a href="#swebench-submit-verify-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit verify ENTRY_PATH
+        swebench submit verify RUN_PATH
       
     </span>
   </a>
@@ -967,10 +967,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-hf-run_id" class="md-nav__link">
+  <a href="#swebench-submit-hf-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit hf RUN_ID
+        swebench submit hf RUN_PATH
       
     </span>
   </a>
@@ -1376,10 +1376,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-publish-submission_path" class="md-nav__link">
+  <a href="#swebench-submit-publish-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit publish SUBMISSION_PATH
+        swebench submit publish RUN_PATH
       
     </span>
   </a>
@@ -1387,10 +1387,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-register-submission_path" class="md-nav__link">
+  <a href="#swebench-submit-register-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit register SUBMISSION_PATH
+        swebench submit register RUN_PATH
       
     </span>
   </a>
@@ -1398,10 +1398,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-verify-entry_path" class="md-nav__link">
+  <a href="#swebench-submit-verify-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit verify ENTRY_PATH
+        swebench submit verify RUN_PATH
       
     </span>
   </a>
@@ -1409,10 +1409,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#swebench-submit-hf-run_id" class="md-nav__link">
+  <a href="#swebench-submit-hf-run_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        swebench submit hf RUN_ID
+        swebench submit hf RUN_PATH
       
     </span>
   </a>
@@ -1617,11 +1617,11 @@ swebench<span class="w"> </span>report<span class="w"> </span>my-run<span class=
 <p><code>swebench submit</code> has two destinations: the SWE-bench leaderboard (via
 <a href="https://github.com/SWE-bench/experiments"><code>SWE-bench/experiments</code></a>) and HuggingFace's
 eval-results system.</p>
-<p>Each leaderboard step reads what the last one recorded, so you only name the run:</p>
-<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>package<span class="w"> </span>logs/evaluation/my-run<span class="w"> </span>--trajs<span class="w"> </span>./output
-swebench<span class="w"> </span>submit<span class="w"> </span>publish<span class="w"> </span>logs/evaluation/my-run/submission
-swebench<span class="w"> </span>submit<span class="w"> </span>register<span class="w"> </span>logs/evaluation/my-run/submission
-swebench<span class="w"> </span>submit<span class="w"> </span>verify<span class="w"> </span>evaluation/verified/&lt;id&gt;
+<p>Every step takes the same run directory and reads what the last one recorded:</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>package<span class="w">  </span>logs/evaluation/my-run<span class="w"> </span>--trajs<span class="w"> </span>./output
+swebench<span class="w"> </span>submit<span class="w"> </span>publish<span class="w">  </span>logs/evaluation/my-run<span class="w"> </span>-r<span class="w"> </span>&lt;owner&gt;/&lt;name&gt;
+swebench<span class="w"> </span>submit<span class="w"> </span>register<span class="w"> </span>logs/evaluation/my-run
+swebench<span class="w"> </span>submit<span class="w"> </span>verify<span class="w">   </span>logs/evaluation/my-run
 </code></pre></div>
 <h3 id="swebench-submit-package-run_path"><code>swebench submit package RUN_PATH</code></h3>
 <p>Takes a run's log directory, or the model directory inside it. Writes two trees to
@@ -1640,24 +1640,24 @@ read from the run's own <code>report.json</code>.</p>
 directory; traces are flattened to <code>trajs/&lt;iid&gt;.*</code>, and files not named after an
 instance are skipped. Test output is gzipped, and anything still over 50MB is refused
 with the instance named. Also: <code>-s</code>, <code>-o</code>, <code>--id</code>, <code>--model</code>, <code>-p/--predictions</code>.</p>
-<h3 id="swebench-submit-publish-submission_path"><code>swebench submit publish SUBMISSION_PATH</code></h3>
+<h3 id="swebench-submit-publish-run_path"><code>swebench submit publish RUN_PATH</code></h3>
 <p>Commits <code>submission-repo/</code> and pushes it. Name the destination: <code>-r/--repo
 &lt;owner&gt;/&lt;name&gt;</code> creates it, <code>--remote &lt;url&gt;</code> pushes to one you made already. Writes the
 URL into
 <code>entry/metadata.yaml</code> as <code>assets.repo</code> / <code>assets.logs</code> / <code>assets.trajs</code> -- the field
 that used to hold <code>s3://swe-bench-submissions/...</code>.</p>
-<h3 id="swebench-submit-register-submission_path"><code>swebench submit register SUBMISSION_PATH</code></h3>
+<h3 id="swebench-submit-register-run_path"><code>swebench submit register RUN_PATH</code></h3>
 <p>Forks <code>SWE-bench/experiments</code>, adds <code>evaluation/&lt;split&gt;/&lt;id&gt;/</code>, and opens the PR with
 the checklist in the body. It refuses while any <code>TODO</code> remains in <code>metadata.yaml</code> or
 <code>README.md</code>, naming each one. Split and id come from <code>submission.json</code>. Also: <code>-s</code>,
 <code>--id</code>, <code>--registry</code>, <code>--allow-todos</code>, <code>--dry-run</code>.</p>
-<h3 id="swebench-submit-verify-entry_path"><code>swebench submit verify ENTRY_PATH</code></h3>
+<h3 id="swebench-submit-verify-run_path"><code>swebench submit verify RUN_PATH</code></h3>
 <p>Clones the repo named in the entry's <code>assets.repo</code>, re-grades every instance from its
 recorded test output, and reports any verdict that disagrees with <code>results.json</code>. No
 Docker and no re-execution. Claiming an instance while shipping no log for it fails.</p>
-<p>The split is inferred from the path. <code>--logs</code> checks a local <code>logs/</code> tree instead of
-cloning. Anyone can run this, since artifacts are self-hosted.</p>
-<h3 id="swebench-submit-hf-run_id"><code>swebench submit hf RUN_ID</code></h3>
+<p>Takes a run directory, or an entry already committed to experiments. The split is
+inferred from the path. <code>--logs</code> checks a local <code>logs/</code> tree instead of cloning. Anyone can run this, since artifacts are self-hosted.</p>
+<h3 id="swebench-submit-hf-run_path"><code>swebench submit hf RUN_PATH</code></h3>
 <p>Uploads a run's report to a HuggingFace bucket and writes a <code>.eval_results/*.yaml</code>
 entry (<a href="https://huggingface.co/docs/hub/eval-results">format</a>). The report and the
 dataset come from the run, so only the bucket has to be named.</p>
