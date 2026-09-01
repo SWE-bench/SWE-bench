@@ -7520,26 +7520,7 @@ Performs this forcefully if the container cannot be stopped with the standard do
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>swebench/harness/docker_utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
+              <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">128</span>
 <span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
@@ -7557,7 +7538,31 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
-<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exec_run_with_timeout</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">60</span><span class="p">):</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">exec_run_with_timeout</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">60</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a command in a container with a timeout.</span>
 
@@ -7568,11 +7573,12 @@ Performs this forcefully if the container cannot be stopped with the standard do
 <span class="sd">    """</span>
     <span class="n">exec_result</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span>
     <span class="n">exec_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">exec_stream</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">exception</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">run_command</span><span class="p">():</span>
-        <span class="k">nonlocal</span> <span class="n">exec_result</span><span class="p">,</span> <span class="n">exec_id</span><span class="p">,</span> <span class="n">exception</span>
+        <span class="k">nonlocal</span> <span class="n">exec_result</span><span class="p">,</span> <span class="n">exec_id</span><span class="p">,</span> <span class="n">exec_stream</span><span class="p">,</span> <span class="n">exception</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">exec_id</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">exec_create</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)[</span><span class="s2">"Id"</span><span class="p">]</span>
             <span class="n">exec_stream</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">exec_start</span><span class="p">(</span><span class="n">exec_id</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -7580,6 +7586,8 @@ Performs this forcefully if the container cannot be stopped with the standard do
                 <span class="n">exec_result</span> <span class="o">+=</span> <span class="n">chunk</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">exception</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">_close_exec_stream</span><span class="p">(</span><span class="n">exec_stream</span><span class="p">)</span>
 
     <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">run_command</span><span class="p">)</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -7591,6 +7599,8 @@ Performs this forcefully if the container cannot be stopped with the standard do
         <span class="k">if</span> <span class="n">exec_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">exec_pid</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">exec_inspect</span><span class="p">(</span><span class="n">exec_id</span><span class="p">)[</span><span class="s2">"Pid"</span><span class="p">]</span>
             <span class="n">container</span><span class="o">.</span><span class="n">exec_run</span><span class="p">(</span><span class="sa">f</span><span class="s2">"kill -TERM </span><span class="si">{</span><span class="n">exec_pid</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">detach</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># the reader is still blocked on the stream; closing it lets that thread end</span>
+        <span class="n">_close_exec_stream</span><span class="p">(</span><span class="n">exec_stream</span><span class="p">)</span>
         <span class="n">timed_out</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="c1"># test output is arbitrary bytes; a stray non-UTF-8 byte must not kill the run</span>
