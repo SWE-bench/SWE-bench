@@ -119,10 +119,10 @@ def package_command(
 def publish_command(
     out: Path = typer.Argument(
         ...,
-        metavar="SUBMISSION_PATH",
+        metavar="RUN_PATH",
         exists=True,
         file_okay=False,
-        help="Directory `package` built, e.g. logs/evaluation/<run_id>/submission",
+        help="A run directory, e.g. logs/evaluation/<run_id>",
     ),
     owner: str = typer.Option(
         "", "--owner", help="GitHub org/user (default: your account)"
@@ -156,11 +156,20 @@ def publish_command(
         swebench submit publish logs/evaluation/my-run/submission -r my-org/my-run
     """
     from swebench.submit._git import has_gh
+    from swebench.submit.package import PackageError, resolve_submission_dir
     from swebench.submit.publish import PublishError, plan_repo_name, publish
 
-    out_dir = out
+    try:
+        out_dir = resolve_submission_dir(out)
+    except PackageError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(1) from exc
     if dry_run:
-        if remote:
+        from swebench.submit._git import origin
+
+        if existing := origin(out_dir / "submission-repo"):
+            how = f"push to its existing remote {existing}"
+        elif remote:
             how = f"push to existing remote {remote}"
         elif repo:
             target = f"{owner}/{repo}" if owner and "/" not in repo else repo
@@ -204,10 +213,10 @@ def publish_command(
 def register_command(
     out: Path = typer.Argument(
         ...,
-        metavar="SUBMISSION_PATH",
+        metavar="RUN_PATH",
         exists=True,
         file_okay=False,
-        help="Directory `package` built, e.g. logs/evaluation/<run_id>/submission",
+        help="A run directory, e.g. logs/evaluation/<run_id>",
     ),
     split: Optional[str] = typer.Option(
         None,
@@ -240,6 +249,11 @@ def register_command(
 
         swebench submit register logs/evaluation/my-run/submission
     """
+    from swebench.submit.package import (
+        PackageError,
+        resolve_entry_dir,
+        resolve_submission_dir,
+    )
     from swebench.submit.publish import plan_repo_name
     from swebench.submit.register import (
         REGISTRY_DEFAULT,
@@ -250,8 +264,12 @@ def register_command(
         unfilled_todos,
     )
 
-    out_dir = out
-    entry_dir = out_dir / "entry" if (out_dir / "entry").is_dir() else out_dir
+    try:
+        out_dir = resolve_submission_dir(out)
+        entry_dir = resolve_entry_dir(out)
+    except PackageError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(1) from exc
     sub_id = submission_id or plan_repo_name(out_dir)
     target = registry or REGISTRY_DEFAULT
 
@@ -286,10 +304,10 @@ def register_command(
 def verify_command(
     entry: Path = typer.Argument(
         ...,
-        metavar="ENTRY_PATH",
+        metavar="RUN_PATH",
         exists=True,
         file_okay=False,
-        help="A submission entry directory",
+        help="A run directory, or an entry already committed to experiments",
     ),
     split: Optional[str] = typer.Option(
         None,
@@ -315,10 +333,16 @@ def verify_command(
     """
     from pathlib import Path as _Path
 
+    from swebench.submit.package import PackageError, resolve_entry_dir
     from swebench.submit.verify import VerifyError, verify
 
     try:
-        result = verify(entry, split, logs_dir=_Path(logs) if logs else None)
+        result = verify(
+            resolve_entry_dir(entry), split, logs_dir=_Path(logs) if logs else None
+        )
+    except PackageError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(1) from exc
     except VerifyError as exc:
         typer.echo(f"error: {exc}", err=True)
         raise typer.Exit(1) from exc
@@ -343,8 +367,8 @@ def verify_command(
 
 @submit_app.command("hf")
 def hf_command(
-    run_id: str = typer.Argument(
-        ..., help="Run id, used as the prefix inside the bucket"
+    run: str = typer.Argument(
+        ..., metavar="RUN_PATH", help="A run directory, or a bare run id"
     ),
     bucket: str = typer.Option(
         ..., "-b", "--bucket", help="HuggingFace bucket, as 'namespace/name'"
@@ -397,8 +421,8 @@ def hf_command(
     """
     from pathlib import Path as _Path
 
-    from swebench.harness.constants import RUN_EVALUATION_LOG_DIR
-    from swebench.harness.run_evaluation import read_run_metadata
+    from swebench.harness.constants import LOG_RUN_METADATA
+    from swebench.submit.package import resolve_run
     from swebench.submit.hf import (
         file_url,
         read_report,
@@ -407,9 +431,8 @@ def hf_command(
         write_eval_result,
     )
 
-    report_path = (
-        _Path(report) if report else RUN_EVALUATION_LOG_DIR / run_id / "results.json"
-    )
+    run_id, run_dir = resolve_run(run)
+    report_path = _Path(report) if report else run_dir / "results.json"
     if not report_path.is_file():
         typer.echo(
             f"error: no report at {report_path.resolve()}. Run `swebench eval` first, "
@@ -419,7 +442,8 @@ def hf_command(
         raise typer.Exit(1)
 
     if dataset is None:
-        recorded = read_run_metadata(run_id) or {}
+        meta_path = run_dir / LOG_RUN_METADATA
+        recorded = json.loads(meta_path.read_text()) if meta_path.is_file() else {}
         if not recorded.get("dataset"):
             typer.echo(
                 f"error: run {run_id!r} did not record which dataset it used, so pass -d.",

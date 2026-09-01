@@ -32,7 +32,12 @@ from typing import Optional
 
 import yaml
 
-from swebench.harness.constants import LOG_REPORT, LOG_RUN_METADATA, LOG_TEST_OUTPUT
+from swebench.harness.constants import (
+    LOG_REPORT,
+    LOG_RUN_METADATA,
+    LOG_TEST_OUTPUT,
+    RUN_EVALUATION_LOG_DIR,
+)
 
 # Directory name under experiments/evaluation/ -> the dataset it is scored against.
 # `bash-only` is deliberately absent: those submissions now live under `verified`, with
@@ -121,6 +126,48 @@ def read_submission_meta(out_dir: Path) -> dict:
         return json.loads(path.read_text()) or {}
     except json.JSONDecodeError:
         return {}
+
+
+SUBMISSION_DIR = "submission"
+
+
+def resolve_submission_dir(path: Path) -> Path:
+    """The submission directory, given a run directory or the submission itself.
+
+    Every `submit` command accepts ``logs/evaluation/<run_id>`` so one path works for
+    the whole flow; pointing straight at the submission still works.
+    """
+    path = Path(path)
+    for candidate in (path, path / SUBMISSION_DIR):
+        if (candidate / "entry").is_dir():
+            return candidate
+    raise PackageError(
+        f"no submission under {path.resolve()} -- looked for entry/ and "
+        f"{SUBMISSION_DIR}/entry/. Run `swebench submit package` first."
+    )
+
+
+def resolve_entry_dir(path: Path) -> Path:
+    """The entry directory, given a run directory, a submission, or the entry itself.
+
+    The third form is how an entry already committed to experiments is checked.
+    """
+    path = Path(path)
+    for candidate in (path, path / "entry", path / SUBMISSION_DIR / "entry"):
+        if (candidate / "metadata.yaml").is_file():
+            return candidate
+    raise PackageError(
+        f"no submission entry under {path.resolve()} -- looked for metadata.yaml here, "
+        f"in entry/, and in {SUBMISSION_DIR}/entry/."
+    )
+
+
+def resolve_run(run: str) -> tuple[str, Path]:
+    """A run id and its directory, from either a path or a bare run id."""
+    path = Path(run)
+    if path.is_dir():
+        return path.name, path
+    return run, RUN_EVALUATION_LOG_DIR / run
 
 
 def _is_instance_dir(path: Path) -> bool:
@@ -279,7 +326,9 @@ def package_run(
         raise PackageError(
             f"unknown split {split!r}; expected one of {', '.join(sorted(SPLIT_DATASETS))}"
         )
-    out_dir = Path(out_dir) if out_dir is not None else resolved.run_dir / "submission"
+    out_dir = (
+        Path(out_dir) if out_dir is not None else resolved.run_dir / SUBMISSION_DIR
+    )
 
     from datasets import load_dataset
 

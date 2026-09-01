@@ -347,3 +347,34 @@ def test_verify_split_unresolvable_is_a_clear_error(tmp_path):
     entry.mkdir(parents=True)
     with pytest.raises(ver.VerifyError, match="cannot tell which split"):
         ver.resolve_split(entry)
+
+
+# --- one path for the whole flow ---------------------------------------------
+
+
+def test_resolvers_accept_a_run_directory(tmp_path, packaged):
+    """Every submit command takes logs/evaluation/<run_id>, not a deeper path."""
+    from swebench.submit.package import resolve_entry_dir, resolve_submission_dir
+
+    run_dir = tmp_path / "logs" / "evaluation" / "my-run"
+    run_dir.mkdir(parents=True)
+    packaged.rename(run_dir / "submission")
+
+    assert resolve_submission_dir(run_dir) == run_dir / "submission"
+    assert resolve_entry_dir(run_dir) == run_dir / "submission" / "entry"
+
+
+def test_resolvers_still_accept_the_deeper_paths(packaged):
+    from swebench.submit.package import resolve_entry_dir, resolve_submission_dir
+
+    assert resolve_submission_dir(packaged) == packaged
+    assert resolve_entry_dir(packaged) == packaged / "entry"
+    assert resolve_entry_dir(packaged / "entry") == packaged / "entry"
+
+
+def test_resolvers_name_where_they_looked(tmp_path):
+    from swebench.submit.package import PackageError, resolve_submission_dir
+
+    (tmp_path / "empty").mkdir()
+    with pytest.raises(PackageError, match="submission/entry/"):
+        resolve_submission_dir(tmp_path / "empty")

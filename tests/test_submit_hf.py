@@ -119,17 +119,12 @@ def test_write_eval_result_creates_parent_dirs(tmp_path):
 
 
 @pytest.fixture
-def run(tmp_path, monkeypatch):
-    """A finished run: logs/evaluation/<run_id>/{results.json,run.json}."""
-    from swebench.harness import constants, run_evaluation
+def run(tmp_path):
+    """A finished run directory: <run>/{results.json,run.json}."""
     from swebench.harness.constants import LOG_RUN_METADATA
 
-    root = tmp_path / "logs" / "evaluation"
-    monkeypatch.setattr(constants, "RUN_EVALUATION_LOG_DIR", root)
-    monkeypatch.setattr(run_evaluation, "RUN_EVALUATION_LOG_DIR", root)
-
     def add(run_id="my-run", dataset="SWE-bench/SWE-bench_Verified", results=True):
-        d = root / run_id
+        d = tmp_path / "logs" / "evaluation" / run_id
         d.mkdir(parents=True)
         if results:
             (d / "results.json").write_text(
@@ -151,29 +146,36 @@ def _invoke(*args):
 
 
 def test_report_and_dataset_come_from_the_run(run):
-    run()
-    result = _invoke("my-run", "-b", "me/bucket", "--dry-run")
+    d = run()
+    result = _invoke(str(d), "-b", "me/bucket", "--dry-run")
     assert result.exit_code == 0, result.output
     assert "42.00" in result.output
     assert "SWE-bench/SWE-bench_Verified" in result.output
 
 
 def test_missing_report_names_the_path_it_looked_in(run):
-    run(results=False)
-    result = _invoke("my-run", "-b", "me/bucket", "--dry-run")
+    d = run(results=False)
+    result = _invoke(str(d), "-b", "me/bucket", "--dry-run")
     assert result.exit_code == 1
     assert "no report at" in result.output and "results.json" in result.output
 
 
 def test_dataset_required_when_the_run_did_not_record_one(run):
-    run(dataset=None)
-    result = _invoke("my-run", "-b", "me/bucket", "--dry-run")
+    d = run(dataset=None)
+    result = _invoke(str(d), "-b", "me/bucket", "--dry-run")
     assert result.exit_code == 1
     assert "did not record which dataset" in result.output
 
 
 def test_explicit_dataset_overrides_the_run(run):
-    run()
-    result = _invoke("my-run", "-b", "me/bucket", "-d", "lite", "--dry-run")
+    d = run()
+    result = _invoke(str(d), "-b", "me/bucket", "-d", "lite", "--dry-run")
     assert result.exit_code == 0
     assert "SWE-bench_Lite" in result.output
+
+
+def test_bucket_prefix_uses_the_run_directory_name(run):
+    d = run(run_id="g35flash")
+    result = _invoke(str(d), "-b", "me/bucket", "--dry-run")
+    assert result.exit_code == 0, result.output
+    assert '"g35flash/results.json"' in result.output

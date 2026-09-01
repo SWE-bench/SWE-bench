@@ -74,13 +74,13 @@ swebench report my-run -d multimodal -i grommet__grommet-6282
 [`SWE-bench/experiments`](https://github.com/SWE-bench/experiments)) and HuggingFace's
 eval-results system.
 
-Each leaderboard step reads what the last one recorded, so you only name the run:
+Every step takes the same run directory and reads what the last one recorded:
 
 ```bash
-swebench submit package logs/evaluation/my-run --trajs ./output
-swebench submit publish logs/evaluation/my-run/submission
-swebench submit register logs/evaluation/my-run/submission
-swebench submit verify evaluation/verified/<id>
+swebench submit package  logs/evaluation/my-run --trajs ./output
+swebench submit publish  logs/evaluation/my-run -r <owner>/<name>
+swebench submit register logs/evaluation/my-run
+swebench submit verify   logs/evaluation/my-run
 ```
 
 ### `swebench submit package RUN_PATH`
@@ -106,7 +106,7 @@ directory; traces are flattened to `trajs/<iid>.*`, and files not named after an
 instance are skipped. Test output is gzipped, and anything still over 50MB is refused
 with the instance named. Also: `-s`, `-o`, `--id`, `--model`, `-p/--predictions`.
 
-### `swebench submit publish SUBMISSION_PATH`
+### `swebench submit publish RUN_PATH`
 
 Commits `submission-repo/` and pushes it. Name the destination: `-r/--repo
 <owner>/<name>` creates it, `--remote <url>` pushes to one you made already. Writes the
@@ -114,23 +114,23 @@ URL into
 `entry/metadata.yaml` as `assets.repo` / `assets.logs` / `assets.trajs` -- the field
 that used to hold `s3://swe-bench-submissions/...`.
 
-### `swebench submit register SUBMISSION_PATH`
+### `swebench submit register RUN_PATH`
 
 Forks `SWE-bench/experiments`, adds `evaluation/<split>/<id>/`, and opens the PR with
 the checklist in the body. It refuses while any `TODO` remains in `metadata.yaml` or
 `README.md`, naming each one. Split and id come from `submission.json`. Also: `-s`,
 `--id`, `--registry`, `--allow-todos`, `--dry-run`.
 
-### `swebench submit verify ENTRY_PATH`
+### `swebench submit verify RUN_PATH`
 
 Clones the repo named in the entry's `assets.repo`, re-grades every instance from its
 recorded test output, and reports any verdict that disagrees with `results.json`. No
 Docker and no re-execution. Claiming an instance while shipping no log for it fails.
 
-The split is inferred from the path. `--logs` checks a local `logs/` tree instead of
-cloning. Anyone can run this, since artifacts are self-hosted.
+Takes a run directory, or an entry already committed to experiments. The split is
+inferred from the path. `--logs` checks a local `logs/` tree instead of cloning. Anyone can run this, since artifacts are self-hosted.
 
-### `swebench submit hf RUN_ID`
+### `swebench submit hf RUN_PATH`
 
 Uploads a run's report to a HuggingFace bucket and writes a `.eval_results/*.yaml`
 entry ([format](https://huggingface.co/docs/hub/eval-results)). The report and the
