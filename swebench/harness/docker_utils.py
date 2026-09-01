@@ -106,6 +106,25 @@ def cleanup_container(client, container, logger):
         )
 
 
+def _close_exec_stream(stream) -> None:
+    """Close a docker exec stream and the HTTP response underneath it.
+
+    Left to the garbage collector, the response's finalizer reports
+    "I/O operation on closed file" from inside __del__ and the socket leaks until then.
+    Both closes are guarded: either may already be closed.
+    """
+    if stream is None:
+        return
+    for owner in (stream, getattr(stream, "_response", None)):
+        close = getattr(owner, "close", None)
+        if close is None:
+            continue
+        try:
+            close()
+        except Exception:
+            pass
+
+
 def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
     """
     Run a command in a container with a timeout.
@@ -117,11 +136,12 @@ def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
     """
     exec_result = b""
     exec_id = None
+    exec_stream = None
     exception = None
     timed_out = False
 
     def run_command():
-        nonlocal exec_result, exec_id, exception
+        nonlocal exec_result, exec_id, exec_stream, exception
         try:
             exec_id = container.client.api.exec_create(container.id, cmd)["Id"]
             exec_stream = container.client.api.exec_start(exec_id, stream=True)
@@ -129,6 +149,8 @@ def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
                 exec_result += chunk
         except Exception as e:
             exception = e
+        finally:
+            _close_exec_stream(exec_stream)
 
     thread = threading.Thread(target=run_command)
     start_time = time.time()
@@ -140,6 +162,8 @@ def exec_run_with_timeout(container, cmd, timeout: int | None = 60):
         if exec_id is not None:
             exec_pid = container.client.api.exec_inspect(exec_id)["Pid"]
             container.exec_run(f"kill -TERM {exec_pid}", detach=True)
+        # the reader is still blocked on the stream; closing it lets that thread end
+        _close_exec_stream(exec_stream)
         timed_out = True
     end_time = time.time()
     # test output is arbitrary bytes; a stray non-UTF-8 byte must not kill the run
