@@ -1664,8 +1664,10 @@ and write a <code>.eval_results/*.yaml</code> entry scored against it
 and the entry's <code>source.url</code> points at the uploaded report. Buckets are created
 private unless you pass <code>--public</code>; a private bucket means that URL is not
 readable by anyone else, so <code>--public</code> is what you want for a shared entry.</p>
-<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/swebench-runs<span class="w"> </span>--report<span class="w"> </span>gpt5.my-run.json<span class="w"> </span>-d<span class="w"> </span>verified<span class="w"> </span>--public
-swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/runs<span class="w"> </span>--report<span class="w"> </span>r.json<span class="w"> </span>-d<span class="w"> </span>verified<span class="w"> </span>--dry-run
+<p>The report and the dataset are read from the run itself, so only the bucket has to be
+named. <code>--report</code> and <code>-d</code> override them.</p>
+<div class="highlight"><pre><span></span><code>swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/swebench-runs<span class="w"> </span>--public
+swebench<span class="w"> </span>submit<span class="w"> </span>hf<span class="w"> </span>my-run<span class="w"> </span>-b<span class="w"> </span>myuser/runs<span class="w"> </span>--dry-run
 </code></pre></div>
 <p>Requires the <code>submit</code> extra (<code>pip install swebench[submit]</code>) for bucket support.</p>
 <h2 id="images">Images</h2>
