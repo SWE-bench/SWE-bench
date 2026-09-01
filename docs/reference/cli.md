@@ -25,9 +25,12 @@ A thin wrapper around `mini-extra swebench`: it resolves SWE-bench's dataset ali
 drops its own default as soon as any `-c` is given. Unrecognized arguments are
 forwarded to mini, so `--filter`, `--slice` and the rest work as documented there.
 
+Predictions and trajectories go to `logs/inference/<run_id>` unless `-o` says
+otherwise, mirroring `swebench eval`'s `logs/evaluation/<run_id>`.
+
 ```bash
-swebench infer verified -m gpt-5 -o preds -w 8
-swebench infer verified -c model.yaml -w 12 -o output
+swebench infer verified -m gpt-5 --run-id gpt5 -w 8
+swebench infer verified -c model.yaml --run-id g35flash -w 12
 swebench infer lite -m gpt-5 --dry-run -- --filter "astropy.*"
 ```
 

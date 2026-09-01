@@ -120,3 +120,27 @@ def test_cli_forwards_unknown_options(monkeypatch, bundled_config):
     )
     assert result.exit_code == 0
     assert "--filter astropy.*" in result.output
+
+
+def test_output_defaults_under_logs_inference(monkeypatch, bundled_config):
+    from typer.testing import CliRunner
+
+    from swebench.cli.cli import app
+
+    monkeypatch.setattr(msa, "is_available", lambda python=None: True)
+    result = CliRunner().invoke(
+        app, ["infer", "verified", "--run-id", "g5", "--dry-run"]
+    )
+    assert "logs/inference/g5" in result.output
+
+
+def test_explicit_output_wins(monkeypatch, bundled_config):
+    from typer.testing import CliRunner
+
+    from swebench.cli.cli import app
+
+    monkeypatch.setattr(msa, "is_available", lambda python=None: True)
+    result = CliRunner().invoke(
+        app, ["infer", "verified", "-o", "/custom/dir", "--dry-run"]
+    )
+    assert "/custom/dir" in result.output and "logs/inference" not in result.output

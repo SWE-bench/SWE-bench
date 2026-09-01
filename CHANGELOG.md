@@ -4,6 +4,20 @@ All notable changes to the PyPI package for SWE-bench ([`swebench`](https://pypi
 
 Prior to version 1.1.0, not all deployed versions are listed, as the PyPI package was going through development and testing. The noteworthy versions and the respective changes that were introduced by that version are included. All versions 1.1.0 onwards are fully listed.
 
+## [Unreleased]
+
+Breaking changes:
+* Evaluation logs are written to `logs/evaluation/<run_id>` instead of
+  `logs/run_evaluation/<run_id>`. Move an existing directory to keep past runs
+  readable by `swebench report` and `swebench submit package`:
+  `mv logs/run_evaluation logs/evaluation`.
+
+Added:
+* `swebench infer` runs mini-SWE-agent over a dataset, writing predictions and
+  trajectories to `logs/inference/<run_id>`.
+* `swebench submit package|publish|register|verify` build and check a leaderboard
+  submission, and `swebench submit hf` publishes to a HuggingFace bucket.
+
 ## [5.0.1] - 8/17/2026
 
 Fixed:

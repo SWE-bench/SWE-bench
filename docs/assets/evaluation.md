@@ -28,7 +28,7 @@ python -m swebench.harness.run_evaluation \
     --max_workers <num_workers> \
     --run_id <run_id>
     # use --predictions_path 'gold' to verify the gold patches
-    # use --run_id to name the run, logs will be written to ./logs/run_evaluation/<run_id>
+    # use --run_id to name the run, logs will be written to ./logs/evaluation/<run_id>
     # use --split to specify which split to evaluate on, usually `dev` or `test`
     # use --modal true to run on Modal
 ```

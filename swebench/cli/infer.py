@@ -6,6 +6,7 @@ from typing import Optional
 import typer
 
 from swebench.cli._datasets import alias_help, resolve_dataset
+from swebench.harness.constants import INFERENCE_LOG_DIR
 
 
 def infer_command(
@@ -18,7 +19,13 @@ def infer_command(
     model: Optional[str] = typer.Option(
         None, "-m", "--model", help="Model name, as litellm spells it"
     ),
-    output: str = typer.Option("preds", "-o", "--output", help="Output directory"),
+    run_id: str = typer.Option("run", "--run-id", help="Names the output directory"),
+    output: Optional[str] = typer.Option(
+        None,
+        "-o",
+        "--output",
+        help="Output directory (default: logs/inference/<run_id>)",
+    ),
     split: str = typer.Option("test", "-s", "--split"),
     workers: int = typer.Option(
         1, "-w", "--workers", help="Instances inferred in parallel"
@@ -53,7 +60,7 @@ def infer_command(
 
     [yellow][bold]Examples:[/bold][/yellow]
 
-        swebench infer verified -m gpt-5 -o preds -w 8
+        swebench infer verified -m gpt-5 --run-id gpt5 -w 8
 
         swebench infer verified -c model.yaml -w 12 -o output
 
@@ -73,10 +80,11 @@ def infer_command(
         typer.echo(INSTALL_HINT, err=True)
         raise typer.Exit(1)
 
+    out_dir = Path(output) if output else INFERENCE_LOG_DIR / run_id
     try:
         cmd = build_command(
             resolve_dataset(dataset),
-            output=Path(output),
+            output=out_dir,
             split=split,
             workers=workers,
             model=model,

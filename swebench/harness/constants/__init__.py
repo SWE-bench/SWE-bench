@@ -22,8 +22,9 @@ class EvalType(Enum):
     FAIL_ONLY = "fail_only"
 
 
-# Constants - Evaluation Log Directories
-RUN_EVALUATION_LOG_DIR = Path("logs/run_evaluation")
+# Constants - Log Directories
+INFERENCE_LOG_DIR = Path("logs/inference")
+RUN_EVALUATION_LOG_DIR = Path("logs/evaluation")
 RUN_VALIDATION_LOG_DIR = Path("logs/run_validation")
 
 # Constants - Test Types, Statuses, Commands
