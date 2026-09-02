@@ -210,6 +210,15 @@ def optional_str(value: str) -> str | None:
     return value
 
 
+def write_container_text(path: Path, text: str) -> None:
+    """Write text with LF endings for files that Linux eval containers will read.
+
+    Path.write_text() uses the platform newline on Windows, so eval.sh / patch.diff
+    become CRLF and bash / git apply fail inside the container (silent 0% resolve).
+    """
+    path.write_text(text, newline="\n")
+
+
 def parse_eval_script(eval_script: str) -> list[str]:
     """Parse an eval.sh script into a command list (strip shebang + set flags)."""
     return [
