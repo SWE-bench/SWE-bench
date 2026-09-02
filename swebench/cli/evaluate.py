@@ -19,7 +19,7 @@ def eval_command(
     predictions: Optional[str] = typer.Option(
         None, "-p", "--predictions", help="Path to a predictions .json/.jsonl"
     ),
-    run_id: str = typer.Option("run", "--run-id", help="Names the log directory"),
+    run_id: str = typer.Option("run", "-r", "--run-id", help="Names the log directory"),
     instance_ids: Optional[list[str]] = typer.Option(
         None, "-i", "--instance", help="Limit to these instances (repeatable)"
     ),

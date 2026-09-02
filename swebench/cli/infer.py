@@ -19,7 +19,9 @@ def infer_command(
     model: Optional[str] = typer.Option(
         None, "-m", "--model", help="Model name, as litellm spells it"
     ),
-    run_id: str = typer.Option("run", "--run-id", help="Names the output directory"),
+    run_id: str = typer.Option(
+        "run", "-r", "--run-id", help="Names the output directory"
+    ),
     output: Optional[str] = typer.Option(
         None,
         "-o",
@@ -68,6 +70,8 @@ def infer_command(
 
         swebench infer verified -c model.yaml --python /path/to/venv/bin/python
     """
+    from dotenv import load_dotenv
+
     from swebench.inference.mini_swe_agent import (
         InferenceError,
         INSTALL_HINT,
@@ -75,6 +79,10 @@ def infer_command(
         is_available,
         run,
     )
+
+    # the provider's key comes from the environment; .env is where it lives in a
+    # checkout, and the subprocess inherits whatever we load here
+    load_dotenv()
 
     if not is_available(python):
         typer.echo(INSTALL_HINT, err=True)

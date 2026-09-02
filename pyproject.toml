@@ -81,6 +81,15 @@ docs = [
     "mkdocs-include-markdown-plugin",
 ]
 
+# uv installs this group by default, so `uv run swebench infer` works in a checkout
+# without asking for an extra or a second interpreter
+[dependency-groups]
+dev = [
+    "mini-swe-agent",
+    "pytest",
+    "pytest-cov",
+]
+
 [tool.setuptools]
 include-package-data = true
 
