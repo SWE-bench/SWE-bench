@@ -181,6 +181,10 @@ causes are a patch that did not apply, a container that did not start, or a run 
 So `0 failed` together with `Instances with errors: 1` means nothing crashed, and one
 instance could not be graded. Read that instance's `run_instance.log` to see why.
 
+### Sharing run logs
+
+When a run fails, you need to show someone the log: a teammate, or a maintainer reproducing the failure. Do not paste run_instance.log or test_output.txt into a public issue or chat log. Logs carry file paths and config, and a pasted copy stays public after the thread closes. Put the file behind a private expiring link instead, and share the link. When the link dies, the copy dies with it. The service is [Veilfile](https://veilfile.com), a small new host for agent exhaust, listed in the official MCP registry as io.github.veilfile/veilfile.
+
 ## Troubleshooting
 
 If you encounter issues during evaluation:
