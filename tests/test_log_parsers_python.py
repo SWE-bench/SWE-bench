@@ -1,4 +1,4 @@
-from swebench.harness.log_parsers.python import parse_log_seaborn
+from swebench.harness.log_parsers.python import parse_log_seaborn, parse_log_sympy
 from swebench.harness.constants import TestStatus
 
 
@@ -35,4 +35,22 @@ test_b.py::test_two PASSED [100%]
         assert result == {
             "test_a.py::test_one": TestStatus.PASSED.value,
             "test_b.py::test_two": TestStatus.PASSED.value,
+        }
+
+
+class TestParseLogSympy:
+    """Tests for parse_log_sympy used by sympy/sympy."""
+
+    def test_last_test_of_file_is_recorded(self):
+        """SymPy appends the file verdict to the last test's line: `test_x ok  [OK]`."""
+        log = (
+            "sympy/a/tests/test_a.py[3] \n"
+            "test_one ok\n"
+            "test_two F\n"
+            "test_last ok                                        [FAIL]\n"
+        )
+        assert parse_log_sympy(log, None) == {
+            "test_one": TestStatus.PASSED.value,
+            "test_two": TestStatus.FAILED.value,
+            "test_last": TestStatus.PASSED.value,
         }

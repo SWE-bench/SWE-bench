@@ -234,6 +234,9 @@ def parse_log_sympy(log: str, test_spec: TestSpec) -> dict[str, str]:
     for line in log.split("\n"):
         line = line.strip()
         if line.startswith("test_"):
+            # the last test of each file carries the file verdict: "test_x ok   [OK]"
+            if line.endswith("[FAIL]") or line.endswith("[OK]"):
+                line = line[: line.rfind("[")].strip()
             if line.endswith(" E"):
                 test = line.split()[0]
                 test_status_map[test] = TestStatus.ERROR.value
