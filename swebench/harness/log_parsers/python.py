@@ -125,14 +125,18 @@ def parse_log_django(log: str, test_spec: TestSpec) -> dict[str, str]:
             test = line.split(" ... FAIL")[0]
             test_status_map[test] = TestStatus.FAILED.value
         if line.startswith("FAIL:"):
-            test = line.split()[1].strip()
-            test_status_map[test] = TestStatus.FAILED.value
+            # a bare "FAIL:" carries no test name, so there is nothing to record
+            parts = line.split()
+            if len(parts) >= 2:
+                test_status_map[parts[1].strip()] = TestStatus.FAILED.value
         if line.endswith(" ... ERROR"):
             test = line.split(" ... ERROR")[0]
             test_status_map[test] = TestStatus.ERROR.value
         if line.startswith("ERROR:"):
-            test = line.split()[1].strip()
-            test_status_map[test] = TestStatus.ERROR.value
+            # same for a bare "ERROR:", which captured stdout produces readily
+            parts = line.split()
+            if len(parts) >= 2:
+                test_status_map[parts[1].strip()] = TestStatus.ERROR.value
 
         if line.lstrip().startswith("ok") and prev_test is not None:
             # It means the test passed, but there's some additional output (including new lines)
