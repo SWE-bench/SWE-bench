@@ -1,5 +1,55 @@
-from swebench.harness.log_parsers.python import parse_log_seaborn
+from swebench.harness.log_parsers.python import (
+    parse_log_matplotlib,
+    parse_log_pytest,
+    parse_log_pytest_options,
+    parse_log_pytest_v2,
+    parse_log_seaborn,
+)
 from swebench.harness.constants import TestStatus
+
+
+class TestPytestParsersPreserveFailed:
+    """Verify that a later PASSED line does not overwrite FAILED/ERROR (#708)."""
+
+    def test_pytest_parsers_preserve_failed_against_later_passed(self):
+        log = """\
+FAILED test_pkg/tests/test_foo.py::test_bar - assert 0
+FAILED test_pkg/tests/test_foo.py::test_baz - assert 0
+=== 2 failed in 0.01s ===
+PASSED test_pkg/tests/test_foo.py::test_bar
+"""
+        for parser in (
+            parse_log_pytest,
+            parse_log_pytest_options,
+            parse_log_pytest_v2,
+            parse_log_matplotlib,
+        ):
+            res = parser(log, None)
+            assert res.get("test_pkg/tests/test_foo.py::test_bar") == TestStatus.FAILED.value, parser.__name__
+            assert res.get("test_pkg/tests/test_foo.py::test_baz") == TestStatus.FAILED.value, parser.__name__
+
+    def test_pytest_parsers_preserve_error_against_later_passed(self):
+        log = """\
+ERROR test_pkg/tests/test_foo.py::test_bar
+PASSED test_pkg/tests/test_foo.py::test_bar
+"""
+        for parser in (
+            parse_log_pytest,
+            parse_log_pytest_options,
+            parse_log_pytest_v2,
+            parse_log_matplotlib,
+        ):
+            res = parser(log, None)
+            assert res.get("test_pkg/tests/test_foo.py::test_bar") == TestStatus.ERROR.value, parser.__name__
+
+    def test_wrapped_progress_artifact_can_still_become_passed(self):
+        """Pass-to-pass backward compatibility for pytest-dev suite with [100%]."""
+        log = """\
+FAILED [100%]
+PASSED [100%]
+"""
+        res = parse_log_pytest(log, None)
+        assert res.get("[100%]") == TestStatus.PASSED.value
 
 
 class TestParseLogSeaborn:
