@@ -32,7 +32,6 @@ def test_failed_assertion_message_excluded_from_id():
     assert parse_log_pytest_v2(log, None) == {"tests/test_a.py::test_x[a b]": FAILED}
 
 
-
 def test_error_teardown_message_excluded_from_id_and_overrides_pass():
     log = (
         "PASSED tests/test_a.py::test_x\n"
