@@ -175,8 +175,12 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
         translator = str.maketrans("", "", escapes)
         line = line.translate(translator)
         if any([line.startswith(x.value) for x in TestStatus]):
-            if line.startswith(TestStatus.FAILED.value):
-                # drop the trailing " - <assertion message>" so it can't enter the id
+            if any(
+                line.startswith(status.value)
+                for status in (TestStatus.FAILED, TestStatus.ERROR, TestStatus.XFAIL)
+            ):
+                # Pytest appends failure/error/xfail details after " - "; they are
+                # not part of the test id.
                 line = line.split(" - ", 1)[0]
             test_case = line.split()
             if len(test_case) >= 2 and not _is_skip_summary(test_case[0], test_case[1]):
