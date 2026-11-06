@@ -231,18 +231,24 @@ def parse_log_sympy(log: str, test_spec: TestSpec) -> dict[str, str]:
     for match in matches:
         test_case = f"{match[1]}.py:{match[2]}"
         test_status_map[test_case] = TestStatus.FAILED.value
+    last_test = None
     for line in log.split("\n"):
         line = line.strip()
         if line.startswith("test_"):
+            test = line.split()[0]
             if line.endswith(" E"):
-                test = line.split()[0]
+                last_test = test
                 test_status_map[test] = TestStatus.ERROR.value
-            if line.endswith(" F"):
-                test = line.split()[0]
+            elif line.endswith(" F"):
+                last_test = test
                 test_status_map[test] = TestStatus.FAILED.value
-            if line.endswith(" ok"):
-                test = line.split()[0]
+            elif line.endswith(" ok"):
+                last_test = test
                 test_status_map[test] = TestStatus.PASSED.value
+        elif line == "E" and last_test is not None:
+            test_status_map[last_test] = TestStatus.ERROR.value
+        elif line == "F" and last_test is not None:
+            test_status_map[last_test] = TestStatus.FAILED.value
     return test_status_map
 
 

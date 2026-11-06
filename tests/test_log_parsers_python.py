@@ -1,4 +1,4 @@
-from swebench.harness.log_parsers.python import parse_log_seaborn
+from swebench.harness.log_parsers.python import parse_log_seaborn, parse_log_sympy
 from swebench.harness.constants import TestStatus
 
 
@@ -35,4 +35,23 @@ test_b.py::test_two PASSED [100%]
         assert result == {
             "test_a.py::test_one": TestStatus.PASSED.value,
             "test_b.py::test_two": TestStatus.PASSED.value,
+        }
+
+
+class TestParseLogSympy:
+    """Tests for parse_log_sympy used by sympy."""
+
+    def test_failing_test_that_prints_ok_is_marked_failed(self):
+        log = """\\
+test_x ok
+F
+
+____ sympy/a/tests/test_a.py:test_x ____
+AssertionError
+"""
+        result = parse_log_sympy(log, test_spec=None)
+
+        assert result == {
+            "sympy/a/tests/test_a.py:test_x": TestStatus.FAILED.value,
+            "test_x": TestStatus.FAILED.value,
         }
