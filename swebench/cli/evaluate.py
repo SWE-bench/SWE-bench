@@ -87,6 +87,11 @@ def report_command(
     ),
     split: Optional[str] = typer.Option(None, "-s", "--split"),
     instance_ids: Optional[list[str]] = typer.Option(None, "-i", "--instance"),
+    model: Optional[str] = typer.Option(
+        None,
+        "--model",
+        help="Model directory to re-grade when a run contains multiple models",
+    ),
 ):
     """Re-grade a finished run from its saved logs, without starting containers.
 
@@ -97,9 +102,12 @@ def report_command(
 
         swebench report my-run -d verified
 
+        swebench report my-run --model my-agent
+
         swebench report my-run -d multimodal -i grommet__grommet-6282
     """
     from swebench.harness.run_evaluation import main as run_evaluation
+    from swebench.harness.run_evaluation import get_saved_predictions
     from swebench.harness.run_evaluation import read_run_metadata
 
     recorded = read_run_metadata(run_id) or {}
@@ -115,6 +123,11 @@ def report_command(
     if split is None:
         split = recorded.get("split", "test")
 
+    try:
+        predictions_override = get_saved_predictions(run_id, model)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--model") from exc
+
     run_evaluation(
         dataset_name=resolve_dataset(dataset),
         split=split,
@@ -129,4 +142,5 @@ def report_command(
         # a run made against a task repo has to be re-graded against the same tests,
         # or the dataset's copy silently overrides them and the verdict changes
         task_repo=recorded.get("task_repo"),
+        predictions_override=predictions_override,
     )

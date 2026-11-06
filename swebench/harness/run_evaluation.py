@@ -451,7 +451,7 @@ def run_instances(
         timeout (int): Timeout for running tests
         rewrite_reports (bool): True if eval run is just to reformat existing report
     """
-    client = _docker_client()
+    client = None if rewrite_reports else _docker_client()
     test_specs = [make_test_spec(instance) for instance in instances]
 
     # run instances in parallel
@@ -510,6 +510,60 @@ def read_run_metadata(run_id: str) -> dict | None:
     """What a previous run graded against, if it recorded it."""
     path = RUN_EVALUATION_LOG_DIR / run_id / LOG_RUN_METADATA
     return json.loads(path.read_text()) if path.is_file() else None
+
+
+def get_saved_predictions(run_id: str, model: str | None = None) -> list[dict] | None:
+    """Reconstruct predictions from a run's saved model artifacts.
+
+    Returns ``None`` when the run only has gold artifacts, preserving the
+    historical ``swebench report`` behavior. Model directories use ``__`` in
+    place of ``/``; ``--model`` accepts either form.
+    """
+    run_dir = RUN_EVALUATION_LOG_DIR / run_id
+    if not run_dir.is_dir():
+        return None
+
+    model_dirs = sorted(
+        path
+        for path in run_dir.iterdir()
+        if path.is_dir() and path.name != "gold"
+    )
+    if model is None:
+        if not model_dirs:
+            return None
+        if len(model_dirs) > 1:
+            names = ", ".join(path.name for path in model_dirs)
+            raise ValueError(
+                f"Run {run_id!r} contains multiple models ({names}); pass --model."
+            )
+        model_dir = model_dirs[0]
+        model_name = model_dir.name
+    else:
+        model_dir = run_dir / model.replace("/", "__")
+        if not model_dir.is_dir():
+            raise ValueError(
+                f"Model {model!r} has no saved artifacts in run {run_id!r}."
+            )
+        model_name = model
+
+    predictions = []
+    for instance_dir in sorted(path for path in model_dir.iterdir() if path.is_dir()):
+        test_output = instance_dir / LOG_TEST_OUTPUT
+        if not test_output.is_file():
+            continue
+        patch_path = instance_dir / "patch.diff"
+        predictions.append(
+            {
+                "instance_id": instance_dir.name,
+                "model_name_or_path": model_name,
+                "model_patch": patch_path.read_text() if patch_path.is_file() else None,
+            }
+        )
+    if not predictions:
+        raise ValueError(
+            f"No saved test logs found for model {model_name!r} in run {run_id!r}."
+        )
+    return predictions
 
 
 def load_instances(
@@ -708,6 +762,7 @@ def main(
     rewrite_reports: bool,
     modal: bool,
     task_repo: str | None = None,
+    predictions_override: list[dict] | None = None,
 ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -731,8 +786,12 @@ def main(
     # set open file limit
     assert len(run_id) > 0, "Run ID must be provided"
     # load predictions as map of instance_id to prediction
-    predictions = get_predictions_from_file(
-        predictions_path, dataset_name, split, task_repo, instance_ids
+    predictions = (
+        predictions_override
+        if predictions_override is not None
+        else get_predictions_from_file(
+            predictions_path, dataset_name, split, task_repo, instance_ids
+        )
     )
     predictions = {pred["instance_id"]: pred for pred in predictions}
     write_run_metadata(run_id, dataset_name, split, task_repo)
@@ -761,7 +820,7 @@ def main(
     # run instances locally
     if platform.system() == "Linux":
         resource.setrlimit(resource.RLIMIT_NOFILE, (open_file_limit, open_file_limit))
-    client = _docker_client()
+    client = None if rewrite_reports else _docker_client()
 
     if not dataset:
         print("No instances to run.")
