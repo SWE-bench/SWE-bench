@@ -1,4 +1,4 @@
-from swebench.harness.log_parsers.javascript import parse_log_jest
+from swebench.harness.log_parsers.javascript import parse_log_jest, parse_log_karma
 from swebench.harness.constants import TestStatus
 
 
@@ -38,3 +38,50 @@ class TestParseLogJest:
         result = parse_log_jest(log, test_spec=None)
 
         assert result == {"works when nested": TestStatus.PASSED.value}
+
+
+class TestParseLogKarma:
+    """Tests for parse_log_karma used by Karma-based JS/TS repos."""
+
+    def test_sibling_suites_at_same_indentation_replace_previous_suite(self):
+        """Sibling describe blocks at the same indentation level must replace
+        the previous sibling rather than keeping the previous sibling's name."""
+        log = """Starting browser HeadlessChrome
+  Suite A
+    ✔ test 1
+  Suite B
+    ✔ test 1
+    ✖ test 2
+SUMMARY:
+"""
+        result = parse_log_karma(log, test_spec=None)
+
+        assert result == {
+            "Suite A > test 1": TestStatus.PASSED.value,
+            "Suite B > test 1": TestStatus.PASSED.value,
+            "Suite B > test 2": TestStatus.FAILED.value,
+        }
+
+    def test_nested_and_dedented_suites_unwind_full_hierarchy(self):
+        """Exiting a deeply nested describe block into an outer sibling describe
+        block must pop all deeper levels as well as the previous sibling at the
+        new indentation level, and push the new suite name."""
+        log = """Starting browser HeadlessChrome
+  Outer A
+    Inner A1
+      Deep A1a
+        ✔ deep test
+    Inner A2
+      ✔ inner 2 test
+  Outer B
+    ✔ outer B test
+SUMMARY:
+"""
+        result = parse_log_karma(log, test_spec=None)
+
+        assert result == {
+            "Outer A > Inner A1 > Deep A1a > deep test": TestStatus.PASSED.value,
+            "Outer A > Inner A2 > inner 2 test": TestStatus.PASSED.value,
+            "Outer B > outer B test": TestStatus.PASSED.value,
+        }
+
