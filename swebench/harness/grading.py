@@ -164,14 +164,17 @@ def get_logs_eval(test_spec: TestSpec, log_fp: str) -> tuple[dict[str, str], boo
         # by the eval script. Exiting non-zero while reporting no failure at all
         # means the log is not describing the run that actually happened.
         exit_code = parse_test_exit_code(content)
-        if (
-            exit_code not in (None, 0)
-            and status_map
-            and not any(
-                status in (TestStatus.FAILED.value, TestStatus.ERROR.value)
-                for status in status_map.values()
-            )
-        ):
+        recorded_failure = any(
+            status in (TestStatus.FAILED.value, TestStatus.ERROR.value)
+            for status in status_map.values()
+        )
+        if exit_code not in (None, 0) and not recorded_failure:
+            # The tests exited non-zero but no failure was recorded. Either the
+            # log describes a different run, or the only failure is suite-level
+            # and this parser cannot name it -- e.g. a Jasmine `afterAll` hook,
+            # whose "Suite error" line carries no spec number. Under
+            # EvalType.FAIL_ONLY an absent test counts as success, so grading
+            # this log would resolve an instance whose suite exited 1.
             return {}, False
         return status_map, True
 
