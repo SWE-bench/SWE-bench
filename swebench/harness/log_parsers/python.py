@@ -117,28 +117,33 @@ def parse_log_django(log: str, test_spec: TestSpec) -> dict[str, str]:
                     line = line.split("...", 1)[-1].strip()
                 test = line.rsplit(suffix, 1)[0]
                 test_status_map[test] = TestStatus.PASSED.value
+                prev_test = None
                 break
         if " ... skipped" in line:
             test = line.split(" ... skipped")[0]
             test_status_map[test] = TestStatus.SKIPPED.value
+            prev_test = None
         if line.endswith(" ... FAIL"):
             test = line.split(" ... FAIL")[0]
             test_status_map[test] = TestStatus.FAILED.value
+            prev_test = None
         if line.startswith("FAIL:"):
             test = line.split()[1].strip()
             test_status_map[test] = TestStatus.FAILED.value
         if line.endswith(" ... ERROR"):
             test = line.split(" ... ERROR")[0]
             test_status_map[test] = TestStatus.ERROR.value
+            prev_test = None
         if line.startswith("ERROR:"):
             test = line.split()[1].strip()
             test_status_map[test] = TestStatus.ERROR.value
 
-        if line.lstrip().startswith("ok") and prev_test is not None:
+        if line == "ok" and prev_test is not None:
             # It means the test passed, but there's some additional output (including new lines)
             # between "..." and "ok" message
             test = prev_test
-            test_status_map[test] = TestStatus.PASSED.value
+            test_status_map.setdefault(test, TestStatus.PASSED.value)
+            prev_test = None
 
     # TODO: This is very brittle, we should do better
     # There's a bug in the django logger, such that sometimes a test output near the end gets
@@ -155,7 +160,7 @@ def parse_log_django(log: str, test_spec: TestSpec) -> dict[str, str]:
     for pattern in patterns:
         for match in re.finditer(pattern, log, re.MULTILINE):
             test_name = match.group(1)
-            test_status_map[test_name] = TestStatus.PASSED.value
+            test_status_map.setdefault(test_name, TestStatus.PASSED.value)
     return test_status_map
 
 
