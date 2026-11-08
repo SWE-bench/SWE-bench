@@ -699,8 +699,7 @@ def parse_log_karma(log: str, test_spec: TestSpec) -> dict[str, str]:
     different describe blocks. Logic is brittle.
     """
     test_status_map = {}
-    current_indent = -1
-    current_suite = []
+    current_suite: list[tuple[str, int]] = []
     started = False
 
     pattern = r"^(\s*)?([✔✖])?\s(.*)$"
@@ -723,16 +722,14 @@ def parse_log_karma(log: str, test_spec: TestSpec) -> dict[str, str]:
 
             if indent and not status:
                 new_indent = len(indent)
-                if new_indent > current_indent:
-                    current_indent = new_indent
-                    current_suite.append(name)
-                elif new_indent < current_indent:
-                    current_indent = new_indent
+                while current_suite and current_suite[-1][1] >= new_indent:
                     current_suite.pop()
-                    continue
+                current_suite.append((name, new_indent))
 
             if status in ("✔", "✖"):
-                full_test_name = " > ".join(current_suite + [name])
+                full_test_name = " > ".join(
+                    [suite_name for suite_name, _ in current_suite] + [name]
+                )
                 test_status_map[full_test_name] = (
                     TestStatus.PASSED.value
                     if status == "✔"
