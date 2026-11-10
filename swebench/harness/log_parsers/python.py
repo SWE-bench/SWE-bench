@@ -1,10 +1,55 @@
 import re
+from collections.abc import Iterator
 
 from swebench.harness.constants import TestStatus
 from swebench.types import TestSpec
 
 _SKIP_SUMMARY_COUNT = re.compile(r"^\[\d+\]$")
 _PROGRESS_PERCENT = re.compile(r"^\[\s*\d+%\s*\]$")
+_ANSI_COLOR = re.compile(r"\x1b\[[\d;]*m")
+_PYTEST_SESSION_START = re.compile(r"^={3,} test session starts ={3,}\s*$", re.M)
+_PYTEST_SHORT_SUMMARY = re.compile(r"={3,} short test summary info ={3,}")
+_PYTEST_SECTION_END = re.compile(r"(?:={3,} .* ={3,}|!{3,} .* !{3,})")
+_PYTEST_VERBOSE_RESULT = re.compile(
+    r".+\.py::.+ (?:PASSED|FAILED|ERROR|SKIPPED|XFAIL)(?: \[\s*\d+%\s*\])?"
+)
+
+
+def _pytest_status_lines(log: str) -> Iterator[str]:
+    """Read pytest's short summary when present, and support older logs without it."""
+    for session in _PYTEST_SESSION_START.split(_ANSI_COLOR.sub("", log)):
+        lines = session.split("\n")
+        progress_end = len(lines)
+        summary_start = None
+        summary_end = len(lines)
+        for index, line in enumerate(lines):
+            heading = line.strip()
+            if not _PYTEST_SECTION_END.fullmatch(heading):
+                continue
+            progress_end = min(progress_end, index)
+            if _PYTEST_SHORT_SUMMARY.fullmatch(heading):
+                summary_start = index + 1
+                summary_end = len(lines)
+            elif summary_start is not None and summary_end == len(lines):
+                summary_end = index
+
+        if summary_start is None:
+            yield from lines
+            continue
+
+        for index, line in enumerate(lines):
+            if summary_start <= index < summary_end:
+                yield line
+            elif index < progress_end and _PYTEST_VERBOSE_RESULT.fullmatch(
+                line.strip()
+            ):
+                # Some runners report only failures in the short summary.
+                yield line
+            else:
+                # The pytest-dev gold lists include this wrapped progress artifact.
+                parts = line.split(maxsplit=1)
+                if len(parts) == 2 and _PROGRESS_PERCENT.fullmatch(parts[1].rstrip()):
+                    yield line
 
 
 def _record_status(test_status_map: dict[str, str], name: str, status: str) -> None:
@@ -47,7 +92,7 @@ def parse_log_pytest(log: str, test_spec: TestSpec) -> dict[str, str]:
         dict: test case to test status mapping
     """
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         if any([line.startswith(x.value) for x in TestStatus]):
             # Additional parsing for FAILED status
             if line.startswith(TestStatus.FAILED.value):
@@ -72,7 +117,7 @@ def parse_log_pytest_options(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     option_pattern = re.compile(r"(.*?)\[(.*)\]")
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         if any([line.startswith(x.value) for x in TestStatus]):
             # Additional parsing for FAILED status
             if line.startswith(TestStatus.FAILED.value):
@@ -189,7 +234,7 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     test_status_map = {}
     escapes = "".join([chr(char) for char in range(1, 32)])
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         line = re.sub(r"\[(\d+)m", "", line)
         translator = str.maketrans("", "", escapes)
         line = line.translate(translator)
@@ -218,7 +263,7 @@ def parse_log_seaborn(log: str, test_spec: TestSpec) -> dict[str, str]:
         dict: test case to test status mapping
     """
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         parts = line.split()
         if len(parts) < 2:
             continue
@@ -275,7 +320,7 @@ def parse_log_matplotlib(log: str, test_spec: TestSpec) -> dict[str, str]:
         dict: test case to test status mapping
     """
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         line = line.replace("MouseButton.LEFT", "1")
         line = line.replace("MouseButton.RIGHT", "3")
         if any([line.startswith(x.value) for x in TestStatus]):

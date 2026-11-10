@@ -51,6 +51,66 @@ PASSED [100%]
         res = parse_log_pytest(log, None)
         assert res.get("[100%]") == TestStatus.PASSED.value
 
+    def test_pytest_short_summary_excludes_printed_statuses(self):
+        log = """\
+============================= test session starts ==============================
+=================================== FAILURES ===================================
+----------------------------- Captured stdout call -----------------------------
+PASSED test_example.py::test_never_runs
+=========================== short test summary info ============================
+FAILED test_example.py::test_first - assert False
+PASSED test_example.py::test_finished
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+PASSED test_example.py::test_after_summary
+========================= 1 failed, 1 passed in 0.01s ==========================
+""".replace("short test summary info", "\x1b[1mshort test summary info\x1b[0m")
+        for parser in (
+            parse_log_pytest,
+            parse_log_pytest_options,
+            parse_log_pytest_v2,
+            parse_log_matplotlib,
+            parse_log_seaborn,
+        ):
+            assert parser(log, None) == {
+                "test_example.py::test_first": TestStatus.FAILED.value,
+                "test_example.py::test_finished": TestStatus.PASSED.value,
+            }, parser.__name__
+
+    def test_pytest_short_summary_preserves_legacy_output(self):
+        log = """\
+============================= test session starts ==============================
+PASSED test_example.py::test_legacy
+============================= test session starts ==============================
+PASSED [100%]
+=========================== short test summary info ============================
+PASSED test_example.py::test_finished
+============================== 1 passed in 0.01s ===============================
+"""
+        assert parse_log_pytest(log, None) == {
+            "test_example.py::test_legacy": TestStatus.PASSED.value,
+            "[100%]": TestStatus.PASSED.value,
+            "test_example.py::test_finished": TestStatus.PASSED.value,
+        }
+
+    def test_partial_pytest_short_summary_preserves_verbose_results(self):
+        for parser, progress in (
+            (parse_log_pytest_v2, "test_example.py::test_finished PASSED"),
+            (parse_log_seaborn, "test_example.py::test_finished PASSED [ 50%]"),
+        ):
+            log = f"""\
+{progress}
+=================================== FAILURES ===================================
+----------------------------- Captured stdout call -----------------------------
+test_example.py::test_never_runs PASSED [100%]
+=========================== short test summary info ============================
+FAILED test_example.py::test_first - assert False
+========================= 1 failed, 1 passed in 0.01s ==========================
+"""
+            assert parser(log, None) == {
+                "test_example.py::test_finished": TestStatus.PASSED.value,
+                "test_example.py::test_first": TestStatus.FAILED.value,
+            }, parser.__name__
+
 
 class TestParseLogSeaborn:
     """Tests for parse_log_seaborn used by mwaskom/seaborn."""
