@@ -1,9 +1,73 @@
 import re
+from collections.abc import Iterator
 
 from swebench.harness.constants import TestStatus
 from swebench.types import TestSpec
 
 _SKIP_SUMMARY_COUNT = re.compile(r"^\[\d+\]$")
+_PROGRESS_PERCENT = re.compile(r"^\[\s*\d+%\s*\]$")
+_ANSI_COLOR = re.compile(r"\x1b\[[\d;]*m")
+_PYTEST_SESSION_START = re.compile(r"^={3,} test session starts ={3,}\s*$", re.M)
+_PYTEST_SHORT_SUMMARY = re.compile(r"={3,} short test summary info ={3,}")
+_PYTEST_SECTION_END = re.compile(r"(?:={3,} .* ={3,}|!{3,} .* !{3,})")
+_PYTEST_VERBOSE_RESULT = re.compile(
+    r".+\.py::.+ (?:PASSED|FAILED|ERROR|SKIPPED|XFAIL)(?: \[\s*\d+%\s*\])?"
+)
+
+
+def _pytest_status_lines(log: str) -> Iterator[str]:
+    """Read pytest's short summary when present, and support older logs without it."""
+    for session in _PYTEST_SESSION_START.split(_ANSI_COLOR.sub("", log)):
+        lines = session.split("\n")
+        progress_end = len(lines)
+        summary_start = None
+        summary_end = len(lines)
+        for index, line in enumerate(lines):
+            heading = line.strip()
+            if not _PYTEST_SECTION_END.fullmatch(heading):
+                continue
+            progress_end = min(progress_end, index)
+            if _PYTEST_SHORT_SUMMARY.fullmatch(heading):
+                summary_start = index + 1
+                summary_end = len(lines)
+            elif summary_start is not None and summary_end == len(lines):
+                summary_end = index
+
+        if summary_start is None:
+            yield from lines
+            continue
+
+        for index, line in enumerate(lines):
+            if summary_start <= index < summary_end:
+                yield line
+            elif index < progress_end and _PYTEST_VERBOSE_RESULT.fullmatch(
+                line.strip()
+            ):
+                # Some runners report only failures in the short summary.
+                yield line
+            else:
+                # The pytest-dev gold lists include this wrapped progress artifact.
+                parts = line.split(maxsplit=1)
+                if len(parts) == 2 and _PROGRESS_PERCENT.fullmatch(parts[1].rstrip()):
+                    yield line
+
+
+def _record_status(test_status_map: dict[str, str], name: str, status: str) -> None:
+    """Record test status into map, preventing a later PASSED line from overwriting FAILED/ERROR (#708).
+
+    A test that pytest reported FAILED or ERROR must not be flipped to PASSED by a
+    subsequent log line (e.g. printed by test code or a conftest hook after summary).
+    Wrapped progress percentage artifacts like ``[100%]`` are exempted for backward
+    compatibility with pytest-dev PASS_TO_PASS lists.
+    """
+    prev_status = test_status_map.get(name)
+    if prev_status in (TestStatus.FAILED.value, TestStatus.ERROR.value):
+        if (
+            status not in (TestStatus.FAILED.value, TestStatus.ERROR.value)
+            and not _PROGRESS_PERCENT.match(name)
+        ):
+            return
+    test_status_map[name] = status
 
 
 def _is_skip_summary(status: str, name: str) -> bool:
@@ -28,7 +92,7 @@ def parse_log_pytest(log: str, test_spec: TestSpec) -> dict[str, str]:
         dict: test case to test status mapping
     """
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         if any([line.startswith(x.value) for x in TestStatus]):
             # Additional parsing for FAILED status
             if line.startswith(TestStatus.FAILED.value):
@@ -38,7 +102,7 @@ def parse_log_pytest(log: str, test_spec: TestSpec) -> dict[str, str]:
                 continue
             if _is_skip_summary(test_case[0], test_case[1]):
                 continue
-            test_status_map[test_case[1]] = test_case[0]
+            _record_status(test_status_map, test_case[1], test_case[0])
     return test_status_map
 
 
@@ -53,7 +117,7 @@ def parse_log_pytest_options(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     option_pattern = re.compile(r"(.*?)\[(.*)\]")
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         if any([line.startswith(x.value) for x in TestStatus]):
             # Additional parsing for FAILED status
             if line.startswith(TestStatus.FAILED.value):
@@ -75,7 +139,7 @@ def parse_log_pytest_options(log: str, test_spec: TestSpec) -> dict[str, str]:
                 test_name = f"{main}[{option}]"
             else:
                 test_name = test_case[1]
-            test_status_map[test_name] = test_case[0]
+            _record_status(test_status_map, test_name, test_case[0])
     return test_status_map
 
 
@@ -170,7 +234,7 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     test_status_map = {}
     escapes = "".join([chr(char) for char in range(1, 32)])
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         line = re.sub(r"\[(\d+)m", "", line)
         translator = str.maketrans("", "", escapes)
         line = line.translate(translator)
@@ -180,12 +244,12 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
                 line = line.split(" - ", 1)[0]
             test_case = line.split()
             if len(test_case) >= 2 and not _is_skip_summary(test_case[0], test_case[1]):
-                test_status_map[" ".join(test_case[1:])] = test_case[0]
+                _record_status(test_status_map, " ".join(test_case[1:]), test_case[0])
         # Support older pytest versions by checking if the line ends with the test status
         elif any([line.endswith(x.value) for x in TestStatus]):
             test_case = line.split()
             if len(test_case) >= 2:
-                test_status_map[" ".join(test_case[:-1])] = test_case[-1]
+                _record_status(test_status_map, " ".join(test_case[:-1]), test_case[-1])
     return test_status_map
 
 
@@ -199,20 +263,20 @@ def parse_log_seaborn(log: str, test_spec: TestSpec) -> dict[str, str]:
         dict: test case to test status mapping
     """
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         parts = line.split()
         if len(parts) < 2:
             continue
         if line.startswith(TestStatus.FAILED.value):
             test_case = parts[1]
-            test_status_map[test_case] = TestStatus.FAILED.value
+            _record_status(test_status_map, test_case, TestStatus.FAILED.value)
         elif f" {TestStatus.PASSED.value} " in line:
             if parts[1] == TestStatus.PASSED.value:
                 test_case = parts[0]
-                test_status_map[test_case] = TestStatus.PASSED.value
+                _record_status(test_status_map, test_case, TestStatus.PASSED.value)
         elif line.startswith(TestStatus.PASSED.value):
             test_case = parts[1]
-            test_status_map[test_case] = TestStatus.PASSED.value
+            _record_status(test_status_map, test_case, TestStatus.PASSED.value)
     return test_status_map
 
 
@@ -256,7 +320,7 @@ def parse_log_matplotlib(log: str, test_spec: TestSpec) -> dict[str, str]:
         dict: test case to test status mapping
     """
     test_status_map = {}
-    for line in log.split("\n"):
+    for line in _pytest_status_lines(log):
         line = line.replace("MouseButton.LEFT", "1")
         line = line.replace("MouseButton.RIGHT", "3")
         if any([line.startswith(x.value) for x in TestStatus]):
@@ -268,7 +332,7 @@ def parse_log_matplotlib(log: str, test_spec: TestSpec) -> dict[str, str]:
                 continue
             if _is_skip_summary(test_case[0], test_case[1]):
                 continue
-            test_status_map[test_case[1]] = test_case[0]
+            _record_status(test_status_map, test_case[1], test_case[0])
     return test_status_map
 
 

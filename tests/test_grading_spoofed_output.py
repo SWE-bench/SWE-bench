@@ -75,6 +75,22 @@ def test_genuine_failure_is_graded(tmp_path):
     assert found and status_map == {"test_a": "FAILED"}
 
 
+def test_printed_passed_line_cannot_override_earlier_failed(tmp_path):
+    """A subsequent PASSED line (e.g. from conftest hook) must not overwrite FAILED (#708)."""
+    body = (
+        "FAILED test_a - assert 0\n"
+        "FAILED test_b - assert 0\n"
+        "=== 2 failed in 0.01s ===\n"
+        "PASSED test_a"
+    )
+    status_map, found = get_logs_eval(
+        _spec(), _log(tmp_path, body, exit_code=1)
+    )
+    assert found
+    assert status_map["test_a"] == "FAILED"
+    assert status_map["test_b"] == "FAILED"
+
+
 def test_logs_without_a_recorded_exit_code_are_unaffected(tmp_path):
     # Runs predating this change, and script shapes with no end marker.
     status_map, found = get_logs_eval(_spec(), _log(tmp_path, "PASSED test_a"))
