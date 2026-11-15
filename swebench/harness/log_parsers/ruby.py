@@ -13,7 +13,10 @@ def parse_log_minitest(log: str, test_spec: TestSpec) -> dict[str, str]:
     """
     test_status_map = {}
 
-    pattern = r"^(.+)\. .*=.*(\.|F|E).*$"
+    # minitest -v prints "<Class>#<test> = <seconds> s = <result code>", where the
+    # code is "." (pass), "F" (fail), "E" (error) or "S" (skip). "S" has to be in
+    # the pattern: without it a skipped test matched the "." of its duration.
+    pattern = r"^(.+)\. .*=.*(\.|F|E|S).*$"
 
     for line in log.split("\n"):
         match = re.match(pattern, line.strip())
@@ -23,6 +26,8 @@ def parse_log_minitest(log: str, test_spec: TestSpec) -> dict[str, str]:
                 test_status_map[test_name] = TestStatus.PASSED.value
             elif outcome in ["F", "E"]:
                 test_status_map[test_name] = TestStatus.FAILED.value
+            elif outcome == "S":
+                test_status_map[test_name] = TestStatus.SKIPPED.value
 
     return test_status_map
 
