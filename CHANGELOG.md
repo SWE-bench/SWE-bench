@@ -23,6 +23,10 @@ Added:
 * `swebench submit package|publish|register|verify` build and check a leaderboard
   submission, and `swebench submit hf` publishes to a HuggingFace bucket.
 
+Fixed:
+* Evaluating a pre-5.0 dataset (e.g. `princeton-nlp/SWE-bench_Verified`) fails with a
+  `ValueError` naming the missing fields and the dataset to use, instead of `KeyError: 'image'`.
+
 ## [5.0.1] - 8/17/2026
 
 Fixed:
