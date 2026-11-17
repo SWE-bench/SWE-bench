@@ -248,6 +248,21 @@ def _parse_image_assets(raw) -> dict:
     return json.loads(raw) if isinstance(raw, str) else raw
 
 
+_TEST_SPEC_FIELDS = frozenset(
+    {
+        "instance_id",
+        "image",
+        "repo",
+        "version",
+        "FAIL_TO_PASS",
+        "PASS_TO_PASS",
+        "log_parser",
+        "eval_type",
+        "eval_script",
+    }
+)
+
+
 def make_test_spec(instance: dict) -> TestSpec:
     """
     Build a TestSpec from a dataset instance.
@@ -255,6 +270,14 @@ def make_test_spec(instance: dict) -> TestSpec:
     The instance dict must contain: instance_id, image, repo, version,
     FAIL_TO_PASS, PASS_TO_PASS, log_parser, eval_type, eval_script.
     """
+    missing = sorted(_TEST_SPEC_FIELDS - instance.keys())
+    if missing:
+        raise ValueError(
+            f"Instance {instance.get('instance_id', '<unknown>')} lacks {', '.join(missing)}. "
+            "Since swebench 5.0, datasets carry their own image and eval script: use a "
+            "SWE-bench/* dataset (e.g. SWE-bench/SWE-bench_Verified) instead of a "
+            "princeton-nlp/* one, or install swebench<5 for the old datasets."
+        )
     f2p = instance["FAIL_TO_PASS"]
     p2p = instance["PASS_TO_PASS"]
     return TestSpec(
