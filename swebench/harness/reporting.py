@@ -73,13 +73,17 @@ def make_run_report(
                     continue
 
                 report = json.loads(content)
-                if report[instance_id]["resolved"]:
+                resolved = report[instance_id]["resolved"]
+                if not isinstance(resolved, bool):
+                    error_ids.add(instance_id)
+                    continue
+                if resolved:
                     # Record if the instance was resolved
                     resolved_ids.add(instance_id)
                 else:
                     unresolved_ids.add(instance_id)
-            except (json.JSONDecodeError, KeyError):
-                # If the report file is not valid JSON or missing keys, treat as error
+            except (json.JSONDecodeError, KeyError, TypeError):
+                # Malformed JSON, missing keys, or invalid report structure is an error.
                 error_ids.add(instance_id)
         else:
             # Otherwise, the instance was not run successfully
