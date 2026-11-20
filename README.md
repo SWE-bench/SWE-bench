@@ -99,12 +99,15 @@ Other commands:
 
 ```bash
 swebench infer verified -m gpt-5 -o preds -w 8        # generate predictions with mini-SWE-agent
-swebench images build verified -j 8           # build/pull images ahead of time
-swebench images check multilingual            # verify images exist on the registry
+swebench images build ~/swe-bench-tasks -j 8    # build images from a task repo
+swebench images check ~/swe-bench-multilingual-tasks  # check images in the registry
 swebench images clean --run-id <run_id>       # remove leftover containers
 swebench submit hf <run_id> -b <user/bucket>      # publish results to an HF bucket
 swebench --help                               # all commands
 ```
+
+The image build and check commands take the path to a cloned task repository,
+such as [swe-bench-tasks](https://github.com/SWE-bench/swe-bench-tasks).
 
 > [!NOTE]
 > The previous `python -m swebench.harness.run_evaluation ...` form still works

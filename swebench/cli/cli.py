@@ -21,10 +21,10 @@ app = typer.Typer(
     swebench eval multimodal --gold -i carbon-design-system__carbon-10188
     swebench report my-run -d verified
     swebench submit hf my-run -b me/swebench-runs
-    swebench images build verified -j 8
-    swebench images check multilingual
+    swebench images build ~/swe-bench-tasks -j 8
+    swebench images check ~/swe-bench-multilingual-tasks
     swebench images clean --run-id my-run
-    swebench dataset build multimodal -s test
+    swebench dataset build ~/swe-bench-multimodal-tasks
     swebench dataset collect scikit-learn/scikit-learn
 """,
     no_args_is_help=True,
