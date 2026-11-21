@@ -181,7 +181,15 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
             ):
                 # Pytest appends failure/error/xfail details after " - "; they are
                 # not part of the test id.
-                line = line.split(" - ", 1)[0]
+                depth = 0
+                for i, char in enumerate(line):
+                    if char == "[":
+                        depth += 1
+                    elif char == "]" and depth:
+                        depth -= 1
+                    elif depth == 0 and line.startswith(" - ", i):
+                        line = line[:i]
+                        break
             test_case = line.split()
             if len(test_case) >= 2 and not _is_skip_summary(test_case[0], test_case[1]):
                 test_status_map[" ".join(test_case[1:])] = test_case[0]

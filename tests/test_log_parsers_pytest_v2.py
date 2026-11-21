@@ -45,6 +45,18 @@ def test_xfail_reason_excluded_from_id():
     assert parse_log_pytest_v2(log, None) == {"tests/test_a.py::test_x": XFAIL}
 
 
+def test_teardown_error_keeps_separator_in_parameter_id():
+    nodeid = "tests/test_a.py::test_case[low - high]"
+    log = f"PASSED {nodeid}\nERROR {nodeid} - RuntimeError: teardown failed"
+    assert parse_log_pytest_v2(log, None) == {nodeid: ERROR}
+
+
+def test_xfail_keeps_separator_in_nested_parameter_id():
+    nodeid = "tests/test_a.py::test_case[outer[low - high]]"
+    log = f"XFAIL {nodeid} - known issue"
+    assert parse_log_pytest_v2(log, None) == {nodeid: XFAIL}
+
+
 def test_bare_status_line_is_skipped():
     """A status word alone must not insert an empty-string key (cf. #611)."""
     log = "PASSED\nFAILED\ntests/test_a.py::test_y PASSED"
