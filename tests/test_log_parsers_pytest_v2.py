@@ -9,6 +9,8 @@ from swebench.harness.log_parsers.python import parse_log_pytest_v2
 
 PASSED = TestStatus.PASSED.value
 FAILED = TestStatus.FAILED.value
+ERROR = TestStatus.ERROR.value
+XFAIL = TestStatus.XFAIL.value
 
 
 def test_id_containing_spaces_is_not_split():
@@ -28,6 +30,31 @@ def test_failed_assertion_message_excluded_from_id():
     """The " - <message>" suffix must not become part of the test id."""
     log = "FAILED tests/test_a.py::test_x[a b] - AssertionError: expected 1 got 2"
     assert parse_log_pytest_v2(log, None) == {"tests/test_a.py::test_x[a b]": FAILED}
+
+
+def test_error_teardown_message_excluded_from_id_and_overrides_pass():
+    log = (
+        "PASSED tests/test_a.py::test_x\n"
+        "ERROR tests/test_a.py::test_x - RuntimeError: teardown failed"
+    )
+    assert parse_log_pytest_v2(log, None) == {"tests/test_a.py::test_x": ERROR}
+
+
+def test_xfail_reason_excluded_from_id():
+    log = "XFAIL tests/test_a.py::test_x - known upstream bug"
+    assert parse_log_pytest_v2(log, None) == {"tests/test_a.py::test_x": XFAIL}
+
+
+def test_teardown_error_keeps_separator_in_parameter_id():
+    nodeid = "tests/test_a.py::test_case[low - high]"
+    log = f"PASSED {nodeid}\nERROR {nodeid} - RuntimeError: teardown failed"
+    assert parse_log_pytest_v2(log, None) == {nodeid: ERROR}
+
+
+def test_xfail_keeps_separator_in_nested_parameter_id():
+    nodeid = "tests/test_a.py::test_case[outer[low - high]]"
+    log = f"XFAIL {nodeid} - known issue"
+    assert parse_log_pytest_v2(log, None) == {nodeid: XFAIL}
 
 
 def test_bare_status_line_is_skipped():
