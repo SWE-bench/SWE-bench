@@ -52,6 +52,7 @@ Added:
 
 Fixed grading:
 * A patch can no longer pass by printing its own `PASSED` lines. The eval script records the test command's exit code, and a log claiming no failures while the tests failed is not graded (#620).
+* A recorded failure can no longer be overwritten by a later `PASSED` line, and pytest's config files are restored before the test patch is applied, so neither a decoy `FAILED` line nor a config-driven `xfail` grades a failing test as resolved (#728).
 * A run with no results and no sign the suite ran is rejected rather than scored as resolved.
 * Infrastructure failures are labelled in the report, without being removed from the score (#586).
 * Truncated parametrized test ids, skipped tests, results outside the output markers, and test names containing spaces are all handled.

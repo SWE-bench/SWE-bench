@@ -5,6 +5,18 @@ from swebench.types import TestSpec
 
 _SKIP_SUMMARY_COUNT = re.compile(r"^\[\d+\]$")
 
+# A recorded failure must stick: a patch can print its own PASSED lines after the
+# run (an atexit hook lands before End Test Output), and last-write-wins let that
+# erase the real failure while a decoy FAILED id satisfied the exit-code
+# cross-check in grading (#728). Rerun plugins, the only source of genuine
+# duplicate lines, are not used in SWE-bench runs.
+_FAILURES = (TestStatus.FAILED.value, TestStatus.ERROR.value)
+
+
+def _record(status_map: dict[str, str], test_case: str, status: str) -> None:
+    if status_map.get(test_case) not in _FAILURES or status in _FAILURES:
+        status_map[test_case] = status
+
 
 def _is_skip_summary(status: str, name: str) -> bool:
     """True for pytest's ``SKIPPED [N] path:line: reason`` summary, where [N] is not a test.
@@ -38,7 +50,7 @@ def parse_log_pytest(log: str, test_spec: TestSpec) -> dict[str, str]:
                 continue
             if _is_skip_summary(test_case[0], test_case[1]):
                 continue
-            test_status_map[test_case[1]] = test_case[0]
+            _record(test_status_map, test_case[1], test_case[0])
     return test_status_map
 
 
@@ -75,7 +87,7 @@ def parse_log_pytest_options(log: str, test_spec: TestSpec) -> dict[str, str]:
                 test_name = f"{main}[{option}]"
             else:
                 test_name = test_case[1]
-            test_status_map[test_name] = test_case[0]
+            _record(test_status_map, test_name, test_case[0])
     return test_status_map
 
 
@@ -180,12 +192,12 @@ def parse_log_pytest_v2(log: str, test_spec: TestSpec) -> dict[str, str]:
                 line = line.split(" - ", 1)[0]
             test_case = line.split()
             if len(test_case) >= 2 and not _is_skip_summary(test_case[0], test_case[1]):
-                test_status_map[" ".join(test_case[1:])] = test_case[0]
+                _record(test_status_map, " ".join(test_case[1:]), test_case[0])
         # Support older pytest versions by checking if the line ends with the test status
         elif any([line.endswith(x.value) for x in TestStatus]):
             test_case = line.split()
             if len(test_case) >= 2:
-                test_status_map[" ".join(test_case[:-1])] = test_case[-1]
+                _record(test_status_map, " ".join(test_case[:-1]), test_case[-1])
     return test_status_map
 
 
@@ -268,7 +280,7 @@ def parse_log_matplotlib(log: str, test_spec: TestSpec) -> dict[str, str]:
                 continue
             if _is_skip_summary(test_case[0], test_case[1]):
                 continue
-            test_status_map[test_case[1]] = test_case[0]
+            _record(test_status_map, test_case[1], test_case[0])
     return test_status_map
 
 

@@ -241,6 +241,36 @@ def record_test_exit_code(eval_script_list: list[str]) -> list[str]:
     return eval_script_list
 
 
+PYTEST_CONFIG_PATHS = (
+    "*conftest.py",
+    "pytest.ini",
+    "pyproject.toml",
+    "setup.cfg",
+    "tox.ini",
+)
+_PYTEST_CONFIG = " ".join(f"'{p}'" for p in PYTEST_CONFIG_PATHS)
+
+# The eval script resets the test files but not pytest's own configuration, so a
+# model patch can add `addopts = "-p plugin"` to pyproject.toml (or a conftest.py)
+# and have the plugin mark a FAIL_TO_PASS test xfail: pytest exits 0 and a genuine
+# failure grades as resolved (#728). Restore the base commit's config files and
+# drop any the patch added before the test patch is applied. HEAD is the base
+# commit -- the model patch is applied to the working tree, uncommitted.
+PYTEST_CONFIG_RESET = (
+    f"git checkout HEAD -- $(git ls-files {_PYTEST_CONFIG}) || true; "
+    f"git clean -fq -- {_PYTEST_CONFIG} || true"
+)
+
+
+def reset_pytest_config(eval_script_list: list[str]) -> list[str]:
+    """Insert the config restore just before the test patch is applied."""
+    for i, line in enumerate(eval_script_list):
+        if line.strip().startswith("git apply"):
+            return [*eval_script_list[:i], PYTEST_CONFIG_RESET, *eval_script_list[i:]]
+    # No test patch in the script (unrecognized shape): leave it untouched.
+    return eval_script_list
+
+
 def _parse_image_assets(raw) -> dict:
     """image_assets ships as a JSON string in the HF datasets, dict when local."""
     if not raw:
@@ -260,8 +290,8 @@ def make_test_spec(instance: dict) -> TestSpec:
     return TestSpec(
         instance_id=instance["instance_id"],
         image=instance["image"],
-        eval_script_list=record_test_exit_code(
-            parse_eval_script(instance["eval_script"])
+        eval_script_list=reset_pytest_config(
+            record_test_exit_code(parse_eval_script(instance["eval_script"]))
         ),
         repo=instance["repo"],
         version=instance["version"],
