@@ -16,6 +16,8 @@ import re
 import subprocess
 import sys
 
+import pytest
+
 from swebench.harness.constants import END_TEST_OUTPUT, START_TEST_OUTPUT
 from swebench.harness.grading import get_logs_eval, parse_test_exit_code
 from swebench.harness.log_parsers import PARSER_REGISTRY
@@ -28,7 +30,7 @@ START_LINE = f": '{START_TEST_OUTPUT}'"
 END_LINE = f": '{END_TEST_OUTPUT}'"
 
 
-def _spec():
+def _spec(parser="parse_log_pytest"):
     return TestSpec(
         instance_id="x__x-1",
         image="img",
@@ -37,7 +39,7 @@ def _spec():
         version="1.0",
         FAIL_TO_PASS=["test_a"],
         PASS_TO_PASS=[],
-        log_parser="parse_log_pytest",
+        log_parser=parser,
         eval_type="pass_and_fail",
     )
 
@@ -73,6 +75,39 @@ def test_genuine_failure_is_graded(tmp_path):
         _spec(), _log(tmp_path, "FAILED test_a", exit_code=1)
     )
     assert found and status_map == {"test_a": "FAILED"}
+
+
+@pytest.mark.parametrize(
+    "parser", ["parse_log_pytest", "parse_log_pytest_options", "parse_log_pytest_v2"]
+)
+def test_a_real_failure_cannot_be_overwritten_by_a_later_pass(tmp_path, parser):
+    """Issue #728: a decoy FAILED somewhere else must not satisfy the cross-check.
+
+    A patch prints a PASSED line after the genuine failure (atexit, conftest) and
+    an unrelated FAILED id whose only job is to keep "some failure exists" true.
+    The parser is last-write-wins, so the real failure was erased and the run
+    graded resolved; a recorded failure has to stick.
+    """
+    body = (
+        "FAILED test_a - AssertionError: assert 2 == 3\n"
+        "PASSED test_a\n"
+        "FAILED decoy/decoy.py::test_decoy"
+    )
+    status_map, found = get_logs_eval(_spec(parser), _log(tmp_path, body, exit_code=1))
+    assert found
+    assert status_map["test_a"] == "FAILED"
+
+
+def test_a_real_failure_cannot_be_turned_into_an_xfail(tmp_path):
+    # XFAIL grades as a pass, so it is a route to the same overwrite.
+    body = (
+        "FAILED test_a - AssertionError: assert 2 == 3\n"
+        "XFAIL test_a\n"
+        "FAILED decoy/decoy.py::test_decoy"
+    )
+    status_map, found = get_logs_eval(_spec(), _log(tmp_path, body, exit_code=1))
+    assert found
+    assert status_map["test_a"] == "FAILED"
 
 
 def test_logs_without_a_recorded_exit_code_are_unaffected(tmp_path):
