@@ -1,3 +1,5 @@
+import re
+
 from dataclasses import dataclass
 from typing import Optional, Union, cast
 
@@ -26,9 +28,9 @@ class ImageSpec:
             raise ValueError("instance_id cannot be empty")
         if not self.dockerfile:
             raise ValueError("dockerfile cannot be empty")
-        if self.arch not in ["amd64", "arm64"]:
+        if self.arch not in ["amd64", "arm64", "riscv64"]:
             raise ValueError(
-                f"Invalid architecture: {self.arch}. Must be 'x86_64' or 'arm64'"
+                f"Invalid architecture: {self.arch}. Must be 'x86_64' or 'arm64' or 'riscv64'"
             )
         if self.namespace is not None and not self.namespace:
             raise ValueError("namespace cannot be empty string if provided")
@@ -59,6 +61,8 @@ class ImageSpec:
             return "linux/amd64"
         elif self.arch == "arm64":
             return "linux/arm64/v8"
+        elif self.arch == "riscv64":
+            return "linux/riscv64"
         else:
             raise ValueError(f"Invalid architecture: {self.arch}")
 
@@ -121,5 +125,20 @@ def make_image_spec(
         dockerfile=dockerfile,
         namespace=namespace,
         tag=tag,
+        arch=_arch_from_dockerfile(dockerfile),
         context_dir=str(context_dir) if context_dir else None,
     )
+
+
+def _arch_from_dockerfile(dockerfile: str) -> str:
+    """Read the target architecture from the Dockerfile FROM --platform line."""
+    m = re.search(r"FROM\s+--platform=linux/([a-z0-9_]+)", dockerfile)
+    if m:
+        arch = m.group(1)
+        if arch.startswith("arm64"):
+            return "arm64"
+        if arch.startswith("riscv64"):
+            return "riscv64"
+        if arch.startswith("amd64") or arch.startswith("x86_64"):
+            return "amd64"
+    return "amd64"
